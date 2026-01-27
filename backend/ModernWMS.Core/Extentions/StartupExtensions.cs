@@ -234,7 +234,7 @@ namespace ModernWMS.Core.Extentions
                     });
 
                     c.IndexStream = () => Assembly.GetExecutingAssembly().GetManifestResourceStream("ModernWMS.Core.Swagger.index.html");
-                    c.RoutePrefix = "";
+                    c.RoutePrefix = "swagger"; // now UI is at /swagger
                 });
             }
         }
