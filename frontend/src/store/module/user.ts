@@ -24,6 +24,7 @@ export const user = {
   },
   mutations: {
     setUserInfo(state: UserStateProps, userInfo: any) {
+      debugger;
       state.userInfo = userInfo
     },
     resetUserInfo(state: UserStateProps, userInfo = {}) {
