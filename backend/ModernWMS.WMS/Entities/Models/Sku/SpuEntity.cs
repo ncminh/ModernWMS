@@ -40,6 +40,8 @@ namespace ModernWMS.WMS.Entities.Models
         /// </summary>
         public string spu_description { get; set; } = string.Empty;
 
+        public string bar_code { get; set; } = string.Empty;
+
         /// <summary>
         /// supplier_id
         /// </summary>
