@@ -52,13 +52,14 @@ namespace ModernWMS.Core.JWT
         /// <returns>(token,有效分钟数)</returns>
         public (string token, int expire) GenerateToken(CurrentUser userClaims)
         {
+            var signingKey = "a-very-long-random-32+byte-secret-string-here-123456";
             string token = new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(
                                                                                  issuer: _tokenSettings.Value.Issuer,
                                                                                  audience: _tokenSettings.Value.Audience,
                                                                                  claims: SetClaims(userClaims),
                                                                                  expires: DateTime.Now.AddMinutes(_tokenSettings.Value.ExpireMinute),
                                                                                  signingCredentials: new SigningCredentials(
-                                                                                                                            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(GlobalConsts.SigningKey)),
+                                                                                                                            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey)),
                                                                                                                             SecurityAlgorithms.HmacSha256)
                                                                                 ));
 
