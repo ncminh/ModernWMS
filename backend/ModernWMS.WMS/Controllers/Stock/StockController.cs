@@ -15,7 +15,7 @@ using System.Collections.Generic;
 namespace ModernWMS.WMS.Controllers
 {
     /// <summary>
-    /// stock controller
+    /// stock controller - Stock Management
     /// </summary>
     [Route("stock")]
     [ApiController]

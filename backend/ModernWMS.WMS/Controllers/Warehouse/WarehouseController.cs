@@ -13,7 +13,7 @@ using ModernWMS.WMS.Services;
 namespace ModernWMS.WMS.Controllers
 {
     /// <summary>
-    /// warehouse controller
+    /// warehouse controller - Warehouse Setting
     /// </summary>
      [Route("warehouse")]
      [ApiController]

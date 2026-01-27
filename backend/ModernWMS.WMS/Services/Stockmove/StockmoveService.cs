@@ -116,9 +116,9 @@ namespace ModernWMS.WMS.Services
                             orig_goods_location_name = orig_location.location_name,
                             orig_goods_warehouse = orig_location.warehouse_name,
                             series_number = m.series_number,
-                            expiry_date = m.expiry_date,
-                            price = m.price,
-                            putaway_date = m.putaway_date,
+                            //expiry_date = m.expiry_date,
+                            //price = m.price,
+                            //putaway_date = m.putaway_date,
                         };
             query = query.Where(t => t.tenant_id.Equals(currentUser.tenant_id))
                 .Where(queries.AsExpression<StockmoveViewModel>());
