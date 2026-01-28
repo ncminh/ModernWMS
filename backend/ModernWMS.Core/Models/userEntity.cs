@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using ModernWMS.Core.Utility;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -11,7 +12,7 @@ namespace ModernWMS.Core.Models
     /// user entity
     /// </summary>
     [Table("user")]
-    public class userEntity : BaseModel
+    public class UserEntity : BaseModel
     {
 
         #region property
@@ -19,65 +20,75 @@ namespace ModernWMS.Core.Models
         /// <summary>
         /// user's number
         /// </summary>
-        public string user_num { get; set; } = string.Empty;
+        [Column("user_num")]
+        public string UserNum { get; set; } = string.Empty;
 
         /// <summary>
         /// user's name
         /// </summary>
-        public string user_name { get; set; } = string.Empty;
+        [Column("user_name")]
+        public string UserName { get; set; } = string.Empty;
 
         /// <summary>
         /// contact
         /// </summary>
-        public string contact_tel { get; set; } = string.Empty;
+        [Column("contact_tel")]
+        public string ContactTel { get; set; } = string.Empty;
 
         /// <summary>
         /// user's role
         /// </summary>
-        public string user_role { get; set; } = string.Empty;
+        [Column("user_role")]
+        public string UserRole { get; set; } = string.Empty;
 
         /// <summary>
         /// sex
         /// </summary>
-        public string sex { get; set; } = string.Empty;
+        [Column("sex")]
+        public string Sex { get; set; } = string.Empty;
 
         /// <summary>
         /// is_valid
         /// </summary>
-        public bool is_valid { get; set; } = false;
+        [Column("is_valid")]
+        public bool IsValid { get; set; } = false;
 
         /// <summary>
         /// password
         /// </summary>
-        public string auth_string { get; set; } = string.Empty;
+        [Column("auth_string")]
+        public string AuthString { get; set; } = string.Empty;
 
         /// <summary>
         /// email
         /// </summary>
-        public string email { get; set; } = string.Empty;
+        [Column("email")]
+        public string Email { get; set; } = string.Empty;
 
         /// <summary>
         /// creator
         /// </summary>
-        public string creator { get; set; } = string.Empty;
+        [Column("creator")]
+        public string Creator { get; set; } = string.Empty;
 
         /// <summary>
         /// createtime
         /// </summary>
-        public DateTime create_time { get; set; } = UtilConvert.MinDate;
+        [Column("create_time")]
+        public DateTime CreateTime { get; set; } = UtilConvert.MinDate;
 
         /// <summary>
         /// last update time
         /// </summary>
-        public DateTime last_update_time { get; set; } = UtilConvert.MinDate;
+        [Column("last_update_time")]
+        public DateTime LastUpdateTime { get; set; } = UtilConvert.MinDate;
 
         /// <summary>
         /// tenant
         /// </summary>
-        public long tenant_id { get; set; } = 0;
-
+        [Column("tenant_id")]
+        public long TenantId { get; set; } = 0;
 
         #endregion
-
     }
 }

@@ -14,7 +14,7 @@ namespace ModernWMS.WMS.IServices
     /// <summary>
     /// Interface of UserService
     /// </summary>
-    public interface IUserService : IBaseService<userEntity>
+    public interface IUserService : IBaseService<UserEntity>
     {
         #region Api
 

@@ -38,17 +38,17 @@ namespace ModernWMS.Core.Services
         /// <returns></returns>
         public async Task<LoginOutputViewModel> Login(LoginInputViewModel loginInput, CurrentUser currentUser)
         {
-            var users = await (from user in _sqlDBContext.GetDbSet<userEntity>().AsNoTracking()
-                                                join ur in _sqlDBContext.GetDbSet<UserroleEntity>().AsNoTracking() on user.user_role equals ur.role_name
-                                                where ur.tenant_id == user.tenant_id&&(user.user_name == loginInput.user_name || user.user_num == loginInput.user_name)
+            var users = await (from user in _sqlDBContext.GetDbSet<UserEntity>().AsNoTracking()
+                                                join ur in _sqlDBContext.GetDbSet<UserroleEntity>().AsNoTracking() on user.UserRole equals ur.role_name
+                                                where ur.tenant_id == user.TenantId&&(user.UserName == loginInput.user_name || user.UserNum == loginInput.user_name)
                                                 select new  {
                                                     user_id = user.id,
-                                                    user_num = user.user_num,
-                                                    user_name = user.user_name,
-                                                    user_role = user.user_role,
+                                                    user_num = user.UserNum,
+                                                    user_name = user.UserName,
+                                                    user_role = user.UserRole,
                                                     userrole_id = ur.id,
-                                                    cipher = user.auth_string,
-                                                    tenant_id = user.tenant_id
+                                                    cipher = user.AuthString,
+                                                    tenant_id = user.TenantId
                                                 }
                                                ).ToListAsync();
             string md5_password = Core.Utility.Md5Helper.Md5Encrypt32(loginInput.password);

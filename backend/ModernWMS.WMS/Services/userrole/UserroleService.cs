@@ -185,9 +185,9 @@ namespace ModernWMS.WMS.Services
             {
                 return (false, _stringLocalizer["not exists entity"]);
             }
-            var user_DBSet = _dBContext.GetDbSet<userEntity>();
-            var this_role_users = await user_DBSet.Where(t=>t.user_role == entity.role_name).ToListAsync();
-            this_role_users.ForEach(t=>t.user_role=viewModel.role_name);
+            var user_DBSet = _dBContext.GetDbSet<UserEntity>();
+            var this_role_users = await user_DBSet.Where(t=>t.UserRole == entity.role_name).ToListAsync();
+            this_role_users.ForEach(t=>t.UserRole=viewModel.role_name);
             entity.id = viewModel.id;
             entity.role_name = viewModel.role_name;
             entity.is_valid = viewModel.is_valid;

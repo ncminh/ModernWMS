@@ -1,10 +1,6 @@
 ﻿using ModernWMS.Core.Utility;
-using System;
-using System.Collections.Generic;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ModernWMS.WMS.Entities.ViewModels
 {
@@ -31,7 +27,8 @@ namespace ModernWMS.WMS.Entities.ViewModels
         [Display(Name = "user_num")]
         [Required(ErrorMessage = "Required")]
         [MaxLength(128, ErrorMessage = "MaxLength")]
-        public string user_num { get; set; } = string.Empty;
+        [JsonProperty("user_num")]
+        public string UserNum { get; set; } = string.Empty;
 
         /// <summary>
         /// user's name
@@ -39,14 +36,16 @@ namespace ModernWMS.WMS.Entities.ViewModels
         [Display(Name = "user_name")]
         [Required(ErrorMessage = "Required")]
         [MaxLength(128, ErrorMessage = "MaxLength")]
-        public string user_name { get; set; } = string.Empty;
+        [JsonProperty("user_name")]
+        public string UserName { get; set; } = string.Empty;
 
         /// <summary>
         /// contact
         /// </summary>
         [Display(Name = "contact_tel")]
         [MaxLength(64, ErrorMessage = "MaxLength")]
-        public string contact_tel { get; set; } = string.Empty;
+        [JsonProperty("contact_tel")]
+        public string ContactTel { get; set; } = string.Empty;
 
         /// <summary>
         /// user's role
@@ -54,54 +53,62 @@ namespace ModernWMS.WMS.Entities.ViewModels
         [Display(Name = "user_role")]
         [Required(ErrorMessage = "Required")]
         [MaxLength(128, ErrorMessage = "MaxLength")]
-        public string user_role { get; set; } = string.Empty;
+        [JsonProperty("user_role")]
+        public string UserRole { get; set; } = string.Empty;
 
         /// <summary>
         /// sex
         /// </summary>
         [Display(Name = "sex")]
         [MaxLength(10, ErrorMessage = "MaxLength")]
-        public string sex { get; set; } = string.Empty;
+        [JsonProperty("sex")]
+        public string Sex { get; set; } = string.Empty;
 
         /// <summary>
         /// is_valid
         /// </summary>
         [Display(Name = "is_valid")]
-        public bool is_valid { get; set; } = false;
+        [JsonProperty("is_valid")]
+        public bool IsValid { get; set; } = false;
 
         /// <summary>
         /// password
         /// </summary>
         [Display(Name = "password")]
         [MaxLength(64, ErrorMessage = "MaxLength")]
-        public string auth_string { get; set; } = string.Empty;
+        [JsonProperty("auth_string")]
+        public string AuthString { get; set; } = string.Empty;
 
         /// <summary>
         /// creator
         /// </summary>
         [Display(Name = "creator")]
         [MaxLength(64, ErrorMessage = "MaxLength")]
-        public string creator { get; set; } = string.Empty;
+        [JsonProperty("creator")]
+        public string Creator { get; set; } = string.Empty;
 
         /// <summary>
         /// createtime
         /// </summary>
         [Display(Name = "create_time")]
         [DataType(DataType.DateTime, ErrorMessage = "DataType_DateTime")]
-        public DateTime create_time { get; set; } = UtilConvert.MinDate;
+        [JsonProperty("create_time")]
+        public DateTime CreateTime { get; set; } = UtilConvert.MinDate;
 
         /// <summary>
         /// last update time
         /// </summary>
         [Display(Name = "last_update_time")]
         [DataType(DataType.DateTime, ErrorMessage = "DataType_DateTime")]
-        public DateTime last_update_time { get; set; } = UtilConvert.MinDate;
+        [JsonProperty("last_update_time")]
+        public DateTime LastUpdateTime { get; set; } = UtilConvert.MinDate;
 
         /// <summary>
         /// tenant
         /// </summary>
         [Display(Name = "tenant")]
-        public long tenant_id { get; set; } = 0;
+        [JsonProperty("tenant_id")]
+        public long TenantId { get; set; } = 0;
 
         #endregion property
     }

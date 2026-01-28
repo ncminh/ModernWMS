@@ -127,7 +127,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPost]
         public async Task<ResultModel<int>> AddAsync(UserViewModel viewModel)
         {
-            viewModel.creator = CurrentUser.user_name;
+            viewModel.Creator = CurrentUser.user_name;
             var (id, msg) = await _userService.AddAsync(viewModel, CurrentUser);
             if (id > 0)
             {

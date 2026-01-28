@@ -71,7 +71,7 @@ namespace ModernWMS.WMS.Services
 
             var flowset_data = await _dBContext.Set<FlowSetEntity>().Where(t => t.flowsetmain_id == main_data.id).ToListAsync();
             var user_data = await (from fsu in _dBContext.Set<FlowSetUserEntity>().AsNoTracking()
-                                   join user in _dBContext.Set<userEntity>().AsNoTracking() on fsu.user_id equals user.id
+                                   join user in _dBContext.Set<UserEntity>().AsNoTracking() on fsu.user_id equals user.id
                                    where fsu.flowsetmain_id == main_data.id
                                    select new FlowSetUserViewModel
                                    {
@@ -80,7 +80,7 @@ namespace ModernWMS.WMS.Services
                                        menu = main_data.menu,
                                        node_guid = fsu.node_guid,
                                        user_id = fsu.user_id,
-                                       user_name = user.user_name
+                                       user_name = user.UserName
                                    }
                                    ).ToListAsync();
             var filter_data = await (from fsf in _dBContext.Set<FlowSetFilterEntity>().AsNoTracking().Where(t => t.flowsetmain_id == main_data.id)
