@@ -18,7 +18,7 @@ namespace ModernWMS.WMS.Services
     /// <summary>
     ///  Rolemenu Service
     /// </summary>
-    public class RolemenuService : BaseService<RolemenuEntity>, IRolemenuService
+    public class RoleMenuService : BaseService<RolemenuEntity>, IRolemenuService
     {
         #region Args
         /// <summary>
@@ -38,7 +38,7 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="dBContext">The DBContext</param>
         /// <param name="stringLocalizer">Localizer</param>
-        public RolemenuService(
+        public RoleMenuService(
             SqlDBContext dBContext
           , IStringLocalizer<ModernWMS.Core.MultiLanguage> stringLocalizer
             )
@@ -86,7 +86,7 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="userrole_id">userrole id</param>
         /// <returns></returns>
-        public async Task<RolemenuBothViewModel> GetAsync(int userrole_id)
+        public async Task<RolemenuBothViewModel> GetAsync(int userrole_id, CurrentUser currentUser)
         {
             var Rolemenus = _dBContext.GetDbSet<RolemenuEntity>();
             var Userroles = _dBContext.GetDbSet<UserroleEntity>();
@@ -94,7 +94,7 @@ namespace ModernWMS.WMS.Services
             var entities = await (from rm in Rolemenus.AsNoTracking()
                                   join m in Menus.AsNoTracking() on rm.menu_id equals m.id
                                   join r in Userroles.AsNoTracking() on rm.userrole_id equals r.id
-                                  where rm.userrole_id == userrole_id
+                                  where rm.userrole_id == userrole_id && rm.tenant_id == currentUser.tenant_id
                                   orderby r.role_name, m.sort, m.menu_name
                                   select new
                                   {
@@ -172,13 +172,13 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="userrole_id">user role id</param>
         /// <returns></returns>
-        public async Task<List<MenuViewModel>> GetMenusByRoleId(int userrole_id)
+        public async Task<List<MenuViewModel>> GetMenusByRoleId(int userrole_id, CurrentUser currentUser)
         {
-            var Rolemenus = _dBContext.GetDbSet<RolemenuEntity>(); 
+            var Rolemenus = _dBContext.GetDbSet<RolemenuEntity>();
             var Menus = _dBContext.GetDbSet<MenuEntity>();
             var data = await (from rm in Rolemenus.AsNoTracking()
                               join m in Menus.AsNoTracking() on rm.menu_id equals m.id
-                              where rm.userrole_id == userrole_id
+                              where rm.userrole_id == userrole_id && rm.tenant_id == currentUser.tenant_id
                               orderby m.sort, m.menu_name
                               select new 
                               {
@@ -303,9 +303,9 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="userrole_id">userrole id</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> DeleteAsync(int userrole_id)
+        public async Task<(bool flag, string msg)> DeleteAsync(int userrole_id, CurrentUser currentUser)
         {
-            var qty = await _dBContext.GetDbSet<RolemenuEntity>().Where(t => t.userrole_id.Equals(userrole_id)).ExecuteDeleteAsync();
+            var qty = await _dBContext.GetDbSet<RolemenuEntity>().Where(t => t.userrole_id.Equals(userrole_id) && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
             if (qty > 0)
             {
                 return (true, _stringLocalizer["delete_success"]);

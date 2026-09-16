@@ -128,10 +128,10 @@ namespace ModernWMS.WMS.Services
         /// Get a record by id
         /// </summary>
         /// <returns></returns>
-        public async Task<UserViewModel> GetAsync(int id)
+        public async Task<UserViewModel> GetAsync(int id, CurrentUser currentUser)
         {
             var DbSet = _dBContext.GetDbSet<UserEntity>();
-            var entity = await DbSet.AsNoTracking().FirstOrDefaultAsync(t => t.id.Equals(id));
+            var entity = await DbSet.AsNoTracking().FirstOrDefaultAsync(t => t.id.Equals(id) && t.TenantId == currentUser.tenant_id);
             if (entity == null)
             {
                 return null;
@@ -184,7 +184,7 @@ namespace ModernWMS.WMS.Services
             {
                 return (false, string.Format(_stringLocalizer["exists_entity"], _stringLocalizer["user_num"], viewModel.UserNum));
             }
-            var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id));
+            var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id) && t.TenantId == currentUser.tenant_id);
             if (entity == null)
             {
                 return (false, _stringLocalizer["not_exists_entity"]);
@@ -213,9 +213,9 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="id">id</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> DeleteAsync(int id)
+        public async Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser)
         {
-            var qty = await _dBContext.GetDbSet<UserEntity>().Where(t => t.id.Equals(id)).ExecuteDeleteAsync();
+            var qty = await _dBContext.GetDbSet<UserEntity>().Where(t => t.id.Equals(id) && t.TenantId == currentUser.tenant_id).ExecuteDeleteAsync();
             if (qty > 0)
             {
                 return (true, _stringLocalizer["delete_success"]);
@@ -280,10 +280,10 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="viewModel">viewmodel</param>
         /// <returns></returns>
-        public async Task<(bool, string)> ResetPwd(BatchOperationViewModel viewModel)
+        public async Task<(bool, string)> ResetPwd(BatchOperationViewModel viewModel, CurrentUser currentUser)
         {
             var DBSet = _dBContext.GetDbSet<UserEntity>();
-            var entities = await DBSet.Where(t => viewModel.id_list.Contains(t.id)).ToListAsync();
+            var entities = await DBSet.Where(t => viewModel.id_list.Contains(t.id) && t.TenantId == currentUser.tenant_id).ToListAsync();
             var newpassword = GetRandomPassword();
             entities.ForEach(t => { t.AuthString = Md5Helper.Md5Encrypt32(newpassword); t.LastUpdateTime = DateTime.Now; });
             var res = await _dBContext.SaveChangesAsync();

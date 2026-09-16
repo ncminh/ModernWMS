@@ -57,7 +57,7 @@
         [HttpGet("authority")]
         public async  Task<ResultModel<List<MenuViewModel>>> GetMenusByRoleId(int userrole_id)
         {
-            var data = await _rolemenuService.GetMenusByRoleId(userrole_id);
+            var data = await _rolemenuService.GetMenusByRoleId(userrole_id, CurrentUser);
             if (data.Any())
             {
                 return ResultModel<List<MenuViewModel>>.Success(data);
@@ -108,7 +108,7 @@
         [HttpGet]
         public async Task<ResultModel<RolemenuBothViewModel>> GetAsync(int userrole_id)
         {
-            var data = await _rolemenuService.GetAsync(userrole_id);
+            var data = await _rolemenuService.GetAsync(userrole_id, CurrentUser);
             if (data != null && data.userrole_id > 0)
             {
                 return ResultModel<RolemenuBothViewModel>.Success(data);
@@ -164,7 +164,7 @@
         [HttpDelete]
         public async Task<ResultModel<string>> DeleteAsync(int userrole_id)
         {
-            var (flag, msg) = await _rolemenuService.DeleteAsync(userrole_id);
+            var (flag, msg) = await _rolemenuService.DeleteAsync(userrole_id, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);

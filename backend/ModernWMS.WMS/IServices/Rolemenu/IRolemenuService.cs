@@ -22,8 +22,9 @@ namespace ModernWMS.WMS.IServices
         /// Get a record by id
         /// </summary>
         /// <param name="userrole_id">userrole id</param>
+        /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<RolemenuBothViewModel> GetAsync(int userrole_id);
+        Task<RolemenuBothViewModel> GetAsync(int userrole_id, CurrentUser currentUser);
 
         /// <summary>
         /// add a new record
@@ -44,8 +45,9 @@ namespace ModernWMS.WMS.IServices
         /// Get menu's authority by user role id
         /// </summary>
         /// <param name="userrole_id">user role id</param>
+        /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<List<MenuViewModel>> GetMenusByRoleId(int userrole_id);
+        Task<List<MenuViewModel>> GetMenusByRoleId(int userrole_id, CurrentUser currentUser);
 
         /// <summary>
         /// update a record
@@ -59,8 +61,9 @@ namespace ModernWMS.WMS.IServices
         /// delete a record
         /// </summary>
         /// <param name="userrole_id">userrole id</param>
+        /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<(bool flag, string msg)> DeleteAsync(int userrole_id);
+        Task<(bool flag, string msg)> DeleteAsync(int userrole_id, CurrentUser currentUser);
         #endregion
     }
 }

@@ -1,6 +1,6 @@
 # Unit Testing Baseline Plan
 
-Status: **Phases 0-2 complete.** Phases 3+ are still just a proposal — nothing beyond Phase 2 has been implemented yet.
+Status: **Phases 0-3 complete.** Phases 4+ are still just a proposal — nothing beyond Phase 3 has been implemented yet.
 
 ## 1. Current state (as found)
 
@@ -78,6 +78,28 @@ Two more bugs, on top of the two from Phase 1 (same eleven-services tenant-filte
 
 `dotnet test ModernWMS.sln` → **122 passed**, 0 failed. `dotnet build ModernWMS.sln` → 0 errors.
 
+## 2d. Phase 3 — done
+
+Before writing tests, renamed the three service classes to proper PascalCase, at the user's request and to the exact scope they confirmed: **service class only** (matching the precedent already set by the user's own earlier renames — `WarehouseareaService`→`WarehouseAreaService`, `GoodslocationService`→`GoodsLocationService`, `GoodsownerService`→`GoodsOwnerService`, `FreightfeeService`→`FreightFeeService`). `UserroleService` → `UserRoleService`, `RolemenuService` → `RoleMenuService` (`UserService` was already correctly cased, so it's unchanged). Interfaces (`IUserroleService`, `IRolemenuService`), controllers (`UserroleController`, `RolemenuController`), folders, and entities/viewmodels (`UserroleEntity`, `RolemenuEntity`, `RolemenuViewModel`, …) were explicitly left as-is — the user confirmed this scope and also confirmed the Core-project `UserEntity`/`UserroleEntity` (they live in `ModernWMS.Core/Models/`, not `ModernWMS.WMS`, and the user has been actively hand-editing `UserEntity` there per commit `971dd4b`) should not be touched at all.
+
+Added one test class per module, 43 new tests (165 total):
+
+- `User` (`UserService`, 20 tests): tenant-scoped `PageAsync` and `GetSelectItemsAsnyc` (valid-only, tenant-scoped role list), add/update duplicate-`UserNum` rejection with audit stamping (the generated password returned to the caller is never the same string as the stored `AuthString` — it's hashed), delete, `ExcelAsync`'s three branches, `ResetPwd` (including its own cross-tenant regression test — this one batch-resets by a client-supplied id list), `ChangePwd` (unknown id / wrong old password / correct old password), and `Register` — the new-tenant signup flow that creates the user, a default "admin" `Userrole`, ~24 starter `Menu` rows, and one `Rolemenu` mapping per menu, all under one freshly-minted `tenant_id`.
+- `UserRole` (`UserroleService` class now `UserRoleService`, 11 tests): tenant isolation, add/update duplicate-`role_name` rejection, `UpdateAsync`'s rename-cascade onto every `User.UserRole` string field carrying the old role name (denormalized, not a real FK), `BulkSaveAsync`'s combined add/update/delete-by-negative-id contract, plus cross-tenant regression tests.
+- `RoleMenu` (`RolemenuService` class now `RoleMenuService`, 12 tests): tenant-scoped `GetAllAsync`/`GetAllMenusAsync`/`GetMenusByRoleId`, `GetAsync`'s JSON-deserialized `menu_actions_authority`, `AddAsync`'s "one mapping set per role" guard, `UpdateAsync`'s add/update/remove-by-negative-id reconciliation (same shape as `UserRole.BulkSaveAsync` and `Spu.UpdateAsync`'s detail list), delete, plus cross-tenant regression tests.
+
+`dotnet test _tests/MWMS.UnitTests/ModernWMS.UnitTests.csproj` → **165 passed**, 0 failed. `dotnet build ModernWMS.sln` → 0 errors.
+
+### Findings surfaced — fixed
+
+Same Issue 1 tenant-filter gap, now also closed in `UserService`, `UserroleService`, and `RolemenuService` — see the updated Issue 1 in `_docs/issue-logs.md`. Two variants worth calling out specifically: `UserService.ResetPwd` batch-resets passwords for a client-supplied id list with no tenant filter at all, and `RolemenuService.GetAsync`/`GetMenusByRoleId`/`DeleteAsync` are keyed by `userrole_id` rather than `id` and had no `CurrentUser` parameter at all (not just a missing filter). `UserService.ChangePwd` was deliberately left alone — full reasoning in the issue log.
+
+### Gotcha hit while writing these (fixed in the test code, not production code)
+
+`RolemenuService.UpdateAsync` builds brand-new `RolemenuEntity` instances (via a LINQ projection) carrying the *same* primary keys as rows already persisted, then calls `UpdateRange`/`AddRange`/`RemoveRange` on them — this only works because a real HTTP request gets a **fresh** `SqlDBContext` from DI, so those ids were never tracked in that context to begin with. A test that seeds rows with `Add()` + `SaveChangesAsync()` and then reuses the *same* `SqlDBContext` for the service call still has those seed instances tracked, so EF Core's identity map throws ("another instance with the same key value... is already being tracked") the moment the service tries to attach its own detached instances with matching ids. Fixed by calling `scope.DbContext.ChangeTracker.Clear()` after seeding and before invoking the service, in `RoleMenuServiceTests.UpdateAsync_AddsUpdatesAndRemovesMappingsInOneCall` — the same "simulate a fresh per-request context" idea as Phase 1's `FindAsync`-vs-`ExecuteDeleteAsync` gotcha, just triggered by attach/update instead of a stale read.
+
+`dotnet test ModernWMS.sln` → **165 passed**, 0 failed. `dotnet build ModernWMS.sln` → 0 errors.
+
 ## 3. Phased rollout (each phase = one PR, one module family)
 
 Ordering favors **small, self-contained modules first** to validate the harness under real conditions, then moves to the modules CLAUDE.md flags as the most complex/risky, where regressions are also the most expensive.
@@ -87,7 +109,7 @@ Ordering favors **small, self-contained modules first** to validate the harness 
 | **0** ✅ | Test project wiring + shared fixtures + one smoke test (see §2) | Nothing else can start until the harness exists and is proven. |
 | **1** ✅ | Reference/master-data services: `Warehouse`, `Warehousearea`, `Goodslocation`, `GoodsOwner`, `Customer`, `supplier`, `company` | Small, mostly CRUD + `tenant_id` filtering, no cross-module quantity math. Good for validating the SQLite-fixture pattern (insert → query → assert) cheaply and catching any tenant-isolation gaps early. |
 | **2** ✅ | `Sku` (Spu/Category), `Freightfee`, `Print` | Still CRUD-shaped; `Sku` has a few more relations (category tree) worth exercising with real data. |
-| **3** | `user`, `userrole`, `Rolemenu` | Auth-adjacent but not the JWT/login flow itself (that's `ModernWMS.Core/AccountController`, out of scope here). Focus on role/menu authority assignment logic, since CLAUDE.md flags a recent bug fix in `rolemenu.menu_actions_authority`. |
+| **3** ✅ | `user`, `userrole`, `Rolemenu` | Auth-adjacent but not the JWT/login flow itself (that's `ModernWMS.Core/AccountController`, out of scope here). Focus on role/menu authority assignment logic, since CLAUDE.md flags a recent bug fix in `rolemenu.menu_actions_authority`. |
 | **4** | `Asn` (`AsnService`, ~1400 lines) | First "where the complexity actually is" module. Cover: form-number generation via `FunctionHelper`, status transitions (`asn_status` literals), tenant filtering, and audit-column stamping on insert/update. |
 | **5** | `Dispatchlist` (`DispatchlistService`, ~1800 lines) | Largest/most complex service per CLAUDE.md. Split this phase further if needed (e.g. list/search vs. status-transition/stock-deduction logic) rather than trying to cover it in one PR. |
 | **6** | Stock movement family: `Stock`, `Stockmove`, `Stockadjust`, `Stockfreeze`, `Stockprocess`, `Stocktaking` | CLAUDE.md explicitly warns a quantity change usually has to touch several of these consistently — test them together (shared fixtures/scenarios) so cross-service quantity invariants (e.g. total on-hand conserved across a move) are actually asserted, not just each service in isolation. |

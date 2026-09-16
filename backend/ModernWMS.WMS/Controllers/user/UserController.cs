@@ -108,7 +108,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpGet]
         public async Task<ResultModel<UserViewModel>> GetAsync(int id)
         {
-            var data = await _userService.GetAsync(id);
+            var data = await _userService.GetAsync(id, CurrentUser);
             if (data != null)
             {
                 return ResultModel<UserViewModel>.Success(data);
@@ -205,7 +205,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpDelete]
         public async Task<ResultModel<string>> DeleteAsync(int id)
         {
-            var (flag, msg) = await _userService.DeleteAsync(id);
+            var (flag, msg) = await _userService.DeleteAsync(id, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -224,7 +224,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPost("reset-pwd")]
         public async Task<ResultModel<string>> ResetPwd(BatchOperationViewModel viewModel)
         {
-            var (flag, msg) = await _userService.ResetPwd(viewModel);
+            var (flag, msg) = await _userService.ResetPwd(viewModel, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);

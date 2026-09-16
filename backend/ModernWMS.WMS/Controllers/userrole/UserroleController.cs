@@ -90,7 +90,7 @@
          [HttpGet]
          public async Task<ResultModel<UserroleViewModel>> GetAsync(int id)
          {
-             var data = await _userroleService.GetAsync(id);
+             var data = await _userroleService.GetAsync(id, CurrentUser);
              if (data!=null)
              {
                  return ResultModel<UserroleViewModel>.Success(data);
@@ -146,7 +146,7 @@
          [HttpDelete]
          public async Task<ResultModel<string>> DeleteAsync(int id)
          {
-             var (flag, msg) = await _userroleService.DeleteAsync(id);
+             var (flag, msg) = await _userroleService.DeleteAsync(id, CurrentUser);
              if (flag)
              {
                  return ResultModel<string>.Success(msg);

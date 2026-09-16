@@ -43,8 +43,9 @@ namespace ModernWMS.WMS.IServices
         /// Get a data by id
         /// </summary>
         /// <param name="id">primary key</param>
+        /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        Task<UserViewModel> GetAsync(int id);
+        Task<UserViewModel> GetAsync(int id, CurrentUser currentUser);
 
         /// <summary>
         /// add a new data
@@ -65,8 +66,9 @@ namespace ModernWMS.WMS.IServices
         /// delete a data
         /// </summary>
         /// <param name="id">id</param>
+        /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        Task<(bool flag, string msg)> DeleteAsync(int id);
+        Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser);
 
         /// <summary>
         /// import users by excel
@@ -80,8 +82,9 @@ namespace ModernWMS.WMS.IServices
         /// reset password
         /// </summary>
         /// <param name="viewModel">viewmodel</param>
+        /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        Task<(bool, string)> ResetPwd(BatchOperationViewModel viewModel);
+        Task<(bool, string)> ResetPwd(BatchOperationViewModel viewModel, CurrentUser currentUser);
 
         /// <summary>
         /// change password
