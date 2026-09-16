@@ -26,6 +26,16 @@ namespace ModernWMS.WMS.Controllers
         private readonly IDispatchlistService _dispatchlistService;
 
         /// <summary>
+        /// dispatch confirm/pick Service
+        /// </summary>
+        private readonly IDispatchConfirmService _dispatchConfirmService;
+
+        /// <summary>
+        /// dispatch package/weight/delivery/sign Service
+        /// </summary>
+        private readonly IDispatchDeliveryService _dispatchDeliveryService;
+
+        /// <summary>
         /// Localizer Service
         /// </summary>
         private readonly IStringLocalizer<ModernWMS.Core.MultiLanguage> _stringLocalizer;
@@ -36,13 +46,19 @@ namespace ModernWMS.WMS.Controllers
         /// constructor
         /// </summary>
         /// <param name="dispatchlistService">dispatchlist Service</param>
+        /// <param name="dispatchConfirmService">dispatch confirm/pick Service</param>
+        /// <param name="dispatchDeliveryService">dispatch package/weight/delivery/sign Service</param>
         /// <param name="stringLocalizer">Localizer</param>
         public DispatchlistController(
             IDispatchlistService dispatchlistService
+          , IDispatchConfirmService dispatchConfirmService
+          , IDispatchDeliveryService dispatchDeliveryService
           , IStringLocalizer<ModernWMS.Core.MultiLanguage> stringLocalizer
             )
         {
             this._dispatchlistService = dispatchlistService;
+            this._dispatchConfirmService = dispatchConfirmService;
+            this._dispatchDeliveryService = dispatchDeliveryService;
             this._stringLocalizer = stringLocalizer;
         }
         #endregion
@@ -135,7 +151,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpGet("confirm-check")]
         public async Task<ResultModel<List<DispatchlistConfirmDetailViewModel>>> ConfirmOrderCheck(string dispatch_no)
         {
-            var datas = await _dispatchlistService.ConfirmOrderCheck(dispatch_no, CurrentUser);
+            var datas = await _dispatchConfirmService.ConfirmOrderCheck(dispatch_no, CurrentUser);
             return ResultModel<List<DispatchlistConfirmDetailViewModel>>.Success(datas);
         }
 
@@ -147,7 +163,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpGet("pick-list")]
         public async Task<ResultModel<List<DispatchpicklistViewModel>>> GetPickListByDispatchID(int dispatch_id)
         {
-            var datas = await _dispatchlistService.GetPickListByDispatchID(dispatch_id);
+            var datas = await _dispatchConfirmService.GetPickListByDispatchID(dispatch_id, CurrentUser);
             return ResultModel<List<DispatchpicklistViewModel>>.Success(datas);
         }
         /// <summary>
@@ -176,7 +192,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPost("confirm-order")]
         public async Task<ResultModel<string>> ConfirmOrder(List<DispatchlistConfirmDetailViewModel> viewModels)
         {
-            var (flag, msg) = await _dispatchlistService.ConfirmOrder(viewModels, CurrentUser);
+            var (flag, msg) = await _dispatchConfirmService.ConfirmOrder(viewModels, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -194,7 +210,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPut("confirm-pick-dispatchlistno")]
         public async Task<ResultModel<string>> ConfirmPickByDispatchNo(string dispatch_no)
         {
-            var (flag, msg) = await _dispatchlistService.ConfirmPickByDispatchNo(dispatch_no, CurrentUser);
+            var (flag, msg) = await _dispatchConfirmService.ConfirmPickByDispatchNo(dispatch_no, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -213,7 +229,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPost("confirm-pick-detail")]
         public async Task<ResultModel<string>> ConfirmPickDetail([FromBody]List<int> picklist_id)
         {
-            var (flag, msg) = await _dispatchlistService.ConfirmPickDetail(picklist_id, CurrentUser);
+            var (flag, msg) = await _dispatchConfirmService.ConfirmPickDetail(picklist_id, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -232,7 +248,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPost("cancel-confirm-pick-detail")]
         public async Task<ResultModel<string>> CancelConfirmPickDetail([FromBody] List<int> picklist_id)
         {
-            var (flag, msg) = await _dispatchlistService.CancelConfirmPickDetail(picklist_id, CurrentUser);
+            var (flag, msg) = await _dispatchConfirmService.CancelConfirmPickDetail(picklist_id, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -251,7 +267,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPost("package")]
         public async Task<ResultModel<string>> Package(List<DispatchlistPackageViewModel> viewModels)
         {
-            var (flag, msg) = await _dispatchlistService.Package(viewModels, CurrentUser);
+            var (flag, msg) = await _dispatchDeliveryService.Package(viewModels, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -270,7 +286,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPost("weight")]
         public async Task<ResultModel<string>> Weight(List<DispatchlistWeightViewModel> viewModels)
         {
-            var (flag, msg) = await _dispatchlistService.Weight(viewModels, CurrentUser);
+            var (flag, msg) = await _dispatchDeliveryService.Weight(viewModels, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -289,7 +305,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPost("delivery")]
         public async Task<ResultModel<string>> Delivery(List<DispatchlistDeliveryViewModel> viewModels)
         {
-            var (flag, msg) = await _dispatchlistService.Delivery(viewModels, CurrentUser);
+            var (flag, msg) = await _dispatchDeliveryService.Delivery(viewModels, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -308,7 +324,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPost("freightfee")]
         public async Task<ResultModel<string>> SetFreightfee(List<DispatchlistFreightfeeViewModel> viewModels)
         {
-            var (flag, msg) = await _dispatchlistService.SetFreightfee(viewModels);
+            var (flag, msg) = await _dispatchDeliveryService.SetFreightfee(viewModels, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -327,7 +343,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPost("sign")]
         public async Task<ResultModel<string>> SignForArrival(List<DispatchlistSignViewModel> viewModels)
         {
-            var (flag, msg) = await _dispatchlistService.SignForArrival(viewModels);
+            var (flag, msg) = await _dispatchDeliveryService.SignForArrival(viewModels, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -338,14 +354,14 @@ namespace ModernWMS.WMS.Controllers
             }
         }
         /// <summary>
-        /// cancel order opration 
+        /// cancel order opration
         /// </summary>
         /// <param name="viewModel">viewModel</param>
         /// <returns></returns>
         [HttpPost("cancel-order")]
         public async Task<ResultModel<string>> CancelOrderOpration(CancelOrderOprationViewModel viewModel)
         {
-            var (flag, msg) = await _dispatchlistService.CancelOrderOpration(viewModel, CurrentUser);
+            var (flag, msg) = await _dispatchConfirmService.CancelOrderOpration(viewModel, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -363,7 +379,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPut("cancel-order")]
         public async Task<ResultModel<string>> CancelDispatchlistDetailOpration(int id)
         {
-            var (flag, msg) = await _dispatchlistService.CancelDispatchlistDetailOpration(id);
+            var (flag, msg) = await _dispatchConfirmService.CancelDispatchlistDetailOpration(id, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -397,4 +413,3 @@ namespace ModernWMS.WMS.Controllers
 
     }
 }
-

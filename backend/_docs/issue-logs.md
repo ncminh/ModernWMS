@@ -8,7 +8,7 @@ Bugs found while writing unit test coverage (see `unit-testing-plan.md`), and ho
 
 **Severity:** High (cross-tenant data leak / cross-tenant write-and-delete).
 
-**Found in:** `WarehouseService`, `WarehouseareaService`, `GoodslocationService`, `GoodsownerService`, `CustomerService`, `SupplierService`, `CompanyService`, `SpuService` (Phase 1); `CategoryService`, `FreightfeeService`, `PrintSolutionService` (Phase 2); `UserService`, `UserroleService`, `RolemenuService` (Phase 3); `AsnService`'s `Api` region (Phase 4, sub-phase 4a); `AsnmasterService`'s `UpdateAsnmasterAsync`/`DeleteAsnmasterAsync` (Phase 4, sub-phase 4b); `AsnConfirmService` — all four methods (`ConfirmAsync`, `ConfirmCancelAsync`, `UnloadAsync`, `UnloadCancelAsync`), none of which took a tenant check at all before this (Phase 4, sub-phase 4c); `AsnSortingService` — all six methods (`SortingAsync`, `GetAsnsortsAsync`, `ModifyAsnsortsAsync`, `SortedAsync`, `SortedCancelAsync`, `GetAsnPrintSeriesNumberAsync`), the largest single slice of this defect found in one service (Phase 4, sub-phase 4d); `AsnPutawayService` — `GetPendingPutawayDataAsync` (no `CurrentUser` at all) and `PutAwayAsync`'s `Asn` fetch (Phase 4, sub-phase 4e, completing Phase 4) — same defect every time, found and fixed the same way as each phase touched these services.
+**Found in:** `WarehouseService`, `WarehouseareaService`, `GoodslocationService`, `GoodsownerService`, `CustomerService`, `SupplierService`, `CompanyService`, `SpuService` (Phase 1); `CategoryService`, `FreightfeeService`, `PrintSolutionService` (Phase 2); `UserService`, `UserroleService`, `RolemenuService` (Phase 3); `AsnService`'s `Api` region (Phase 4, sub-phase 4a); `AsnmasterService`'s `UpdateAsnmasterAsync`/`DeleteAsnmasterAsync` (Phase 4, sub-phase 4b); `AsnConfirmService` — all four methods (`ConfirmAsync`, `ConfirmCancelAsync`, `UnloadAsync`, `UnloadCancelAsync`), none of which took a tenant check at all before this (Phase 4, sub-phase 4c); `AsnSortingService` — all six methods (`SortingAsync`, `GetAsnsortsAsync`, `ModifyAsnsortsAsync`, `SortedAsync`, `SortedCancelAsync`, `GetAsnPrintSeriesNumberAsync`), the largest single slice of this defect found in one service (Phase 4, sub-phase 4d); `AsnPutawayService` — `GetPendingPutawayDataAsync` (no `CurrentUser` at all) and `PutAwayAsync`'s `Asn` fetch (Phase 4, sub-phase 4e, completing Phase 4); `DispatchConfirmService.ConfirmOrder`'s `dispatchlist_datas` fetch (Phase 5's Option B split); `DispatchDeliveryService.Package`/`Weight`/`Delivery`'s entity fetches (Phase 5's Option B split); `DispatchConfirmService.GetPickListByDispatchID` (no `CurrentUser` at all) and `CancelDispatchlistDetailOpration` (no `CurrentUser` at all), plus `ConfirmPickDetail`/`CancelConfirmPickDetail` (both already took `CurrentUser` but never used it to scope the query — same shape as Phase 1's `GoodsownerService`-family gap) (Phase 5, sub-phase 5b); `DispatchDeliveryService.SetFreightfee` and `SignForArrival` (neither took `CurrentUser` at all) (Phase 5, sub-phase 5c) — same defect every time, found and fixed the same way as each phase touched these services.
 
 ### What was wrong
 
@@ -40,12 +40,19 @@ For each of the eight services:
 - `AsnmasterService.DeleteAsnmasterAsync` needed the same "guard before touching children" shape as `SpuService.DeleteAsync`/`CategoryService.DeleteAsync`: it deletes every child `Asn` row (by `asnmaster_id`) before deleting the `Asnmaster` row itself, so the fix checks the `Asnmaster` belongs to the caller's tenant *before* touching any child rows, returning `delete_failed` immediately if not — otherwise a cross-tenant call could still wipe out another tenant's `Asn` detail rows even while the tenant check on the final `Asnmaster` delete blocked deleting the parent.
 - `AsnSortingService.ModifyAsnsortsAsync` is the trickiest variant of this fix so far: `entities` is a raw, client-supplied `List<AsnsortEntity>` (ids and field values straight from the request body), used to both `ExecuteDeleteAsync` (by negative id) and blind-`UpdateRange` (attaching the client-supplied objects directly and marking them `Modified`, rather than fetching real rows first). The delete got the usual `&& tenant_id == user.tenant_id` added to its `Where`. The update needed an extra step, since there was nothing fetched from the DB to filter by tenant in the first place: before attaching, the fix now queries which of the requested update ids actually belong to the caller's tenant, and silently drops the rest from `updateEntities` before `UpdateRange` ever touches them. The final "recompute `Asn.sorted_qty` from the sum of its `Asnsort` rows" step also got the tenant filter added to its `Asn` fetch, so a cross-tenant `asn_id` slipped into the request body doesn't cause its `Asn.sorted_qty` to be recomputed either.
 - `AsnPutawayService.PutAwayAsync` had a second, distinct flavor of this gap beyond its own `Asn` fetch: the `GoodslocationEntity` rows named by the client-supplied `goods_location_id`s (the request body's putaway destinations) were fetched with no tenant filter either — `Goodslocations.Where(t => LocationIdList.Contains(t.id))`. A tenant-A caller who supplied a `goods_location_id` belonging to tenant B would have had `StockEntity` rows written into tenant B's warehouse location. This is the first instance in Phase 4 where the missing check was on a *referenced* entity (a location named by id in the request), not the primary entity the method operates on — fixed by adding `&& t.tenant_id == currentUser.tenant_id` to that fetch too, so an out-of-tenant location id now fails the existing "all requested locations must exist" check instead of silently resolving to someone else's location.
+- **Phase 5's Option B split fixed this ahead of any sub-phase test** (unlike every phase above, where the fix landed alongside the sub-phase's regression test): `DispatchConfirmService.ConfirmOrder`'s `dispatchlist_datas` fetch (`DBSet.Where(t => dispatchlist_id_list.Contains(t.id))`, straight off a client-supplied id list) gained `&& t.tenant_id == currentUser.tenant_id`; `DispatchDeliveryService.Package`/`Weight`/`Delivery` each had the identical shape on their `entities` fetch and got the same fix. These were fixed during the structural split itself because reading the code made the gap obvious without needing a test to surface it first — the actual cross-tenant regression tests landed with sub-phase 5b (`ConfirmOrder`); 5c (`Package`/`Weight`/`Delivery`) is still pending.
+- **Sub-phase 5b found three more variants while writing its own tests** (fixed alongside their regression tests, the normal sequence for this issue): `GetPickListByDispatchID` had no `CurrentUser` parameter at all — any caller could read another tenant's pick-list detail (location, sku, series number, price) for any `dispatchlist_id` they could guess. Fixed by adding `CurrentUser currentUser`, joining to `DispatchlistEntity` for the first time in this query, and filtering on `dl.tenant_id == currentUser.tenant_id`. `CancelDispatchlistDetailOpration(int id)` also had no `CurrentUser` at all — any caller could revert another tenant's package/weight state by guessing a `dispatchlist_id`. Fixed by adding the parameter and the usual `&& t.tenant_id == currentUser.tenant_id` on the fetch. `ConfirmPickDetail`/`CancelConfirmPickDetail` are the "parameter present but unused" variant already seen in Phase 1's `GoodsownerService` family: both already took `CurrentUser` (to stamp `picker`/`picker_id`) but the `pick_DBSet.Where(t => picklist_id.Contains(t.id))` fetch never checked it. `DispatchpicklistEntity` carries no `tenant_id` of its own, so there was nothing to filter on directly — fixed by joining to its parent `DispatchlistEntity` (via `dispatchlist_id`) and filtering on the parent's `tenant_id`, the same "join to the owning entity" shape as `AsnSortingService.ModifyAsnsortsAsync`'s fix. Cross-tenant ids are silently dropped from the working set rather than erroring, matching that same precedent.
+- **Sub-phase 5c found the same "no `CurrentUser` at all" shape on the last two untouched methods in the file**, closing out the `Dispatchlist` module: `SetFreightfee` and `SignForArrival` — the only two methods in the pre-split `DispatchlistService` that never took a `CurrentUser` (their controller actions didn't pass one either, since there was nothing to pass). Both were fixed the same way as `CancelDispatchlistDetailOpration` above: add the parameter, add `&& t.tenant_id == currentUser.tenant_id` to the `entities` fetch, thread it through the interface and the two controller call sites.
 
 ### Verification
 
 Added one cross-tenant regression test per service per operation (`GetAsync_BelongsToDifferentTenant_Returns…`, `UpdateAsync_BelongsToDifferentTenant_ReturnsNotExists`, `DeleteAsync_BelongsToDifferentTenant_DoesNotDelete`) — 24 tests in Phase 1 across `WarehouseServiceTests`, `WarehouseareaServiceTests`, `GoodslocationServiceTests`, `GoodsownerServiceTests`, `CustomerServiceTests`, `SupplierServiceTests`, `CompanyServiceTests`, `SpuServiceTests`; 9 more in Phase 2 across `CategoryServiceTests`, `FreightfeeServiceTests`, `PrintSolutionServiceTests`; 6 more in Phase 3 across `UserServiceTests`, `UserRoleServiceTests`, `RoleMenuServiceTests` (plus `UserServiceTests.ResetPwd_UserBelongsToDifferentTenant_LeavesPasswordUnchanged` for the `ResetPwd` variant); 4 more in Phase 4's sub-phase 4a across `AsnServiceTests` (`GetAsync`/`UpdateAsync`/`DeleteAsync`/`BulkModifyGoodsownerAsync`); 3 more in sub-phase 4b across `AsnmasterServiceTests` (`GetAsnmasterAsync`/`UpdateAsnmasterAsync`/`DeleteAsnmasterAsync`, the last also asserting the child `Asn` rows survive an attempted cross-tenant delete); 4 more in sub-phase 4c across `AsnConfirmServiceTests` (`ConfirmAsync`/`ConfirmCancelAsync`/`UnloadAsync`/`UnloadCancelAsync`); 6 more in sub-phase 4d across `AsnSortingServiceTests` (`SortingAsync`/`GetAsnsortsAsync`/`ModifyAsnsortsAsync`/`SortedAsync`/`SortedCancelAsync`/`GetAsnPrintSeriesNumberAsync`); and 3 more in sub-phase 4e across `AsnPutawayServiceTests` (`GetPendingPutawayDataAsync`, plus `PutAwayAsync_LocationBelongsToDifferentTenant_IsRejected` and `PutAwayAsync_AsnBelongsToDifferentTenant_ReturnsNotExists`, which isolate the two separate tenant checks from each other). Each seeds a row under tenant 1 and calls the service as tenant 2, asserting the row is invisible/unmodifiable/undeletable from tenant 2. All pass against the fixed code (and would fail against the pre-fix code, since the tenant check is exactly what makes them pass).
 
 `dotnet test ModernWMS.sln` → 240 passed, 0 failed (as of Phase 4's sub-phase 4e, completing Phase 4). `dotnet build ModernWMS.sln` → 0 errors.
+
+Phase 5 additions: sub-phase 5b added `DispatchConfirmServiceTests.CancelDispatchlistDetailOpration_BelongsToDifferentTenant_ReturnsNotExists`, `GetPickListByDispatchID_BelongsToDifferentTenant_ReturnsEmpty`, `ConfirmPickDetail_BelongsToDifferentTenant_IsIgnored`, `CancelConfirmPickDetail_BelongsToDifferentTenant_IsIgnored`, and `ConfirmOrder_BelongsToDifferentTenant_ReturnsDataChanged` (the last proving the tenant filter added during the Option B split, ahead of any test). `dotnet test ModernWMS.sln` → 288 passed, 0 failed (as of sub-phase 5b). `dotnet build ModernWMS.sln` → 0 errors.
+
+Sub-phase 5c added `DispatchDeliveryServiceTests.Package_BelongsToDifferentTenant_ReturnsDataChanged`, `Weight_BelongsToDifferentTenant_ReturnsDataChanged`, `Delivery_BelongsToDifferentTenant_ReturnsDataChanged` (all three proving the tenant filters added during the Option B split), and `SetFreightfee_BelongsToDifferentTenant_LeavesRowUntouched`/`SignForArrival_BelongsToDifferentTenant_LeavesRowUntouched` (proving the two brand-new `CurrentUser` parameters added in this sub-phase). This closes out Issue 1 for the entire `Dispatchlist` module — every method across all three split services now filters by tenant. `dotnet test ModernWMS.sln` → 306 passed, 0 failed (as of sub-phase 5c, completing Phase 5). `dotnet build ModernWMS.sln` → 0 errors.
 
 ---
 
@@ -173,3 +180,64 @@ Renamed the inner lambda's parameter so it can no longer shadow the outer one, a
 `AsnConfirmServiceTests.ConfirmAsync_MultipleRows_EachGetsItsOwnArrivalTime` and `UnloadAsync_MultipleRows_EachGetsItsOwnUnloadData` each seed **two** distinct ASNs in one batch call with two distinct values, and assert each row keeps its own value rather than both collapsing onto the first row's — a single-row test would not have exercised this bug at all. Both pass against the fixed code (and would fail against the pre-fix code, since the bug's effect is exactly "second row's own value never gets applied").
 
 `dotnet test ModernWMS.sln` → 205 passed, 0 failed. `dotnet build ModernWMS.sln` → 0 errors.
+
+---
+
+## Issue 6 — `DispatchConfirmService.ConfirmOrderCheck` compared a stock's `tenant_id` against the caller's `user_id`, not `tenant_id`
+
+**Severity:** Critical (wrong field entirely, not just a missing filter — breaks the core stock-availability calculation for any deployment with more than one user).
+
+**Found in:** `DispatchlistService.ConfirmOrderCheck` (found by reading the file while planning Phase 5's Option B split; fixed during the split itself, ahead of sub-phase 5b's tests — this bug was severe and obvious enough on reading that it didn't need a test to surface it).
+
+### What was wrong
+
+```csharp
+var stock_group_datas = from stock in stock_DbSet.AsNoTracking()
+                        join gl in _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking() on stock.goods_location_id equals gl.id
+                        where stock.tenant_id == currentUser.user_id   // <- bug
+                        group stock by ...
+```
+
+This method computes how much stock is actually available to satisfy a dispatch order — the whole reason it exists is to answer "can we confirm this order against real inventory?" The filter compares `StockEntity.tenant_id` against `currentUser.user_id`, two unrelated identifiers. Any caller whose `user_id` doesn't happen to numerically equal their own `tenant_id` (i.e. essentially always, since `tenant_id` identifies the organization and `user_id` identifies the person within it) gets a `stock_group_datas` result that's either **empty** (no stock rows happen to have `tenant_id == user_id`) or, worse, **includes some other tenant's stock** if another tenant's `tenant_id` happens to equal this caller's `user_id`. Either way, `qty_available` and the `confirm` flag downstream are computed from the wrong data — an order could be wrongly marked unconfirmable (false negative, blocking real business) or wrongly marked confirmable against stock that doesn't actually belong to the caller's tenant (cross-tenant leak feeding a real allocation decision).
+
+### Fix
+
+Changed the comparison to `stock.tenant_id == currentUser.tenant_id`, matching the tenant-scoping pattern used by every other query in the same method (the `dl.tenant_id == currentUser.tenant_id` check later in the same method was already correct — only this one `stock_group_datas` filter had the wrong field).
+
+### Verification
+
+Deferred to sub-phase 5b, along with the rest of `ConfirmOrderCheck`'s test coverage — the regression test there needs to seed stock under the caller's actual `tenant_id` (proving real stock is now found) and, separately, a stock row whose `tenant_id` happens to equal the caller's `user_id` (proving that row is *not* found post-fix, since pre-fix it would have been).
+
+`dotnet build ModernWMS.sln` → 0 errors. `dotnet test ModernWMS.sln` → 240 passed, 0 failed (no Dispatchlist tests exist yet — confirms nothing else regressed from this fix).
+
+---
+
+## Issue 7 — `DispatchDeliveryService.SignForArrival` compared a viewmodel's id to itself instead of to the entity being processed
+
+**Severity:** High (silent data corruption on a common bulk operation, same effect class as Issue 5 but a different root cause — a straight copy-paste typo, not variable shadowing).
+
+**Found in:** `DispatchlistService.SignForArrival` (found by reading the file while planning Phase 5's Option B split; fixed during the split itself, ahead of sub-phase 5c's tests).
+
+### What was wrong
+
+```csharp
+foreach (var entity in entities)
+{
+    var vm = viewModels.FirstOrDefault(t => t.id == t.id && t.dispatch_status == entity.dispatch_status);   // <- bug
+    ...
+}
+```
+
+Unlike Issue 5 (where an inner lambda parameter shadowed an outer one of the same name), there's no shadowing here — the outer loop variable is `entity`, and the lambda's parameter is `t`. But the id comparison was written as `t.id == t.id` instead of `t.id == entity.id`, so it's a tautology that's always `true` regardless of which `entity` the outer `foreach` is currently on. `FirstOrDefault` therefore returns the *first* `viewModels` entry whose `dispatch_status` happens to match the current `entity`'s status — not the one that actually corresponds to this `entity`'s `id`.
+
+Effect: signing for arrival on **more than one dispatch order sharing the same `dispatch_status` in one batch call** applies whichever viewmodel matched first's `damage_qty` to every entity with that status, silently corrupting `sign_qty`/`damage_qty` for all but (at most) one of them.
+
+### Fix
+
+Changed the predicate to `t.id == entity.id && t.dispatch_status == entity.dispatch_status`, so each entity is matched to its own viewmodel by id, same as every other batch method in this file already does correctly (e.g. `Package`/`Weight`'s `entities.FirstOrDefault(t => t.id == vm.id && ...)`).
+
+### Verification
+
+Deferred to sub-phase 5c — the regression test there needs ≥2 dispatch orders sharing the same `dispatch_status` in one batch call, each with a distinct `damage_qty`, and must assert each entity ends up with its *own* `damage_qty`/`sign_qty` rather than all collapsing onto the first match — the same shape as Phase 4's `ConfirmAsync_MultipleRows_EachGetsItsOwnArrivalTime` (Issue 5). A batch where every order has a different `dispatch_status`, or only one order, would not have exercised this bug at all.
+
+`dotnet build ModernWMS.sln` → 0 errors. `dotnet test ModernWMS.sln` → 240 passed, 0 failed (no Dispatchlist tests exist yet — confirms nothing else regressed from this fix).
