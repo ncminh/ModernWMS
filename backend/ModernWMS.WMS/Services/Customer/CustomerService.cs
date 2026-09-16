@@ -91,9 +91,9 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="id">id</param>
         /// <returns></returns>
-        public async Task<CustomerViewModel> GetAsync(int id)
+        public async Task<CustomerViewModel> GetAsync(int id, CurrentUser currentUser)
         {
-            var entity = await _dBContext.GetDbSet<CustomerEntity>().AsNoTracking().FirstOrDefaultAsync(t => t.id.Equals(id));
+            var entity = await _dBContext.GetDbSet<CustomerEntity>().AsNoTracking().FirstOrDefaultAsync(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id);
             if (entity != null)
             {
                 return entity.Adapt<CustomerViewModel>();
@@ -139,10 +139,10 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="viewModel">args</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> UpdateAsync(CustomerViewModel viewModel)
+        public async Task<(bool flag, string msg)> UpdateAsync(CustomerViewModel viewModel, CurrentUser currentUser)
         {
             var DbSet = _dBContext.GetDbSet<CustomerEntity>();
-            var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id));
+            var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id) && t.tenant_id == currentUser.tenant_id);
             if (entity == null)
             {
                 return (false, _stringLocalizer["not_exists_entity"]);
@@ -174,14 +174,14 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="id">id</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> DeleteAsync(int id)
+        public async Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser)
         {
             var Dispatchlists = _dBContext.GetDbSet<DispatchlistEntity>();
             if(await Dispatchlists.AsNoTracking().AnyAsync(t => t.customer_id.Equals(id)))
             {
                 return (false, _stringLocalizer["delete_referenced"]);
             }
-            var qty = await _dBContext.GetDbSet<CustomerEntity>().Where(t => t.id.Equals(id)).ExecuteDeleteAsync();
+            var qty = await _dBContext.GetDbSet<CustomerEntity>().Where(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
             if (qty > 0)
             {
                 return (true, _stringLocalizer["delete_success"]);

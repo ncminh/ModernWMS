@@ -21,7 +21,7 @@ namespace ModernWMS.WMS.Services
     /// <summary>
     ///  Warehousearea Service
     /// </summary>
-    public class WarehouseareaService : BaseService<WarehouseareaEntity>, IWarehouseareaService
+    public class WarehouseAreaService : BaseService<WarehouseareaEntity>, IWarehouseareaService
     {
         #region Args
         /// <summary>
@@ -41,7 +41,7 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="dBContext">The DBContext</param>
         /// <param name="stringLocalizer">Localizer</param>
-        public WarehouseareaService(
+        public WarehouseAreaService(
             SqlDBContext dBContext
           , IStringLocalizer<ModernWMS.Core.MultiLanguage> stringLocalizer
             )
@@ -139,10 +139,10 @@ namespace ModernWMS.WMS.Services
         /// Get a record by id
         /// </summary>
         /// <returns></returns>
-        public async Task<WarehouseareaViewModel> GetAsync(int id)
+        public async Task<WarehouseareaViewModel> GetAsync(int id, CurrentUser currentUser)
         {
             var DbSet = _dBContext.GetDbSet<WarehouseareaEntity>();
-            var entity = await DbSet.AsNoTracking().FirstOrDefaultAsync(t => t.id.Equals(id));
+            var entity = await DbSet.AsNoTracking().FirstOrDefaultAsync(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id);
             if (entity == null)
             {
                 return null;
@@ -187,7 +187,7 @@ namespace ModernWMS.WMS.Services
         public async Task<(bool flag, string msg)> UpdateAsync(WarehouseareaViewModel viewModel, CurrentUser currentUser)
         {
             var DbSet = _dBContext.GetDbSet<WarehouseareaEntity>();
-            var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id));
+            var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id) && t.tenant_id == currentUser.tenant_id);
             if (await DbSet.AnyAsync(t => t.id != viewModel.id && t.warehouse_id == viewModel.warehouse_id && t.area_name == viewModel.area_name && t.tenant_id == currentUser.tenant_id))
             {
                 return (false, string.Format(_stringLocalizer["exists_entity"], _stringLocalizer["area_name"], viewModel.area_name));
@@ -226,13 +226,13 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="id">id</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> DeleteAsync(int id)
+        public async Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser)
         {
             if (await _dBContext.GetDbSet < GoodslocationEntity>().AnyAsync(t=>t.warehouse_area_id  == id))
             {
                 return (false, _stringLocalizer["exist_location_not_delete"]);
             }
-            var qty = await _dBContext.GetDbSet<WarehouseareaEntity>().Where(t => t.id.Equals(id)).ExecuteDeleteAsync();
+            var qty = await _dBContext.GetDbSet<WarehouseareaEntity>().Where(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
             if (qty > 0)
             {
                 return (true, _stringLocalizer["delete_success"]);

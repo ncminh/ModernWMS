@@ -91,7 +91,7 @@ namespace ModernWMS.WMS.Controllers
          [HttpGet]
          public async Task<ResultModel<SupplierViewModel>> GetAsync(int id)
          {
-             var data = await _supplierService.GetAsync(id);
+             var data = await _supplierService.GetAsync(id, CurrentUser);
              if (data!=null)
              {
                  return ResultModel<SupplierViewModel>.Success(data);
@@ -147,7 +147,7 @@ namespace ModernWMS.WMS.Controllers
          [HttpDelete]
          public async Task<ResultModel<string>> DeleteAsync(int id)
          {
-             var (flag, msg) = await _supplierService.DeleteAsync(id);
+             var (flag, msg) = await _supplierService.DeleteAsync(id, CurrentUser);
              if (flag)
              {
                  return ResultModel<string>.Success(msg);

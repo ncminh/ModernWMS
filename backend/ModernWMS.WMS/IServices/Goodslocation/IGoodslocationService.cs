@@ -40,8 +40,9 @@
          /// Get a record by id
          /// </summary>
          /// <param name="id">primary key</param>
+         /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         Task<GoodslocationViewModel> GetAsync(int id);
+         Task<GoodslocationViewModel> GetAsync(int id, CurrentUser currentUser);
          /// <summary>
          /// add a new record
          /// </summary>
@@ -61,8 +62,9 @@
          /// delete a record
          /// </summary>
          /// <param name="id">id</param>
+         /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         Task<(bool flag, string msg)> DeleteAsync(int id);
+         Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser);
 
          #endregion
      }

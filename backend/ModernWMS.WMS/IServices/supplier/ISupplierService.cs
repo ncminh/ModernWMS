@@ -31,8 +31,9 @@ namespace ModernWMS.WMS.IServices
          /// Get a record by id
          /// </summary>
          /// <param name="id">primary key</param>
+         /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         Task<SupplierViewModel> GetAsync(int id);
+         Task<SupplierViewModel> GetAsync(int id, CurrentUser currentUser);
         /// <summary>
         /// add a new record
         /// </summary>
@@ -52,8 +53,9 @@ namespace ModernWMS.WMS.IServices
          /// delete a record
          /// </summary>
          /// <param name="id">id</param>
+         /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         Task<(bool flag, string msg)> DeleteAsync(int id);
+         Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser);
 
         /// <summary>
         /// import suppliers by excel

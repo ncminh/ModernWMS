@@ -119,10 +119,10 @@ namespace ModernWMS.WMS.Services
         /// Get a record by id
         /// </summary>
         /// <returns></returns>
-        public async Task<WarehouseViewModel> GetAsync(int id)
+        public async Task<WarehouseViewModel> GetAsync(int id, CurrentUser currentUser)
         {
             var DbSet = _dBContext.GetDbSet<WarehouseEntity>();
-            var entity = await DbSet.AsNoTracking().FirstOrDefaultAsync(t => t.id.Equals(id));
+            var entity = await DbSet.AsNoTracking().FirstOrDefaultAsync(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id);
             if (entity == null)
             {
                 return null;
@@ -172,7 +172,7 @@ namespace ModernWMS.WMS.Services
             {
                return(false,  string.Format(_stringLocalizer["exists_entity"], _stringLocalizer["warehouse_name"], viewModel.warehouse_name));
             }
-            var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id));
+            var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id) && t.tenant_id == currentUser.tenant_id);
             if (entity == null)
             {
                 return (false, _stringLocalizer["not_exists_entity"]);
@@ -214,13 +214,13 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="id">id</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> DeleteAsync(int id)
+        public async Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser)
         {
             if (await _dBContext.GetDbSet<GoodslocationEntity>().AnyAsync(t => t.warehouse_id == id))
             {
                 return (false, _stringLocalizer["exist_warehousearea_not_delete"]);
             }
-            var qty = await _dBContext.GetDbSet<WarehouseEntity>().Where(t => t.id.Equals(id)).ExecuteDeleteAsync();
+            var qty = await _dBContext.GetDbSet<WarehouseEntity>().Where(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
             if (qty > 0)
             {
                 return (true, _stringLocalizer["delete_success"]);

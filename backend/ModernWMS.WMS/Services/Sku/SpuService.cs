@@ -139,7 +139,7 @@ namespace ModernWMS.WMS.Services
         /// Get a record by id
         /// </summary>
         /// <returns></returns>
-        public async Task<SpuBothViewModel> GetAsync(int id)
+        public async Task<SpuBothViewModel> GetAsync(int id, CurrentUser currentUser)
         {
             var Categorys = _dBContext.GetDbSet<CategoryEntity>();
             var Spus = _dBContext.GetDbSet<SpuEntity>();
@@ -148,7 +148,7 @@ namespace ModernWMS.WMS.Services
             var Warehouses = _dBContext.GetDbSet<WarehouseEntity>();
             var query = from m in Spus.AsNoTracking()
                         join c in Categorys.AsNoTracking() on m.category_id equals c.id
-                        where m.id == id
+                        where m.id == id && m.tenant_id == currentUser.tenant_id
                         select new SpuBothViewModel
                         {
                             id = m.id,
@@ -494,11 +494,11 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="viewModel">args</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> UpdateAsync(SpuBothViewModel viewModel)
+        public async Task<(bool flag, string msg)> UpdateAsync(SpuBothViewModel viewModel, CurrentUser currentUser)
         {
             var DbSet = _dBContext.GetDbSet<SpuEntity>();
             var entity = await DbSet.Include(d => d.detailList)
-                .FirstOrDefaultAsync(t => t.id.Equals(viewModel.id));
+                .FirstOrDefaultAsync(t => t.id.Equals(viewModel.id) && t.tenant_id == currentUser.tenant_id);
             if (entity == null)
             {
                 return (false, _stringLocalizer["not_exists_entity"]);
@@ -571,15 +571,20 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="id">id</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> DeleteAsync(int id)
+        public async Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser)
         {
             var Asns = _dBContext.GetDbSet<AsnEntity>();
             if(await Asns.AsNoTracking().AnyAsync(t => t.spu_id.Equals(id)))
             {
                 return (false, _stringLocalizer["delete_referenced"]);
             }
+            var spuBelongsToTenant = await _dBContext.GetDbSet<SpuEntity>().AsNoTracking().AnyAsync(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id);
+            if (!spuBelongsToTenant)
+            {
+                return (false, _stringLocalizer["delete_failed"]);
+            }
             var qty = await _dBContext.GetDbSet<SkuEntity>().Where(t => t.spu_id.Equals(id)).ExecuteDeleteAsync();
-            qty += await _dBContext.GetDbSet<SpuEntity>().Where(t => t.id.Equals(id)).ExecuteDeleteAsync();
+            qty += await _dBContext.GetDbSet<SpuEntity>().Where(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
             if (qty > 0)
             {
                 return (true, _stringLocalizer["delete_success"]);

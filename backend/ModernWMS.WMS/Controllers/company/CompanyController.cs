@@ -70,7 +70,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpGet]
         public async Task<ResultModel<CompanyViewModel>> GetAsync(int id)
         {
-            var data = await _companyService.GetAsync(id);
+            var data = await _companyService.GetAsync(id, CurrentUser);
             if (data != null && data.id > 0)
             {
                 return ResultModel<CompanyViewModel>.Success(data);
@@ -107,7 +107,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPut]
         public async Task<ResultModel<bool>> UpdateAsync(CompanyViewModel viewModel)
         {
-            var (flag, msg) = await _companyService.UpdateAsync(viewModel);
+            var (flag, msg) = await _companyService.UpdateAsync(viewModel, CurrentUser);
             if (flag)
             {
                 return ResultModel<bool>.Success(flag);
@@ -126,7 +126,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpDelete]
         public async Task<ResultModel<string>> DeleteAsync(int id)
         {
-            var (flag, msg) = await _companyService.DeleteAsync(id);
+            var (flag, msg) = await _companyService.DeleteAsync(id, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);

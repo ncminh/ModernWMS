@@ -19,7 +19,7 @@
      /// <summary>
      ///  Goodslocation Service
      /// </summary>
-     public class GoodslocationService : BaseService<GoodslocationEntity>, IGoodslocationService
+     public class GoodsLocationService : BaseService<GoodslocationEntity>, IGoodslocationService
      {
          #region Args
          /// <summary>
@@ -39,7 +39,7 @@
          /// </summary>
          /// <param name="dBContext">The DBContext</param>
         /// <param name="stringLocalizer">Localizer</param>
-         public GoodslocationService(
+         public GoodsLocationService(
              SqlDBContext dBContext
            , IStringLocalizer<ModernWMS.Core.MultiLanguage> stringLocalizer
              )
@@ -120,10 +120,10 @@
          /// Get a record by id
          /// </summary>
          /// <returns></returns>
-         public async Task<GoodslocationViewModel> GetAsync(int id)
+         public async Task<GoodslocationViewModel> GetAsync(int id, CurrentUser currentUser)
          {
              var DbSet = _dBContext.GetDbSet<GoodslocationEntity>();
-             var entity = await DbSet.AsNoTracking().FirstOrDefaultAsync(t=>t.id.Equals(id));
+             var entity = await DbSet.AsNoTracking().FirstOrDefaultAsync(t=>t.id.Equals(id) && t.tenant_id == currentUser.tenant_id);
              if (entity == null)
              {
                  return null;
@@ -172,7 +172,7 @@
             {
                 return (false, string.Format(_stringLocalizer["exists_entity"], _stringLocalizer["location_name"], viewModel.location_name));
             }
-            var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id));
+            var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id) && t.tenant_id == currentUser.tenant_id);
              if (entity == null)
              {
                  return (false,_stringLocalizer[ "not_exists_entity"]);
@@ -210,14 +210,14 @@
          /// </summary>
          /// <param name="id">id</param>
          /// <returns></returns>
-         public async Task<(bool flag, string msg)> DeleteAsync(int id)
+         public async Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser)
          {
              var exist_stock =await  _dBContext.GetDbSet<StockEntity>().AsNoTracking().Where(t=>t.qty>0&&t.goods_location_id == id ).AnyAsync();
             if (exist_stock)
             {
                 return (false, _stringLocalizer["location_exist_stock_not_delete"]);
             }
-             var qty = await _dBContext.GetDbSet<GoodslocationEntity>().Where(t => t.id.Equals(id)).ExecuteDeleteAsync();
+             var qty = await _dBContext.GetDbSet<GoodslocationEntity>().Where(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
              if (qty > 0)
              {
                  return (true, _stringLocalizer["delete_success"]);
