@@ -36,8 +36,9 @@ namespace ModernWMS.WMS.IServices
         /// Get a record by id
         /// </summary>
         /// <param name="id">primary key</param>
+        /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<PrintSolutionViewModel> GetAsync(int id);
+        Task<PrintSolutionViewModel> GetAsync(int id, CurrentUser currentUser);
 
         /// <summary>
         /// get a record by path
@@ -58,15 +59,17 @@ namespace ModernWMS.WMS.IServices
         /// update a record
         /// </summary>
         /// <param name="viewModel">viewmodel</param>
+        /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<(bool flag, string msg)> UpdateAsync(PrintSolutionViewModel viewModel);
+        Task<(bool flag, string msg)> UpdateAsync(PrintSolutionViewModel viewModel, CurrentUser currentUser);
 
         /// <summary>
         /// delete a record
         /// </summary>
         /// <param name="id">id</param>
+        /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<(bool flag, string msg)> DeleteAsync(int id);
+        Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser);
 
         #endregion Api
     }

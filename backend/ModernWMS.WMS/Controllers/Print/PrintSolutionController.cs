@@ -96,7 +96,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpGet]
         public async Task<ResultModel<PrintSolutionViewModel>> GetAsync(int id)
         {
-            var data = await _PrintSolutionService.GetAsync(id);
+            var data = await _PrintSolutionService.GetAsync(id, CurrentUser);
             if (data != null)
             {
                 return ResultModel<PrintSolutionViewModel>.Success(data);
@@ -152,7 +152,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPut]
         public async Task<ResultModel<bool>> UpdateAsync(PrintSolutionViewModel viewModel)
         {
-            var (flag, msg) = await _PrintSolutionService.UpdateAsync(viewModel);
+            var (flag, msg) = await _PrintSolutionService.UpdateAsync(viewModel, CurrentUser);
             if (flag)
             {
                 return ResultModel<bool>.Success(flag);
@@ -171,7 +171,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpDelete]
         public async Task<ResultModel<string>> DeleteAsync(int id)
         {
-            var (flag, msg) = await _PrintSolutionService.DeleteAsync(id);
+            var (flag, msg) = await _PrintSolutionService.DeleteAsync(id, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);

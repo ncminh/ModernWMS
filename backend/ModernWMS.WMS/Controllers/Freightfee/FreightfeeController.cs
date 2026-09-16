@@ -90,7 +90,7 @@ namespace ModernWMS.WMS.Controllers
          [HttpGet]
          public async Task<ResultModel<FreightfeeViewModel>> GetAsync(int id)
          {
-             var data = await _freightfeeService.GetAsync(id);
+             var data = await _freightfeeService.GetAsync(id, CurrentUser);
              if (data!=null)
              {
                  return ResultModel<FreightfeeViewModel>.Success(data);
@@ -127,7 +127,7 @@ namespace ModernWMS.WMS.Controllers
          [HttpPut]
          public async Task<ResultModel<bool>> UpdateAsync(FreightfeeViewModel viewModel)
          {
-             var (flag, msg) = await _freightfeeService.UpdateAsync(viewModel);
+             var (flag, msg) = await _freightfeeService.UpdateAsync(viewModel, CurrentUser);
              if (flag)
              {
                  return ResultModel<bool>.Success(flag);
@@ -146,7 +146,7 @@ namespace ModernWMS.WMS.Controllers
          [HttpDelete]
          public async Task<ResultModel<string>> DeleteAsync(int id)
          {
-             var (flag, msg) = await _freightfeeService.DeleteAsync(id);
+             var (flag, msg) = await _freightfeeService.DeleteAsync(id, CurrentUser);
              if (flag)
              {
                  return ResultModel<string>.Success(msg);

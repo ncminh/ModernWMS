@@ -32,8 +32,9 @@
          /// Get a record by id
          /// </summary>
          /// <param name="id">primary key</param>
+         /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         Task<FreightfeeViewModel> GetAsync(int id);
+         Task<FreightfeeViewModel> GetAsync(int id, CurrentUser currentUser);
          /// <summary>
          /// add a new record
          /// </summary>
@@ -45,15 +46,17 @@
          /// update a record
          /// </summary>
          /// <param name="viewModel">viewmodel</param>
+         /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         Task<(bool flag, string msg)> UpdateAsync(FreightfeeViewModel viewModel);
- 
+         Task<(bool flag, string msg)> UpdateAsync(FreightfeeViewModel viewModel, CurrentUser currentUser);
+
          /// <summary>
          /// delete a record
          /// </summary>
          /// <param name="id">id</param>
+         /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         Task<(bool flag, string msg)> DeleteAsync(int id);
+         Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser);
 
         /// <summary>
         /// import freightfee by excel

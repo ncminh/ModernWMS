@@ -25,8 +25,9 @@ namespace ModernWMS.WMS.IServices
         /// Get a record by id
         /// </summary>
         /// <param name="id">primary key</param>
+        /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<CategoryViewModel> GetAsync(int id);
+        Task<CategoryViewModel> GetAsync(int id, CurrentUser currentUser);
         /// <summary>
         /// add a new record
         /// </summary>
@@ -38,15 +39,17 @@ namespace ModernWMS.WMS.IServices
         /// update a record
         /// </summary>
         /// <param name="viewModel">viewmodel</param>
+        /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<(bool flag, string msg)> UpdateAsync(CategoryViewModel viewModel);
+        Task<(bool flag, string msg)> UpdateAsync(CategoryViewModel viewModel, CurrentUser currentUser);
 
         /// <summary>
         /// delete a record
         /// </summary>
         /// <param name="id">id</param>
+        /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<(bool flag, string msg)> DeleteAsync(int id);
+        Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser);
         #endregion
     }
 }

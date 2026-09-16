@@ -68,10 +68,10 @@ namespace ModernWMS.WMS.Services
         /// Get a record by id
         /// </summary>
         /// <returns></returns>
-        public async Task<CategoryViewModel> GetAsync(int id)
+        public async Task<CategoryViewModel> GetAsync(int id, CurrentUser currentUser)
         {
             var DbSet = _dBContext.GetDbSet<CategoryEntity>();
-            var entity = await DbSet.AsNoTracking().FirstOrDefaultAsync(t => t.id.Equals(id));
+            var entity = await DbSet.AsNoTracking().FirstOrDefaultAsync(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id);
             if (entity == null)
             {
                 return new CategoryViewModel();
@@ -114,10 +114,10 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="viewModel">args</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> UpdateAsync(CategoryViewModel viewModel)
+        public async Task<(bool flag, string msg)> UpdateAsync(CategoryViewModel viewModel, CurrentUser currentUser)
         {
             var DbSet = _dBContext.GetDbSet<CategoryEntity>();
-            var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id));
+            var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id) && t.tenant_id == currentUser.tenant_id);
             if (entity == null)
             {
                 return (false, _stringLocalizer["not_exists_entity"]);
@@ -165,7 +165,7 @@ namespace ModernWMS.WMS.Services
                     children.Add(item);
                     if (entities.Any(t => t.parent_id.Equals(item.id)))
                     {
-                        GetChildren(entities, item.parent_id, ref children);
+                        GetChildren(entities, item.id, ref children);
                     }
                 }
             }
@@ -175,10 +175,10 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="id">id</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> DeleteAsync(int id)
+        public async Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser)
         {
             var DbSet = _dBContext.GetDbSet<CategoryEntity>();
-            var entities = await DbSet.Where(t => t.parent_id.Equals(id)).ToListAsync();
+            var entities = await DbSet.Where(t => t.parent_id > 0).ToListAsync();
             List<CategoryEntity> children = new List<CategoryEntity>();
             GetChildren(entities, id, ref children);
             List<int> idList = new List<int> { id };
@@ -192,7 +192,7 @@ namespace ModernWMS.WMS.Services
             {
                 return (false, _stringLocalizer["delete_referenced"]);
             }
-            var qty = await _dBContext.GetDbSet<CategoryEntity>().Where(t => idList.Contains(t.id)).ExecuteDeleteAsync();
+            var qty = await _dBContext.GetDbSet<CategoryEntity>().Where(t => idList.Contains(t.id) && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
             if (qty > 0)
             {
                 return (true, _stringLocalizer["delete_success"]);

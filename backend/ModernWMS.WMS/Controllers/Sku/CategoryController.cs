@@ -74,7 +74,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpGet]
         public async Task<ResultModel<CategoryViewModel>> GetAsync(int id)
         {
-            var data = await _categoryService.GetAsync(id);
+            var data = await _categoryService.GetAsync(id, CurrentUser);
             if (data != null)
             {
                 return ResultModel<CategoryViewModel>.Success(data);
@@ -111,7 +111,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPut]
         public async Task<ResultModel<bool>> UpdateAsync(CategoryViewModel viewModel)
         {
-            var (flag, msg) = await _categoryService.UpdateAsync(viewModel);
+            var (flag, msg) = await _categoryService.UpdateAsync(viewModel, CurrentUser);
             if (flag)
             {
                 return ResultModel<bool>.Success(flag);
@@ -130,7 +130,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpDelete]
         public async Task<ResultModel<string>> DeleteAsync(int id)
         {
-            var (flag, msg) = await _categoryService.DeleteAsync(id);
+            var (flag, msg) = await _categoryService.DeleteAsync(id, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);

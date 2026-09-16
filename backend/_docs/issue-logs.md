@@ -1,6 +1,6 @@
 # Issue Log
 
-Bugs found while writing Phase 0/1 unit test coverage (see `unit-testing-plan.md`), and how they were fixed. Each entry: what was wrong, why it matters, what changed, and how it's verified.
+Bugs found while writing unit test coverage (see `unit-testing-plan.md`), and how they were fixed. Each entry: what was wrong, why it matters, what changed, and how it's verified.
 
 ---
 
@@ -8,7 +8,7 @@ Bugs found while writing Phase 0/1 unit test coverage (see `unit-testing-plan.md
 
 **Severity:** High (cross-tenant data leak / cross-tenant write-and-delete).
 
-**Found in:** `WarehouseService`, `WarehouseareaService`, `GoodslocationService`, `GoodsownerService`, `CustomerService`, `SupplierService`, `CompanyService`, `SpuService`.
+**Found in:** `WarehouseService`, `WarehouseareaService`, `GoodslocationService`, `GoodsownerService`, `CustomerService`, `SupplierService`, `CompanyService`, `SpuService` (Phase 1), plus `CategoryService`, `FreightfeeService`, `PrintSolutionService` (Phase 2 — same defect, found and fixed the same way once Phase 2 touched these services).
 
 ### What was wrong
 
@@ -31,15 +31,16 @@ For each of the eight services:
 - `UpdateAsync(viewModel[, currentUser])` → now always takes `CurrentUser currentUser`, with the same tenant check added to the entity fetch. (`GoodsownerService`, `CustomerService`, `CompanyService` gained the parameter; the other five already had it and just needed the filter added.)
 - `DeleteAsync(int id)` → `DeleteAsync(int id, CurrentUser currentUser)`, with the same tenant check added to the delete predicate.
 - `SpuService.DeleteAsync` needed one extra step beyond a simple filter: it deletes child `SkuEntity` rows (which have no `tenant_id` of their own) by `spu_id` before deleting the parent `SpuEntity`. Adding the tenant filter only to the final `SpuEntity` delete would have left a gap where a cross-tenant call still wiped out the child `Sku` rows even though the parent `Spu` survived. Fixed by checking the `Spu` belongs to the caller's tenant *before* touching any child rows, and returning `delete_failed` immediately if not.
-- Every interface (`IWarehouseService`, `IWarehouseareaService`, `IGoodslocationService`, `IGoodsownerService`, `ICustomerService`, `ISupplierService`, `ICompanyService`, `ISpuService`) updated to match.
-- Every controller call site (`WarehouseController`, `WarehouseareaController`, `GoodslocationController`, `GoodsownerController`, `CustomerController`, `SupplierController`, `CompanyController`, `SpuController`) updated to pass `CurrentUser` (already available on every controller via `BaseController`).
-- No other internal callers existed (confirmed by grepping the whole solution for calls to these methods outside the `Controllers/` folders) — the fix has no other ripple effect.
+- Every interface (`IWarehouseService`, `IWarehouseareaService`, `IGoodslocationService`, `IGoodsownerService`, `ICustomerService`, `ISupplierService`, `ICompanyService`, `ISpuService`, and — Phase 2 — `ICategoryService`, `IFreightfeeService`, `IPrintSolutionService`) updated to match.
+- Every controller call site (`WarehouseController`, `WarehouseareaController`, `GoodslocationController`, `GoodsownerController`, `CustomerController`, `SupplierController`, `CompanyController`, `SpuController`, `CategoryController`, `FreightfeeController`, `PrintSolutionController`) updated to pass `CurrentUser` (already available on every controller via `BaseController`).
+- `CategoryService.DeleteAsync` needed the same "guard before touching children" shape as `SpuService`: it also fans out to delete descendant categories via `GetChildren` (see Issue 3), so the tenant check was added to the final `ExecuteDeleteAsync` predicate rather than trying to re-derive tenant ownership for every descendant id individually — consistent with how the sibling `Warehouse`/`Warehousearea` delete-cascade checks were handled in Phase 1.
+- No other internal callers existed for any of the eleven services (confirmed by grepping the whole solution for calls to these methods outside the `Controllers/` folders) — the fix has no other ripple effect.
 
 ### Verification
 
-Added one cross-tenant regression test per service per operation (`GetAsync_BelongsToDifferentTenant_Returns…`, `UpdateAsync_BelongsToDifferentTenant_ReturnsNotExists`, `DeleteAsync_BelongsToDifferentTenant_DoesNotDelete`) — 24 new tests across `WarehouseServiceTests`, `WarehouseareaServiceTests`, `GoodslocationServiceTests`, `GoodsownerServiceTests`, `CustomerServiceTests`, `SupplierServiceTests`, `CompanyServiceTests`, `SpuServiceTests`. Each seeds a row under tenant 1 and calls the service as tenant 2, asserting the row is invisible/unmodifiable/undeletable from tenant 2. All pass against the fixed code (and would fail against the pre-fix code, since the tenant check is exactly what makes them pass).
+Added one cross-tenant regression test per service per operation (`GetAsync_BelongsToDifferentTenant_Returns…`, `UpdateAsync_BelongsToDifferentTenant_ReturnsNotExists`, `DeleteAsync_BelongsToDifferentTenant_DoesNotDelete`) — 24 tests in Phase 1 across `WarehouseServiceTests`, `WarehouseareaServiceTests`, `GoodslocationServiceTests`, `GoodsownerServiceTests`, `CustomerServiceTests`, `SupplierServiceTests`, `CompanyServiceTests`, `SpuServiceTests`, plus 9 more in Phase 2 across `CategoryServiceTests`, `FreightfeeServiceTests`, `PrintSolutionServiceTests`. Each seeds a row under tenant 1 and calls the service as tenant 2, asserting the row is invisible/unmodifiable/undeletable from tenant 2. All pass against the fixed code (and would fail against the pre-fix code, since the tenant check is exactly what makes them pass).
 
-`dotnet test ModernWMS.sln` → 79 passed, 0 failed. `dotnet build ModernWMS.sln` → 0 errors.
+`dotnet test ModernWMS.sln` → 122 passed, 0 failed (as of Phase 2). `dotnet build ModernWMS.sln` → 0 errors.
 
 ---
 
@@ -63,4 +64,75 @@ Reordered `SupplierService.AddAsync` to check for the duplicate name first and o
 
 `SupplierServiceTests.AddAsync_DuplicateNameInSameTenant_IsRejectedWithoutPersisting` already asserted the duplicate call leaves exactly one row in the table; it continues to pass after the reorder. No new test was needed to prove the abandoned-tracked-entity risk is gone, since that risk was about ordering (now eliminated by construction) rather than an observable output — the existing assertion on row count is what would have caught a regression either way.
 
-`dotnet test ModernWMS.sln` → 79 passed, 0 failed.
+`dotnet test ModernWMS.sln` → 79 passed, 0 failed (at the time this issue was fixed, in Phase 1).
+
+---
+
+## Issue 3 — `CategoryService.GetChildren` recursed on the wrong id, and `DeleteAsync` couldn't see past direct children
+
+**Severity:** High (crashes the process — `StackOverflowException` cannot be caught — on ordinary data; found before it could ship, since a test surfaced it during Phase 2).
+
+**Found in:** `CategoryService.GetChildren` (private helper used by both `UpdateAsync`'s is-valid cascade and `DeleteAsync`'s cascade-delete).
+
+### What was wrong
+
+```csharp
+private void GetChildren(List<CategoryEntity> entities, int parentId, ref List<CategoryEntity> children)
+{
+    var data = entities.Where(t => t.parent_id == parentId).ToList();
+    foreach (var item in data)
+    {
+        children.Add(item);
+        if (entities.Any(t => t.parent_id.Equals(item.id)))
+        {
+            GetChildren(entities, item.parent_id, ref children); // bug: should be item.id
+        }
+    }
+}
+```
+
+The recursive call passed `item.parent_id` instead of `item.id`. Every `item` in `data` was already filtered by `t.parent_id == parentId`, so `item.parent_id` **always equals** the `parentId` already passed into the current call — the recursive call is therefore always `GetChildren(entities, parentId, ref children)`, identical to the call already in progress.
+
+The blast radius differed by caller because each passes a different candidate pool as `entities`:
+- **`UpdateAsync`** (toggling `is_valid`) passes `entities = await DbSet.Where(t => t.parent_id > 0).ToListAsync()` — the *entire* non-root category table. For any category whose child itself has a child (a 3-level-deep chain), the recursion condition (`entities.Any(t => t.parent_id.Equals(item.id))`) is true, and the call recurses with identical arguments forever: **`StackOverflowException`**, which .NET cannot catch — it kills the process outright. Toggling `is_valid` on any category with an active 3-level subtree would have taken down the whole ASP.NET Core worker.
+- **`DeleteAsync`** passes only the *direct children* of the id being deleted (`DbSet.Where(t => t.parent_id.Equals(id))`), so the buggy recursive call's condition was never true in practice (a flat list of siblings never contains another sibling's child) — no crash, but `GetChildren` could then never discover grandchildren either. Deleting a category with a 3-level-deep subtree silently deleted only the category and its direct children, leaving grandchildren behind as now-orphaned rows still referencing a `parent_id` that no longer exists.
+
+### Fix
+
+1. `GetChildren`: recurse on `item.id`, not `item.parent_id`.
+2. `DeleteAsync`: changed its initial `entities` fetch from `Where(t => t.parent_id.Equals(id))` (direct children only) to `Where(t => t.parent_id > 0)` (the same "whole non-root table" pool `UpdateAsync` already used), so the now-correct recursion has the full candidate pool to traverse multiple levels.
+
+### Verification
+
+`CategoryServiceTests.UpdateAsync_TogglingInvalid_CascadesToDescendants` and `DeleteAsync_WithMultiLevelDescendants_DeletesWholeSubtree` both seed a 3-level hierarchy (root → child → grandchild) — exactly the shape that hung the old code — and assert the grandchild is updated/deleted too. Both pass against the fixed code; run standalone first (`dotnet test --filter FullyQualifiedName~CategoryServiceTests`) before folding into the full suite, since a regression here would have crashed the whole `dotnet test` process rather than reporting a clean failure.
+
+`dotnet test ModernWMS.sln` → 122 passed, 0 failed (as of Phase 2). `dotnet build ModernWMS.sln` → 0 errors.
+
+---
+
+## Issue 4 — `SpuService.UpdateAsync` recomputed SKU volume with a `Math.Round` inside `ExecuteUpdateAsync`, which SQLite can't translate
+
+**Severity:** High (breaks the feature entirely under the project's own default dev database).
+
+**Found in:** `SpuService.UpdateAsync`.
+
+### What was wrong
+
+After saving SPU/SKU changes, the method recalculated every sibling SKU's `volume` in one bulk statement:
+
+```csharp
+await _dBContext.GetDbSet<SkuEntity>().Where(t => t.spu_id.Equals(entity.id))
+    .ExecuteUpdateAsync(p => p.SetProperty(x => x.volume, x => Math.Round(x.lenght * dec * x.width * dec * x.height * dec, 3)));
+```
+
+`ExecuteUpdateAsync` translates its expression tree to a single SQL `UPDATE` statement. EF Core's SQLite provider cannot translate `System.Math.Round(decimal, int)` into SQL, so this throws `InvalidOperationException` ("could not be translated") wrapped in the call — **every single successful `UpdateAsync` call that actually persists a change** (`qty > 0`, which is the normal case) hits this line. Since `appsettings.Development.json` defaults `Database:db` to `SQLITE` and ships a checked-in `wms.db`, this isn't a rare-provider edge case — it's the path this repository's own default local setup takes, meaning SPU/SKU edits were broken in local dev.
+
+### Fix
+
+Replaced the bulk `ExecuteUpdateAsync` with fetch-compute-save: load the sibling `SkuEntity` rows into memory, compute `Math.Round(...)` in .NET (works identically regardless of provider), and let the normal change-tracked `SaveChangesAsync()` persist it. EF Core's identity map means rows already tracked from earlier in the same method (the ones just added/edited from `viewModel.detailList`) come back as the same tracked instances rather than duplicates, so there's no double-tracking conflict.
+
+### Verification
+
+`SpuServiceTests.UpdateAsync_NewDetailRow_IsAdded`, `UpdateAsync_ExistingDetailRow_IsUpdated`, and `UpdateAsync_NegativeDetailRowId_RemovesTheRow` all exercise this code path (each ends in a persisted change, so each was hitting the crash before the fix) and pass now.
+
+`dotnet test ModernWMS.sln` → 122 passed, 0 failed. `dotnet build ModernWMS.sln` → 0 errors.

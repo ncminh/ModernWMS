@@ -1,6 +1,6 @@
 # Unit Testing Baseline Plan
 
-Status: **Phases 0-1 complete.** Phases 2+ are still just a proposal — nothing beyond Phase 1 has been implemented yet.
+Status: **Phases 0-2 complete.** Phases 3+ are still just a proposal — nothing beyond Phase 2 has been implemented yet.
 
 ## 1. Current state (as found)
 
@@ -58,6 +58,26 @@ Writing these tests surfaced two bugs, both now fixed; full writeup (root cause,
 
 `dotnet test ModernWMS.sln` → **79 passed**, 0 failed (55 from Phase 1 + 24 new regression tests). `dotnet build ModernWMS.sln` → 0 errors.
 
+## 2c. Phase 2 — done
+
+Added one test class per module, 43 new tests (122 total):
+
+- `Category` (10 tests): tenant isolation, add/update duplicate-name rejection, `UpdateAsync`'s `is_valid` cascade down a category tree, `DeleteAsync`'s referenced-by-`Spu` guard and whole-subtree delete, plus the three cross-tenant regression tests.
+- `Freightfee` (9 tests): tenant-scoped `PageAsync`, add/update/delete, `ExcelAsync` import, plus cross-tenant regression tests. No natural-key duplicate check exists for this module (carrier/route/price, not a name) — matches current behavior, nothing to test there.
+- `Print` (`PrintSolutionService`, 9 tests): tenant-scoped `PageAsync` and the path-scoped `GetByPathAsync` (both `vue_path` **and** `tab_page` must match, and tenant-scoped), add/update/delete, plus cross-tenant regression tests.
+- `Sku` (`SpuService`, 19 tests, up from the 4 already covering Phase 0/1's cross-tenant work): tenant-scoped `PageAsync`, add/update duplicate-`spu_code` rejection, the three `detailList` reconciliation branches on `UpdateAsync` (`id == 0` → add a new `Sku` row, `id > 0` → update an existing one, `id < 0` → remove the row named by `-id`), `DeleteAsync`'s referenced-by-`Asn` guard and its cascade-delete of child `Sku` rows, `GetSkuAsync`/`GetSkuByBarCodeAsync`, and `InsertOrUpdateSkuSafetyStockAsync`'s add/remove branches.
+
+`dotnet test _tests/MWMS.UnitTests/ModernWMS.UnitTests.csproj` → **122 passed**, 0 failed. `dotnet build ModernWMS.sln` → 0 errors.
+
+### Findings surfaced — fixed
+
+Two more bugs, on top of the two from Phase 1 (same eleven-services tenant-filter gap extended to `Category`/`Freightfee`/`PrintSolution` — see Issue 1 in `_docs/issue-logs.md`, already updated). Full writeup for both in **`_docs/issue-logs.md`**:
+
+3. **`CategoryService.GetChildren` recursed on `item.parent_id` instead of `item.id`.** In `UpdateAsync`'s `is_valid` cascade (which loads the whole non-root category table as its candidate pool) this caused **infinite recursion — `StackOverflowException`, uncatchable, kills the process** — for any 3-level-deep hierarchy. In `DeleteAsync` (which only loaded direct children to begin with) it instead silently failed to cascade past one level, orphaning grandchildren. Both the recursion and `DeleteAsync`'s too-narrow initial query were fixed. **Caution for anyone re-running just this file in isolation**: the regression tests that prove this (`CategoryServiceTests.UpdateAsync_TogglingInvalid_CascadesToDescendants`, `DeleteAsync_WithMultiLevelDescendants_DeletesWholeSubtree`) use a real 3-level hierarchy — that's deliberate, since a 2-level tree wouldn't have exercised the bug at all.
+4. **`SpuService.UpdateAsync` recomputed sibling `Sku.volume` via `ExecuteUpdateAsync` with a `Math.Round` in the expression tree**, which EF Core's SQLite provider cannot translate to SQL — breaking every `UpdateAsync` call that actually persists a change, under this project's own default `appsettings.Development.json` (`SQLITE`) setup. Fixed by fetching the sibling rows and recomputing in memory instead of pushing the computation into a single SQL statement.
+
+`dotnet test ModernWMS.sln` → **122 passed**, 0 failed. `dotnet build ModernWMS.sln` → 0 errors.
+
 ## 3. Phased rollout (each phase = one PR, one module family)
 
 Ordering favors **small, self-contained modules first** to validate the harness under real conditions, then moves to the modules CLAUDE.md flags as the most complex/risky, where regressions are also the most expensive.
@@ -66,7 +86,7 @@ Ordering favors **small, self-contained modules first** to validate the harness 
 |---|---|---|
 | **0** ✅ | Test project wiring + shared fixtures + one smoke test (see §2) | Nothing else can start until the harness exists and is proven. |
 | **1** ✅ | Reference/master-data services: `Warehouse`, `Warehousearea`, `Goodslocation`, `GoodsOwner`, `Customer`, `supplier`, `company` | Small, mostly CRUD + `tenant_id` filtering, no cross-module quantity math. Good for validating the SQLite-fixture pattern (insert → query → assert) cheaply and catching any tenant-isolation gaps early. |
-| **2** | `Sku` (Spu/Category), `Freightfee`, `Print` | Still CRUD-shaped; `Sku` has a few more relations (category tree) worth exercising with real data. |
+| **2** ✅ | `Sku` (Spu/Category), `Freightfee`, `Print` | Still CRUD-shaped; `Sku` has a few more relations (category tree) worth exercising with real data. |
 | **3** | `user`, `userrole`, `Rolemenu` | Auth-adjacent but not the JWT/login flow itself (that's `ModernWMS.Core/AccountController`, out of scope here). Focus on role/menu authority assignment logic, since CLAUDE.md flags a recent bug fix in `rolemenu.menu_actions_authority`. |
 | **4** | `Asn` (`AsnService`, ~1400 lines) | First "where the complexity actually is" module. Cover: form-number generation via `FunctionHelper`, status transitions (`asn_status` literals), tenant filtering, and audit-column stamping on insert/update. |
 | **5** | `Dispatchlist` (`DispatchlistService`, ~1800 lines) | Largest/most complex service per CLAUDE.md. Split this phase further if needed (e.g. list/search vs. status-transition/stock-deduction logic) rather than trying to cover it in one PR. |

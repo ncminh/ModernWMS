@@ -556,9 +556,12 @@ namespace ModernWMS.WMS.Services
             var qty = await _dBContext.SaveChangesAsync();
             if (qty > 0)
             {
+                // Math.Round can't be translated to SQL by every provider (SQLite in
+                // particular), so recompute in memory rather than via ExecuteUpdateAsync.
                 decimal dec = ChangeLengthUnit(entity.length_unit, entity.volume_unit);
-                await _dBContext.GetDbSet<SkuEntity>().Where(t => t.spu_id.Equals(entity.id))
-                    .ExecuteUpdateAsync(p => p.SetProperty(x => x.volume, x => Math.Round(x.lenght * dec * x.width * dec * x.height * dec, 3)));
+                var skus = await _dBContext.GetDbSet<SkuEntity>().Where(t => t.spu_id.Equals(entity.id)).ToListAsync();
+                skus.ForEach(sku => sku.volume = Math.Round(sku.lenght * dec * sku.width * dec * sku.height * dec, 3));
+                await _dBContext.SaveChangesAsync();
                 return (true, _stringLocalizer["save_success"]);
             }
             else
