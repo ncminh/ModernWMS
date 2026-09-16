@@ -29,6 +29,26 @@ namespace ModernWMS.WMS.Controllers
         private readonly IAsnService _asnService;
 
         /// <summary>
+        /// asnmaster Service
+        /// </summary>
+        private readonly IAsnmasterService _asnmasterService;
+
+        /// <summary>
+        /// asn confirm/unload Service
+        /// </summary>
+        private readonly IAsnConfirmService _asnConfirmService;
+
+        /// <summary>
+        /// asn sorting Service
+        /// </summary>
+        private readonly IAsnSortingService _asnSortingService;
+
+        /// <summary>
+        /// asn putaway Service
+        /// </summary>
+        private readonly IAsnPutawayService _asnPutawayService;
+
+        /// <summary>
         /// Localizer Service
         /// </summary>
         private readonly IStringLocalizer<ModernWMS.Core.MultiLanguage> _stringLocalizer;
@@ -39,19 +59,31 @@ namespace ModernWMS.WMS.Controllers
         /// constructor
         /// </summary>
         /// <param name="asnService">asn Service</param>
+        /// <param name="asnmasterService">asnmaster Service</param>
+        /// <param name="asnConfirmService">asn confirm/unload Service</param>
+        /// <param name="asnSortingService">asn sorting Service</param>
+        /// <param name="asnPutawayService">asn putaway Service</param>
         /// <param name="stringLocalizer">Localizer</param>
         public AsnController(
             IAsnService asnService
+          , IAsnmasterService asnmasterService
+          , IAsnConfirmService asnConfirmService
+          , IAsnSortingService asnSortingService
+          , IAsnPutawayService asnPutawayService
           , IStringLocalizer<ModernWMS.Core.MultiLanguage> stringLocalizer
             )
         {
             this._asnService = asnService;
+            this._asnmasterService = asnmasterService;
+            this._asnConfirmService = asnConfirmService;
+            this._asnSortingService = asnSortingService;
+            this._asnPutawayService = asnPutawayService;
             this._stringLocalizer = stringLocalizer;
         }
         #endregion
 
 
-        #region Arrival list 
+        #region Arrival list
         /// <summary>
         /// Arrival list
         /// </summary>
@@ -60,7 +92,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPost("asnmaster/list")]
         public async Task<ResultModel<PageData<AsnmasterBothViewModel>>> PageAsnmasterAsync(PageSearch pageSearch)
         {
-            var (data, totals) = await _asnService.PageAsnmasterAsync(pageSearch, CurrentUser);
+            var (data, totals) = await _asnmasterService.PageAsnmasterAsync(pageSearch, CurrentUser);
 
             return ResultModel<PageData<AsnmasterBothViewModel>>.Success(new PageData<AsnmasterBothViewModel>
             {
@@ -76,7 +108,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpGet("asnmaster")]
         public async Task<ResultModel<AsnmasterBothViewModel>> GetAsnmasterAsync(int id)
         {
-            var data = await _asnService.GetAsnmasterAsync(id, CurrentUser);
+            var data = await _asnmasterService.GetAsnmasterAsync(id, CurrentUser);
             if (data != null && data.id > 0)
             {
                 return ResultModel<AsnmasterBothViewModel>.Success(data);
@@ -95,7 +127,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPost("asnmaster")]
         public async Task<ResultModel<int>> AddAsnmasterAsync(AsnmasterBothViewModel viewModel)
         {
-            var (id, msg) = await _asnService.AddAsnmasterAsync(viewModel, CurrentUser);
+            var (id, msg) = await _asnmasterService.AddAsnmasterAsync(viewModel, CurrentUser);
             if (id > 0)
             {
                 return ResultModel<int>.Success(id);
@@ -113,7 +145,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPut("asnmaster")]
         public async Task<ResultModel<bool>> UpdateAsnmasterAsync(AsnmasterBothViewModel viewModel)
         {
-            var (flag, msg) = await _asnService.UpdateAsnmasterAsync(viewModel, CurrentUser);
+            var (flag, msg) = await _asnmasterService.UpdateAsnmasterAsync(viewModel, CurrentUser);
             if (flag)
             {
                 return ResultModel<bool>.Success(flag);
@@ -132,7 +164,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpDelete("asnmaster")]
         public async Task<ResultModel<string>> DeleteAsnmasterAsync(int id)
         {
-            var (flag, msg) = await _asnService.DeleteAsnmasterAsync(id);
+            var (flag, msg) = await _asnmasterService.DeleteAsnmasterAsync(id, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -169,7 +201,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpGet]
         public async Task<ResultModel<AsnViewModel>> GetAsync(int id)
         {
-            var data = await _asnService.GetAsync(id);
+            var data = await _asnService.GetAsync(id, CurrentUser);
             if (data != null && data.id > 0)
             {
                 return ResultModel<AsnViewModel>.Success(data);
@@ -206,7 +238,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPut]
         public async Task<ResultModel<bool>> UpdateAsync(AsnViewModel viewModel)
         {
-            var (flag, msg) = await _asnService.UpdateAsync(viewModel);
+            var (flag, msg) = await _asnService.UpdateAsync(viewModel, CurrentUser);
             if (flag)
             {
                 return ResultModel<bool>.Success(flag);
@@ -225,7 +257,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpDelete]
         public async Task<ResultModel<string>> DeleteAsync(int id)
         {
-            var (flag, msg) = await _asnService.DeleteAsync(id);
+            var (flag, msg) = await _asnService.DeleteAsync(id, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -244,7 +276,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPut("bulk-modify-goods-owner")]
         public async Task<ResultModel<bool>> BulkModifyGoodsownerAsync(AsnBulkModifyGoodsOwnerViewModel viewModel)
         {
-            var (flag, msg) = await _asnService.BulkModifyGoodsownerAsync(viewModel);
+            var (flag, msg) = await _asnService.BulkModifyGoodsownerAsync(viewModel, CurrentUser);
             if (flag)
             {
                 return ResultModel<bool>.Success(flag);
@@ -267,7 +299,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPut("confirm")]
         public async Task<ResultModel<string>> ConfirmAsync(List<AsnConfirmInputViewModel> viewModels)
         {
-            var (flag, msg) = await _asnService.ConfirmAsync(viewModels);
+            var (flag, msg) = await _asnConfirmService.ConfirmAsync(viewModels, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -286,7 +318,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPut("confirm-cancel")]
         public async Task<ResultModel<string>> ConfirmCancelAsync(List<int> idList)
         {
-            var (flag, msg) = await _asnService.ConfirmCancelAsync(idList);
+            var (flag, msg) = await _asnConfirmService.ConfirmCancelAsync(idList, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -306,7 +338,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPut("unload")]
         public async Task<ResultModel<string>> UnloadAsync(List<AsnUnloadInputViewModel> viewModels)
         {
-            var (flag, msg) = await _asnService.UnloadAsync(viewModels, CurrentUser);
+            var (flag, msg) = await _asnConfirmService.UnloadAsync(viewModels, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -326,7 +358,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPut("unload-cancel")]
         public async Task<ResultModel<string>> UnloadCancelAsync(List<int> idList)
         {
-            var (flag, msg) = await _asnService.UnloadCancelAsync(idList);
+            var (flag, msg) = await _asnConfirmService.UnloadCancelAsync(idList, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -345,7 +377,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPut("sorting")]
         public async Task<ResultModel<string>> SortingAsync(List<AsnsortInputViewModel> viewModels)
         {
-            var (flag, msg) = await _asnService.SortingAsync(viewModels, CurrentUser);
+            var (flag, msg) = await _asnSortingService.SortingAsync(viewModels, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -364,7 +396,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpGet("sorting")]
         public async Task<ResultModel<List<AsnsortViewModel>>> GetAsnsortsAsync(int asn_id)
         {
-            var data = await _asnService.GetAsnsortsAsync(asn_id);
+            var data = await _asnSortingService.GetAsnsortsAsync(asn_id, CurrentUser);
             return ResultModel<List<AsnsortViewModel>>.Success(data);
         }
 
@@ -376,7 +408,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPut("sorting-modify")]
         public async Task<ResultModel<string>> ModifyAsnsortsAsync(List<AsnsortEntity> entities)
         {
-            var (flag, msg) = await _asnService.ModifyAsnsortsAsync(entities, CurrentUser);
+            var (flag, msg) = await _asnSortingService.ModifyAsnsortsAsync(entities, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -396,7 +428,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPut("sorted")]
         public async Task<ResultModel<string>> SortedAsync(List<int> idList)
         {
-            var (flag, msg) = await _asnService.SortedAsync(idList);
+            var (flag, msg) = await _asnSortingService.SortedAsync(idList, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -416,7 +448,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPut("sorted-cancel")]
         public async Task<ResultModel<string>> SortedCancelAsync(List<int> idList)
         {
-            var (flag, msg) = await _asnService.SortedCancelAsync(idList);
+            var (flag, msg) = await _asnSortingService.SortedCancelAsync(idList, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -435,7 +467,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpGet("pending-putaway")]
         public async Task<ResultModel<List<AsnPendingPutawayViewModel>>> GetPendingPutawayDataAsync(int id)
         {
-            var data = await _asnService.GetPendingPutawayDataAsync(id);
+            var data = await _asnPutawayService.GetPendingPutawayDataAsync(id, CurrentUser);
             data ??= new List<AsnPendingPutawayViewModel>();
             return ResultModel<List<AsnPendingPutawayViewModel>>.Success(data);
         }
@@ -448,7 +480,7 @@ namespace ModernWMS.WMS.Controllers
         [HttpPut("putaway")]
         public async Task<ResultModel<string>> PutAwayAsync(List<AsnPutAwayInputViewModel> viewModels)
         {
-            var (flag, msg) = await _asnService.PutAwayAsync(viewModels, CurrentUser);
+            var (flag, msg) = await _asnPutawayService.PutAwayAsync(viewModels, CurrentUser);
             if (flag)
             {
                 return ResultModel<string>.Success(msg);
@@ -469,10 +501,9 @@ namespace ModernWMS.WMS.Controllers
         [HttpPost("print-sn")]
         public async Task<ResultModel<List<AsnPrintSeriesNumberViewModel>>> GetAsnPrintSeriesNumberAsync(List<int> input)
         {
-            var data = await _asnService.GetAsnPrintSeriesNumberAsync(input);
+            var data = await _asnSortingService.GetAsnPrintSeriesNumberAsync(input, CurrentUser);
             return ResultModel<List<AsnPrintSeriesNumberViewModel>>.Success(data);
         }
         #endregion
     }
 }
- 
