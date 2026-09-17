@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "Full Stack (API + React)",
+    "Projects": [
+      {
+        "Path": "ModernWMS\\ModernWMS.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "..\\frontend2\\modernwms.wmsui.esproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
