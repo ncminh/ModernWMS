@@ -25,7 +25,7 @@ namespace ModernWMS.WMS.Services
     /// <summary>
     ///  Stockprocess Service
     /// </summary>
-    public class StockprocessService : BaseService<StockProcessEntity>, IStockProcessService
+    public class StockProcessService : BaseService<StockProcessEntity>, IStockProcessService
     {
         #region Args
 
@@ -53,7 +53,7 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="dBContext">The DBContext</param>
         /// <param name="stringLocalizer">Localizer</param>
-        public StockprocessService(
+        public StockProcessService(
             SqlDBContext dBContext
           , IStringLocalizer<ModernWMS.Core.MultiLanguage> stringLocalizer
             , FunctionHelper functionHelper

@@ -11,7 +11,7 @@
  namespace ModernWMS.WMS.IServices
  {
      /// <summary>
-     /// Interface of StockprocessService
+     /// Interface of StockProcessService
      /// </summary>
      public interface IStockProcessService : IBaseService<StockProcessEntity>
      {

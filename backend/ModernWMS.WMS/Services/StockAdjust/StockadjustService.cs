@@ -21,7 +21,7 @@ namespace ModernWMS.WMS.Services
     /// <summary>
     ///  Stockadjust Service
     /// </summary>
-    public class StockadjustService : BaseService<StockAdjustEntity>, IStockAdjustService
+    public class StockAdjustService : BaseService<StockAdjustEntity>, IStockAdjustService
     {
         #region Args
 
@@ -44,7 +44,7 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="dBContext">The DBContext</param>
         /// <param name="stringLocalizer">Localizer</param>
-        public StockadjustService(
+        public StockAdjustService(
             SqlDBContext dBContext
           , IStringLocalizer<ModernWMS.Core.MultiLanguage> stringLocalizer
             )

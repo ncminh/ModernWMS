@@ -11,7 +11,7 @@
  namespace ModernWMS.WMS.IServices
  {
      /// <summary>
-     /// Interface of StockmoveService
+     /// Interface of StockMoveService
      /// </summary>
      public interface IStockMoveService : IBaseService<StockMoveEntity>
      {

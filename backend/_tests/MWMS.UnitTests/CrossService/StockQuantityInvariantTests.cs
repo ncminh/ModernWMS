@@ -51,7 +51,7 @@ namespace ModernWMS.UnitTests.CrossService
         [Fact]
         public async Task StockmoveConfirm_ConservesTotalOnHandQtyAcrossLocations()
         {
-            // StockmoveService moves qty between two locations; StockService's aggregate
+            // StockMoveService moves qty between two locations; StockService's aggregate
             // report must show the same total on-hand qty for the sku before and after,
             // just redistributed between the two locations.
             using var scope = new SqliteTestDbContextScope();
@@ -61,7 +61,7 @@ namespace ModernWMS.UnitTests.CrossService
             var dest = await SeedLocationAsync(scope.DbContext, 1, "Dest");
             await SeedStockAsync(scope.DbContext, 1, sku.id, orig.id, qty: 10);
 
-            var moveService = new StockmoveService(scope.DbContext, new FakeStringLocalizer<MultiLanguage>(), TestFunctionHelperFactory.Create(scope.DbContext));
+            var moveService = new StockMoveService(scope.DbContext, new FakeStringLocalizer<MultiLanguage>(), TestFunctionHelperFactory.Create(scope.DbContext));
             var (moveId, _) = await moveService.AddAsync(
                 new StockMoveViewModel { sku_id = sku.id, orig_goods_location_id = orig.id, dest_googs_location_id = dest.id, qty = 6 },
                 currentUser);
@@ -90,7 +90,7 @@ namespace ModernWMS.UnitTests.CrossService
             var dest = await SeedLocationAsync(scope.DbContext, 1, "Dest");
             await SeedStockAsync(scope.DbContext, 1, sku.id, orig.id, qty: 10);
 
-            var moveService = new StockmoveService(scope.DbContext, new FakeStringLocalizer<MultiLanguage>(), TestFunctionHelperFactory.Create(scope.DbContext));
+            var moveService = new StockMoveService(scope.DbContext, new FakeStringLocalizer<MultiLanguage>(), TestFunctionHelperFactory.Create(scope.DbContext));
             var (moveId, _) = await moveService.AddAsync(
                 new StockMoveViewModel { sku_id = sku.id, orig_goods_location_id = orig.id, dest_googs_location_id = dest.id, qty = 6 },
                 currentUser);
@@ -108,8 +108,8 @@ namespace ModernWMS.UnitTests.CrossService
         [Fact]
         public async Task StockfreezeAddAsync_BlocksStockmoveAddAsyncFromMovingFrozenStock()
         {
-            // StockfreezeService.AddAsync toggles StockEntity.is_freeze directly. A later
-            // StockmoveService.AddAsync sourcing from that same stock row must see it as
+            // StockFreezeService.AddAsync toggles StockEntity.is_freeze directly. A later
+            // StockMoveService.AddAsync sourcing from that same stock row must see it as
             // unavailable, even though the freeze was applied by a different service.
             using var scope = new SqliteTestDbContextScope();
             var currentUser = new CurrentUser { tenant_id = 1, user_name = "alice" };
@@ -118,13 +118,13 @@ namespace ModernWMS.UnitTests.CrossService
             var dest = await SeedLocationAsync(scope.DbContext, 1, "Dest");
             await SeedStockAsync(scope.DbContext, 1, sku.id, orig.id, qty: 10);
 
-            var freezeService = new StockfreezeService(scope.DbContext, new FakeStringLocalizer<MultiLanguage>(), TestFunctionHelperFactory.Create(scope.DbContext));
+            var freezeService = new StockFreezeService(scope.DbContext, new FakeStringLocalizer<MultiLanguage>(), TestFunctionHelperFactory.Create(scope.DbContext));
             var (freezeId, _) = await freezeService.AddAsync(
                 new StockFreezeViewModel { sku_id = sku.id, goods_location_id = orig.id, job_type = true },
                 currentUser);
             freezeId.ShouldBeGreaterThan(0);
 
-            var moveService = new StockmoveService(scope.DbContext, new FakeStringLocalizer<MultiLanguage>(), TestFunctionHelperFactory.Create(scope.DbContext));
+            var moveService = new StockMoveService(scope.DbContext, new FakeStringLocalizer<MultiLanguage>(), TestFunctionHelperFactory.Create(scope.DbContext));
             var (moveId, _) = await moveService.AddAsync(
                 new StockMoveViewModel { sku_id = sku.id, orig_goods_location_id = orig.id, dest_googs_location_id = dest.id, qty = 5 },
                 currentUser);
@@ -136,7 +136,7 @@ namespace ModernWMS.UnitTests.CrossService
         [Fact]
         public async Task StockadjustConfirmAdjustment_ChangeIsReflectedInStockPageAsyncTotals()
         {
-            // StockadjustService.ConfirmAdjustment mutates StockEntity.qty directly.
+            // StockAdjustService.ConfirmAdjustment mutates StockEntity.qty directly.
             // StockService's aggregate report (a different service, different query
             // shape entirely) must reflect that change immediately.
             using var scope = new SqliteTestDbContextScope();
@@ -145,7 +145,7 @@ namespace ModernWMS.UnitTests.CrossService
             var location = await SeedLocationAsync(scope.DbContext, 1, "L1");
             await SeedStockAsync(scope.DbContext, 1, sku.id, location.id, qty: 10);
 
-            var adjustService = new StockadjustService(scope.DbContext, new FakeStringLocalizer<MultiLanguage>());
+            var adjustService = new StockAdjustService(scope.DbContext, new FakeStringLocalizer<MultiLanguage>());
             var (adjustId, _) = await adjustService.AddAsync(
                 new StockAdjustViewModel { sku_id = sku.id, goods_location_id = location.id, qty = -3 },
                 currentUser);
@@ -162,7 +162,7 @@ namespace ModernWMS.UnitTests.CrossService
         [Fact]
         public async Task StockprocessConfirmAdjustment_TargetLocationCreationReflectedAcrossLocationsInStockPageAsync()
         {
-            // StockprocessService moves qty from a source location to a target location
+            // StockProcessService moves qty from a source location to a target location
             // (repackaging/consolidation) via ConfirmAdjustment. StockService's aggregate
             // qty for the sku must be conserved across both locations, same invariant as
             // the plain Stockmove case but exercised through a different mutating service.
@@ -173,7 +173,7 @@ namespace ModernWMS.UnitTests.CrossService
             var target = await SeedLocationAsync(scope.DbContext, 1, "Target");
             await SeedStockAsync(scope.DbContext, 1, sku.id, source.id, qty: 10);
 
-            var processService = new StockprocessService(scope.DbContext, new FakeStringLocalizer<MultiLanguage>(), TestFunctionHelperFactory.Create(scope.DbContext));
+            var processService = new StockProcessService(scope.DbContext, new FakeStringLocalizer<MultiLanguage>(), TestFunctionHelperFactory.Create(scope.DbContext));
             var viewModel = new StockProcessViewModel
             {
                 detailList = new List<StockProcessDetailViewModel>

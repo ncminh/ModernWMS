@@ -11,7 +11,7 @@
  namespace ModernWMS.WMS.IServices
  {
      /// <summary>
-     /// Interface of StockadjustService
+     /// Interface of StockAdjustService
      /// </summary>
      public interface IStockAdjustService : IBaseService<StockAdjustEntity>
      {

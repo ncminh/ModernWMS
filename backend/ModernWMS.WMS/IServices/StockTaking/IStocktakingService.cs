@@ -11,7 +11,7 @@ using ModernWMS.Core.Services;
  namespace ModernWMS.WMS.IServices
  {
      /// <summary>
-     /// Interface of StocktakingService
+     /// Interface of StockTakingService
      /// </summary>
      public interface IStockTakingService : IBaseService<StockTakingEntity>
      {

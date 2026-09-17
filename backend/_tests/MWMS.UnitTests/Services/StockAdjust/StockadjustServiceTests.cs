@@ -7,11 +7,11 @@ using ModernWMS.WMS.Entities.Models;
 using ModernWMS.WMS.Entities.ViewModels;
 using ModernWMS.WMS.Services;
 
-namespace ModernWMS.UnitTests.Services.Stockadjust
+namespace ModernWMS.UnitTests.Services.StockAdjust
 {
-    public class StockadjustServiceTests
+    public class StockAdjustServiceTests
     {
-        private static StockadjustService CreateService(ModernWMS.Core.DBContext.SqlDBContext dbContext) =>
+        private static StockAdjustService CreateService(ModernWMS.Core.DBContext.SqlDBContext dbContext) =>
             new(dbContext, new FakeStringLocalizer<MultiLanguage>());
 
         private static async Task<(SpuEntity spu, SkuEntity sku)> SeedSpuSkuAsync(

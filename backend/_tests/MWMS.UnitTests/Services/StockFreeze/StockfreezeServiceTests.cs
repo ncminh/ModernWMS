@@ -7,11 +7,11 @@ using ModernWMS.WMS.Entities.Models;
 using ModernWMS.WMS.Entities.ViewModels;
 using ModernWMS.WMS.Services;
 
-namespace ModernWMS.UnitTests.Services.Stockfreeze
+namespace ModernWMS.UnitTests.Services.StockFreeze
 {
-    public class StockfreezeServiceTests
+    public class StockFreezeServiceTests
     {
-        private static StockfreezeService CreateService(ModernWMS.Core.DBContext.SqlDBContext dbContext) =>
+        private static StockFreezeService CreateService(ModernWMS.Core.DBContext.SqlDBContext dbContext) =>
             new(dbContext, new FakeStringLocalizer<MultiLanguage>(), TestFunctionHelperFactory.Create(dbContext));
 
         private static async Task<(SpuEntity spu, SkuEntity sku)> SeedSpuSkuAsync(

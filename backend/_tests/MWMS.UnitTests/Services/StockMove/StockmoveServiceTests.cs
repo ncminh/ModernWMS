@@ -9,9 +9,9 @@ using ModernWMS.WMS.Services;
 
 namespace ModernWMS.UnitTests.Services.Stockmove
 {
-    public class StockmoveServiceTests
+    public class StockMoveServiceTests
     {
-        private static StockmoveService CreateService(ModernWMS.Core.DBContext.SqlDBContext dbContext) =>
+        private static StockMoveService CreateService(ModernWMS.Core.DBContext.SqlDBContext dbContext) =>
             new(dbContext, new FakeStringLocalizer<MultiLanguage>(), TestFunctionHelperFactory.Create(dbContext));
 
         private static async Task<(SpuEntity spu, SkuEntity sku)> SeedSpuSkuAsync(

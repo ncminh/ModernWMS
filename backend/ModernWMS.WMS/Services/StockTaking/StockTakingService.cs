@@ -22,7 +22,7 @@ namespace ModernWMS.WMS.Services
     /// <summary>
     ///  Stocktaking Service
     /// </summary>
-    public class StocktakingService : BaseService<StockTakingEntity>, IStockTakingService
+    public class StockTakingService : BaseService<StockTakingEntity>, IStockTakingService
     {
         #region Args
         /// <summary>
@@ -49,7 +49,7 @@ namespace ModernWMS.WMS.Services
         /// <param name="dBContext">The DBContext</param>
         /// <param name="stringLocalizer">Localizer</param>
         /// <param name="functionHelper">functionHelper</param>
-        public StocktakingService(
+        public StockTakingService(
             SqlDBContext dBContext
           , IStringLocalizer<ModernWMS.Core.MultiLanguage> stringLocalizer
           , FunctionHelper functionHelper 

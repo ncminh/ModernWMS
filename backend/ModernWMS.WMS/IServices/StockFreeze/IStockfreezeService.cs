@@ -11,7 +11,7 @@
  namespace ModernWMS.WMS.IServices
  {
      /// <summary>
-     /// Interface of StockfreezeService
+     /// Interface of StockFreezeService
      /// </summary>
      public interface IStockFreezeService : IBaseService<StockFreezeEntity>
      {

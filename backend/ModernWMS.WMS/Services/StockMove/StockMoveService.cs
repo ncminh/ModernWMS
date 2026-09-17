@@ -25,7 +25,7 @@ namespace ModernWMS.WMS.Services
     /// <summary>
     ///  Stockmove Service
     /// </summary>
-    public class StockmoveService : BaseService<StockMoveEntity>, IStockMoveService
+    public class StockMoveService : BaseService<StockMoveEntity>, IStockMoveService
     {
         #region Args
 
@@ -53,7 +53,7 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="dBContext">The DBContext</param>
         /// <param name="stringLocalizer">Localizer</param>
-        public StockmoveService(
+        public StockMoveService(
             SqlDBContext dBContext
           , IStringLocalizer<ModernWMS.Core.MultiLanguage> stringLocalizer
             , FunctionHelper functionHelper

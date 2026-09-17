@@ -24,7 +24,7 @@ namespace ModernWMS.WMS.Services
     /// <summary>
     ///  Stockfreeze Service
     /// </summary>
-    public class StockfreezeService : BaseService<StockFreezeEntity>, IStockFreezeService
+    public class StockFreezeService : BaseService<StockFreezeEntity>, IStockFreezeService
     {
         #region Args
 
@@ -52,7 +52,7 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="dBContext">The DBContext</param>
         /// <param name="stringLocalizer">Localizer</param>
-        public StockfreezeService(
+        public StockFreezeService(
             SqlDBContext dBContext
           , IStringLocalizer<ModernWMS.Core.MultiLanguage> stringLocalizer
              , FunctionHelper functionHelper)
