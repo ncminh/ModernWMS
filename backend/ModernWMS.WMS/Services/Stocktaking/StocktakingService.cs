@@ -22,7 +22,7 @@ namespace ModernWMS.WMS.Services
     /// <summary>
     ///  Stocktaking Service
     /// </summary>
-    public class StocktakingService : BaseService<StocktakingEntity>, IStocktakingService
+    public class StocktakingService : BaseService<StockTakingEntity>, IStockTakingService
     {
         #region Args
         /// <summary>
@@ -68,7 +68,7 @@ namespace ModernWMS.WMS.Services
         /// <param name="pageSearch">args</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        public async Task<(List<StocktakingViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser)
+        public async Task<(List<StockTakingViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser)
         {
             QueryCollection queries = new QueryCollection();
             if (pageSearch.searchObjects.Any())
@@ -78,12 +78,12 @@ namespace ModernWMS.WMS.Services
                     queries.Add(s);
                 });
             }
-            var Stocktakings = _dBContext.GetDbSet<StocktakingEntity>();
+            var Stocktakings = _dBContext.GetDbSet<StockTakingEntity>();
             var Spus = _dBContext.GetDbSet<SpuEntity>();
             var Skus = _dBContext.GetDbSet<SkuEntity>();
             var Goodsowners = _dBContext.GetDbSet<GoodsownerEntity>();
             var Goodslocations = _dBContext.GetDbSet<GoodslocationEntity>();
-            var Stockadjusts = _dBContext.GetDbSet<StockadjustEntity>();
+            var Stockadjusts = _dBContext.GetDbSet<StockAdjustEntity>();
             var queryAdjust = Stockadjusts.AsNoTracking().Where(t => t.job_type == 1).Select(t => new { t.id, t.source_table_id });
 
             var query = from st in Stocktakings.AsNoTracking()
@@ -95,7 +95,7 @@ namespace ModernWMS.WMS.Services
                         join adj in queryAdjust on st.id equals adj.source_table_id into adjJoin
                         from adj in adjJoin.DefaultIfEmpty()
                         where st.tenant_id == currentUser.tenant_id
-                        select new StocktakingViewModel
+                        select new StockTakingViewModel
                         {
                             id = st.id,
                             job_code = st.job_code,
@@ -124,7 +124,7 @@ namespace ModernWMS.WMS.Services
                             handle_time = st.handle_time,
                             last_update_time = st.last_update_time
                         };
-            query = query.Where(queries.AsExpression<StocktakingViewModel>());
+            query = query.Where(queries.AsExpression<StockTakingViewModel>());
             int totals = await query.CountAsync();
             var list = await query.OrderByDescending(t => t.last_update_time)
                        .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
@@ -139,14 +139,14 @@ namespace ModernWMS.WMS.Services
         /// <param name="id">primary key</param>
         /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        public async Task<StocktakingViewModel> GetAsync(int id, CurrentUser currentUser)
+        public async Task<StockTakingViewModel> GetAsync(int id, CurrentUser currentUser)
         {
-            var Stocktakings = _dBContext.GetDbSet<StocktakingEntity>();
+            var Stocktakings = _dBContext.GetDbSet<StockTakingEntity>();
             var Spus = _dBContext.GetDbSet<SpuEntity>();
             var Skus = _dBContext.GetDbSet<SkuEntity>();
             var Goodsowners = _dBContext.GetDbSet<GoodsownerEntity>();
             var Goodslocations = _dBContext.GetDbSet<GoodslocationEntity>();
-            var Stockadjusts = _dBContext.GetDbSet<StockadjustEntity>();
+            var Stockadjusts = _dBContext.GetDbSet<StockAdjustEntity>();
             var queryAdjust = Stockadjusts.AsNoTracking().Where(t => t.job_type == 1).Select(t => new { t.id, t.source_table_id });
 
             var query = from st in Stocktakings.AsNoTracking()
@@ -158,7 +158,7 @@ namespace ModernWMS.WMS.Services
                         join adj in queryAdjust on st.id equals adj.source_table_id into adjJoin
                         from adj in adjJoin.DefaultIfEmpty()
                         where st.id == id && st.tenant_id == currentUser.tenant_id
-                        select new StocktakingViewModel
+                        select new StockTakingViewModel
                         {
                             id = st.id,
                             job_code = st.job_code,
@@ -194,7 +194,7 @@ namespace ModernWMS.WMS.Services
             }
             else
             {
-                return new StocktakingViewModel();
+                return new StockTakingViewModel();
             }
         }
         /// <summary>
@@ -203,10 +203,10 @@ namespace ModernWMS.WMS.Services
         /// <param name="viewModel">viewmodel</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        public async Task<(int id, string msg)> AddAsync(StocktakingBasicViewModel viewModel, CurrentUser currentUser)
+        public async Task<(int id, string msg)> AddAsync(StockTakingBasicViewModel viewModel, CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<StocktakingEntity>();
-            var entity = viewModel.Adapt<StocktakingEntity>();
+            var DbSet = _dBContext.GetDbSet<StockTakingEntity>();
+            var entity = viewModel.Adapt<StockTakingEntity>();
             entity.id = 0;
             entity.job_code = await _functionHelper.GetFormNoAsync("Stocktaking");
             entity.creator = currentUser.user_name;
@@ -232,7 +232,7 @@ namespace ModernWMS.WMS.Services
         /// <returns></returns>
         public async Task<string> GetOrderCode(CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<StocktakingEntity>();
+            var DbSet = _dBContext.GetDbSet<StockTakingEntity>();
             string code = "";
             string date = DateTime.Now.ToString("yyyy" + "MM" + "dd");
             string maxNo = await DbSet.AsNoTracking().Where(t => t.tenant_id.Equals(currentUser.tenant_id)).MaxAsync(t => t.job_code);
@@ -271,9 +271,9 @@ namespace ModernWMS.WMS.Services
         /// <param name="viewModel">args</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> PutAsync(StocktakingConfirmViewModel viewModel, CurrentUser currentUser)
+        public async Task<(bool flag, string msg)> PutAsync(StockTakingConfirmViewModel viewModel, CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<StocktakingEntity>();
+            var DbSet = _dBContext.GetDbSet<StockTakingEntity>();
             var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id) && t.tenant_id == currentUser.tenant_id);
             if (entity == null)
             {
@@ -304,13 +304,13 @@ namespace ModernWMS.WMS.Services
         /// <returns></returns>
         public async Task<(bool flag, string msg)> ConfirmAsync(int id, CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<StocktakingEntity>();
+            var DbSet = _dBContext.GetDbSet<StockTakingEntity>();
             var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id);
             if (entity == null)
             {
                 return (false, _stringLocalizer["not_exists_entity"]);
             }
-            var alreadyAdjusted = await _dBContext.GetDbSet<StockadjustEntity>().AsNoTracking()
+            var alreadyAdjusted = await _dBContext.GetDbSet<StockAdjustEntity>().AsNoTracking()
                 .AnyAsync(t => t.job_type == 1 && t.source_table_id == entity.id);
             if (alreadyAdjusted)
             {
@@ -350,8 +350,8 @@ namespace ModernWMS.WMS.Services
                 stockEntity.last_update_time = DateTime.Now;
             }
             // add a record to stockadjust
-            var Stockadjusts = _dBContext.GetDbSet<StockadjustEntity>();
-            await Stockadjusts.AddAsync(new StockadjustEntity
+            var Stockadjusts = _dBContext.GetDbSet<StockAdjustEntity>();
+            await Stockadjusts.AddAsync(new StockAdjustEntity
             {
                 job_code = entity.job_code,
                 sku_id = entity.sku_id,
@@ -389,7 +389,7 @@ namespace ModernWMS.WMS.Services
         /// <returns></returns>
         public async Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser)
         {
-            var qty = await _dBContext.GetDbSet<StocktakingEntity>().Where(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
+            var qty = await _dBContext.GetDbSet<StockTakingEntity>().Where(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
             if (qty > 0)
             {
                 return (true, _stringLocalizer["delete_success"]);

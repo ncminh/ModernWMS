@@ -44,11 +44,11 @@ namespace ModernWMS.UnitTests.Services.Stocktaking
             return stock;
         }
 
-        private static async Task<StocktakingEntity> SeedStocktakingAsync(
+        private static async Task<StockTakingEntity> SeedStocktakingAsync(
             ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId, int skuId, int locationId,
             int bookQty = 10, int countedQty = 0, int differenceQty = 0, bool jobStatus = false)
         {
-            var entity = new StocktakingEntity
+            var entity = new StockTakingEntity
             {
                 job_code = "S1",
                 sku_id = skuId,
@@ -59,7 +59,7 @@ namespace ModernWMS.UnitTests.Services.Stocktaking
                 job_status = jobStatus,
                 tenant_id = tenantId,
             };
-            dbContext.GetDbSet<StocktakingEntity>().Add(entity);
+            dbContext.GetDbSet<StockTakingEntity>().Add(entity);
             await dbContext.SaveChangesAsync();
             return entity;
         }
@@ -90,7 +90,7 @@ namespace ModernWMS.UnitTests.Services.Stocktaking
             var (_, sku) = await SeedSpuSkuAsync(scope.DbContext, 1);
             var location = await SeedLocationAsync(scope.DbContext, 1);
             var entity = await SeedStocktakingAsync(scope.DbContext, 1, sku.id, location.id);
-            scope.DbContext.GetDbSet<StockadjustEntity>().Add(new StockadjustEntity
+            scope.DbContext.GetDbSet<StockAdjustEntity>().Add(new StockAdjustEntity
             {
                 sku_id = sku.id,
                 goods_location_id = location.id,
@@ -164,11 +164,11 @@ namespace ModernWMS.UnitTests.Services.Stocktaking
             var currentUser = new CurrentUser { tenant_id = 1, user_name = "alice" };
 
             var (id, _) = await service.AddAsync(
-                new StocktakingBasicViewModel { sku_id = sku.id, goods_location_id = location.id, book_qty = 10 },
+                new StockTakingBasicViewModel { sku_id = sku.id, goods_location_id = location.id, book_qty = 10 },
                 currentUser);
 
             id.ShouldBeGreaterThan(0);
-            var saved = await scope.DbContext.GetDbSet<StocktakingEntity>().FindAsync(id);
+            var saved = await scope.DbContext.GetDbSet<StockTakingEntity>().FindAsync(id);
             saved!.creator.ShouldBe("alice");
             saved.tenant_id.ShouldBe(1);
             saved.job_code.ShouldNotBeNullOrEmpty();
@@ -182,7 +182,7 @@ namespace ModernWMS.UnitTests.Services.Stocktaking
             using var scope = new SqliteTestDbContextScope();
             var service = CreateService(scope.DbContext);
 
-            var (flag, _) = await service.PutAsync(new StocktakingConfirmViewModel { id = 999, counted_qty = 5 }, new CurrentUser { tenant_id = 1 });
+            var (flag, _) = await service.PutAsync(new StockTakingConfirmViewModel { id = 999, counted_qty = 5 }, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
         }
@@ -197,11 +197,11 @@ namespace ModernWMS.UnitTests.Services.Stocktaking
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.PutAsync(
-                new StocktakingConfirmViewModel { id = entity.id, counted_qty = 7 },
+                new StockTakingConfirmViewModel { id = entity.id, counted_qty = 7 },
                 new CurrentUser { tenant_id = 1, user_name = "bob" });
 
             flag.ShouldBeTrue();
-            var saved = await scope.DbContext.GetDbSet<StocktakingEntity>().FindAsync(entity.id);
+            var saved = await scope.DbContext.GetDbSet<StockTakingEntity>().FindAsync(entity.id);
             saved!.counted_qty.ShouldBe(7);
             saved.difference_qty.ShouldBe(-3);
             saved.job_status.ShouldBeTrue();
@@ -219,7 +219,7 @@ namespace ModernWMS.UnitTests.Services.Stocktaking
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.PutAsync(
-                new StocktakingConfirmViewModel { id = entity.id, counted_qty = 7 },
+                new StockTakingConfirmViewModel { id = entity.id, counted_qty = 7 },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
@@ -242,7 +242,7 @@ namespace ModernWMS.UnitTests.Services.Stocktaking
             var stock = await scope.DbContext.GetDbSet<StockEntity>().AsNoTracking().SingleAsync();
             stock.qty.ShouldBe(2);
             stock.tenant_id.ShouldBe(1);
-            var adjust = await scope.DbContext.GetDbSet<StockadjustEntity>().AsNoTracking().SingleAsync();
+            var adjust = await scope.DbContext.GetDbSet<StockAdjustEntity>().AsNoTracking().SingleAsync();
             adjust.source_table_id.ShouldBe(entity.id);
             adjust.qty.ShouldBe(2);
             adjust.job_type.ShouldBe((byte)1);
@@ -282,7 +282,7 @@ namespace ModernWMS.UnitTests.Services.Stocktaking
             firstFlag.ShouldBeTrue();
             secondFlag.ShouldBeFalse();
             (await scope.DbContext.GetDbSet<StockEntity>().FindAsync(stock.id))!.qty.ShouldBe(8);
-            (await scope.DbContext.GetDbSet<StockadjustEntity>().AsNoTracking().CountAsync()).ShouldBe(1);
+            (await scope.DbContext.GetDbSet<StockAdjustEntity>().AsNoTracking().CountAsync()).ShouldBe(1);
         }
 
         [Fact]
@@ -328,7 +328,7 @@ namespace ModernWMS.UnitTests.Services.Stocktaking
             var (flag, _) = await service.DeleteAsync(entity.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<StocktakingEntity>().AsNoTracking().AnyAsync(t => t.id == entity.id)).ShouldBeFalse();
+            (await scope.DbContext.GetDbSet<StockTakingEntity>().AsNoTracking().AnyAsync(t => t.id == entity.id)).ShouldBeFalse();
         }
 
         [Fact]
@@ -344,7 +344,7 @@ namespace ModernWMS.UnitTests.Services.Stocktaking
             var (flag, _) = await service.DeleteAsync(entity.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<StocktakingEntity>().AsNoTracking().AnyAsync(t => t.id == entity.id)).ShouldBeTrue();
+            (await scope.DbContext.GetDbSet<StockTakingEntity>().AsNoTracking().AnyAsync(t => t.id == entity.id)).ShouldBeTrue();
         }
     }
 }

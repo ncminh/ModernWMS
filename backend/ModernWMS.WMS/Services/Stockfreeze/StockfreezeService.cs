@@ -24,7 +24,7 @@ namespace ModernWMS.WMS.Services
     /// <summary>
     ///  Stockfreeze Service
     /// </summary>
-    public class StockfreezeService : BaseService<StockfreezeEntity>, IStockfreezeService
+    public class StockfreezeService : BaseService<StockFreezeEntity>, IStockFreezeService
     {
         #region Args
 
@@ -72,7 +72,7 @@ namespace ModernWMS.WMS.Services
         /// <param name="pageSearch">args</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        public async Task<(List<StockfreezeViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser)
+        public async Task<(List<StockFreezeViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser)
         {
             QueryCollection queries = new QueryCollection();
             if (pageSearch.searchObjects.Any())
@@ -82,13 +82,13 @@ namespace ModernWMS.WMS.Services
                     queries.Add(s);
                 });
             }
-            var DbSet = _dBContext.GetDbSet<StockfreezeEntity>();
+            var DbSet = _dBContext.GetDbSet<StockFreezeEntity>();
 
             var query = from m in DbSet.AsNoTracking()
                         join sku in _dBContext.GetDbSet<SkuEntity>().AsNoTracking() on m.sku_id equals sku.id
                         join spu in _dBContext.GetDbSet<SpuEntity>().AsNoTracking() on sku.spu_id equals spu.id
                         join location in _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking() on m.goods_location_id equals location.id
-                        select new StockfreezeViewModel
+                        select new StockFreezeViewModel
                         {
                             id = m.id,
                             job_code = m.job_code,
@@ -109,7 +109,7 @@ namespace ModernWMS.WMS.Services
                         };
             query = query
                 .Where(t => t.tenant_id.Equals(currentUser.tenant_id))
-                .Where(queries.AsExpression<StockfreezeViewModel>());
+                .Where(queries.AsExpression<StockFreezeViewModel>());
             int totals = await query.CountAsync();
             var list = await query.OrderByDescending(t => t.last_update_time)
                        .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
@@ -122,11 +122,11 @@ namespace ModernWMS.WMS.Services
         /// Get all records
         /// </summary>
         /// <returns></returns>
-        public async Task<List<StockfreezeViewModel>> GetAllAsync(CurrentUser currentUser)
+        public async Task<List<StockFreezeViewModel>> GetAllAsync(CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<StockfreezeEntity>();
+            var DbSet = _dBContext.GetDbSet<StockFreezeEntity>();
             var data = await DbSet.AsNoTracking().Where(t => t.tenant_id.Equals(currentUser.tenant_id)).ToListAsync();
-            return data.Adapt<List<StockfreezeViewModel>>();
+            return data.Adapt<List<StockFreezeViewModel>>();
         }
 
         /// <summary>
@@ -135,15 +135,15 @@ namespace ModernWMS.WMS.Services
         /// <param name="id">primary key</param>
         /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        public async Task<StockfreezeViewModel> GetAsync(int id, CurrentUser currentUser)
+        public async Task<StockFreezeViewModel> GetAsync(int id, CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<StockfreezeEntity>();
+            var DbSet = _dBContext.GetDbSet<StockFreezeEntity>();
             var data = await (from m in DbSet.AsNoTracking()
                               join sku in _dBContext.GetDbSet<SkuEntity>().AsNoTracking() on m.sku_id equals sku.id
                               join spu in _dBContext.GetDbSet<SpuEntity>().AsNoTracking() on sku.spu_id equals spu.id
                               join location in _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking() on m.goods_location_id equals location.id
                               where m.id == id && m.tenant_id == currentUser.tenant_id
-                              select new StockfreezeViewModel
+                              select new StockFreezeViewModel
                               {
                                   id = m.id,
                                   job_code = m.job_code,
@@ -172,10 +172,10 @@ namespace ModernWMS.WMS.Services
         /// <param name="viewModel">viewmodel</param>
         /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        public async Task<(int id, string msg)> AddAsync(StockfreezeViewModel viewModel, CurrentUser currentUser)
+        public async Task<(int id, string msg)> AddAsync(StockFreezeViewModel viewModel, CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<StockfreezeEntity>();
-            var entity = viewModel.Adapt<StockfreezeEntity>();
+            var DbSet = _dBContext.GetDbSet<StockFreezeEntity>();
+            var entity = viewModel.Adapt<StockFreezeEntity>();
             entity.id = 0;
             entity.handle_time = DateTime.Now;
             entity.handler = currentUser.user_name;
@@ -192,7 +192,7 @@ namespace ModernWMS.WMS.Services
                     stock.is_freeze = false;
             }
             await DbSet.AddAsync(entity);
-            if (await (_dBContext.GetDbSet<StockprocessdetailEntity>().AnyAsync(t => t.goods_location_id == entity.goods_location_id && t.goods_owner_id == entity.goods_owner_id && t.sku_id == entity.sku_id && t.is_update_stock == false)))
+            if (await (_dBContext.GetDbSet<StockProcessDetailEntity>().AnyAsync(t => t.goods_location_id == entity.goods_location_id && t.goods_owner_id == entity.goods_owner_id && t.sku_id == entity.sku_id && t.is_update_stock == false)))
             {
                 return (0, _stringLocalizer["process_not_comfirm"]);
             }
@@ -200,7 +200,7 @@ namespace ModernWMS.WMS.Services
             {
                 return (0, _stringLocalizer["dispatch_not_comfirm"]);
             }
-            else if (await (_dBContext.GetDbSet<StockmoveEntity>().AnyAsync(t => (t.orig_goods_location_id == entity.goods_location_id || t.dest_googs_location_id == entity.goods_location_id) && t.sku_id == entity.sku_id && t.move_status == 0)))
+            else if (await (_dBContext.GetDbSet<StockMoveEntity>().AnyAsync(t => (t.orig_goods_location_id == entity.goods_location_id || t.dest_googs_location_id == entity.goods_location_id) && t.sku_id == entity.sku_id && t.move_status == 0)))
             {
                 return (0, _stringLocalizer["move_not_comfirm"]);
             }
@@ -224,9 +224,9 @@ namespace ModernWMS.WMS.Services
         /// <param name="viewModel">args</param>
         /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> UpdateAsync(StockfreezeViewModel viewModel, CurrentUser currentUser)
+        public async Task<(bool flag, string msg)> UpdateAsync(StockFreezeViewModel viewModel, CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<StockfreezeEntity>();
+            var DbSet = _dBContext.GetDbSet<StockFreezeEntity>();
             var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id) && t.tenant_id == currentUser.tenant_id);
             if (entity == null)
             {
@@ -261,7 +261,7 @@ namespace ModernWMS.WMS.Services
         /// <returns></returns>
         public async Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser)
         {
-            var qty = await _dBContext.GetDbSet<StockfreezeEntity>().Where(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
+            var qty = await _dBContext.GetDbSet<StockFreezeEntity>().Where(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
             if (qty > 0)
             {
                 return (true, _stringLocalizer["delete_success"]);
@@ -280,7 +280,7 @@ namespace ModernWMS.WMS.Services
         {
             string code;
             string date = DateTime.Now.ToString("yyyy" + "MM" + "dd");
-            string maxNo = await _dBContext.GetDbSet<StockfreezeEntity>().AsNoTracking().Where(t => t.tenant_id == currentUser.tenant_id).MaxAsync(t => t.job_code);
+            string maxNo = await _dBContext.GetDbSet<StockFreezeEntity>().AsNoTracking().Where(t => t.tenant_id == currentUser.tenant_id).MaxAsync(t => t.job_code);
             if (maxNo == null)
             {
                 code = date + "-0001";

@@ -63,7 +63,7 @@ namespace ModernWMS.UnitTests.CrossService
 
             var moveService = new StockmoveService(scope.DbContext, new FakeStringLocalizer<MultiLanguage>(), TestFunctionHelperFactory.Create(scope.DbContext));
             var (moveId, _) = await moveService.AddAsync(
-                new StockmoveViewModel { sku_id = sku.id, orig_goods_location_id = orig.id, dest_googs_location_id = dest.id, qty = 6 },
+                new StockMoveViewModel { sku_id = sku.id, orig_goods_location_id = orig.id, dest_googs_location_id = dest.id, qty = 6 },
                 currentUser);
             moveId.ShouldBeGreaterThan(0);
             var (confirmFlag, _) = await moveService.Confirm(moveId, currentUser);
@@ -80,7 +80,7 @@ namespace ModernWMS.UnitTests.CrossService
         [Fact]
         public async Task StockmovePendingLock_ReducesAvailableQtyInStockPageAsync()
         {
-            // An unconfirmed StockmoveEntity (move_status == 0) locks qty at the origin.
+            // An unconfirmed StockMoveEntity (move_status == 0) locks qty at the origin.
             // StockService.StockPageAsync's qty_available computation must account for
             // that lock even though the move itself was created by a different service.
             using var scope = new SqliteTestDbContextScope();
@@ -92,7 +92,7 @@ namespace ModernWMS.UnitTests.CrossService
 
             var moveService = new StockmoveService(scope.DbContext, new FakeStringLocalizer<MultiLanguage>(), TestFunctionHelperFactory.Create(scope.DbContext));
             var (moveId, _) = await moveService.AddAsync(
-                new StockmoveViewModel { sku_id = sku.id, orig_goods_location_id = orig.id, dest_googs_location_id = dest.id, qty = 6 },
+                new StockMoveViewModel { sku_id = sku.id, orig_goods_location_id = orig.id, dest_googs_location_id = dest.id, qty = 6 },
                 currentUser);
             moveId.ShouldBeGreaterThan(0); // left pending, not confirmed
 
@@ -120,17 +120,17 @@ namespace ModernWMS.UnitTests.CrossService
 
             var freezeService = new StockfreezeService(scope.DbContext, new FakeStringLocalizer<MultiLanguage>(), TestFunctionHelperFactory.Create(scope.DbContext));
             var (freezeId, _) = await freezeService.AddAsync(
-                new StockfreezeViewModel { sku_id = sku.id, goods_location_id = orig.id, job_type = true },
+                new StockFreezeViewModel { sku_id = sku.id, goods_location_id = orig.id, job_type = true },
                 currentUser);
             freezeId.ShouldBeGreaterThan(0);
 
             var moveService = new StockmoveService(scope.DbContext, new FakeStringLocalizer<MultiLanguage>(), TestFunctionHelperFactory.Create(scope.DbContext));
             var (moveId, _) = await moveService.AddAsync(
-                new StockmoveViewModel { sku_id = sku.id, orig_goods_location_id = orig.id, dest_googs_location_id = dest.id, qty = 5 },
+                new StockMoveViewModel { sku_id = sku.id, orig_goods_location_id = orig.id, dest_googs_location_id = dest.id, qty = 5 },
                 currentUser);
 
             moveId.ShouldBe(0);
-            (await scope.DbContext.GetDbSet<StockmoveEntity>().AsNoTracking().AnyAsync()).ShouldBeFalse();
+            (await scope.DbContext.GetDbSet<StockMoveEntity>().AsNoTracking().AnyAsync()).ShouldBeFalse();
         }
 
         [Fact]
@@ -147,7 +147,7 @@ namespace ModernWMS.UnitTests.CrossService
 
             var adjustService = new StockadjustService(scope.DbContext, new FakeStringLocalizer<MultiLanguage>());
             var (adjustId, _) = await adjustService.AddAsync(
-                new StockadjustViewModel { sku_id = sku.id, goods_location_id = location.id, qty = -3 },
+                new StockAdjustViewModel { sku_id = sku.id, goods_location_id = location.id, qty = -3 },
                 currentUser);
             adjustId.ShouldBeGreaterThan(0);
             var (confirmFlag, _) = await adjustService.ConfirmAdjustment(adjustId, currentUser);
@@ -174,9 +174,9 @@ namespace ModernWMS.UnitTests.CrossService
             await SeedStockAsync(scope.DbContext, 1, sku.id, source.id, qty: 10);
 
             var processService = new StockprocessService(scope.DbContext, new FakeStringLocalizer<MultiLanguage>(), TestFunctionHelperFactory.Create(scope.DbContext));
-            var viewModel = new StockprocessViewModel
+            var viewModel = new StockProcessViewModel
             {
-                detailList = new List<StockprocessdetailViewModel>
+                detailList = new List<StockProcessDetailViewModel>
                 {
                     new() { sku_id = sku.id, goods_location_id = source.id, qty = 6, is_source = true },
                     new() { sku_id = sku.id, goods_location_id = target.id, qty = 6, is_source = false },

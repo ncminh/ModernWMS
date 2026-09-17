@@ -71,10 +71,10 @@ namespace ModernWMS.UnitTests.Services.Stock
         private static async Task SeedProcessLockAsync(
             ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId, int skuId, int locationId, int qty)
         {
-            var process = new StockprocessEntity { job_code = "P1", tenant_id = tenantId };
-            dbContext.GetDbSet<StockprocessEntity>().Add(process);
+            var process = new StockProcessEntity { job_code = "P1", tenant_id = tenantId };
+            dbContext.GetDbSet<StockProcessEntity>().Add(process);
             await dbContext.SaveChangesAsync();
-            dbContext.GetDbSet<StockprocessdetailEntity>().Add(new StockprocessdetailEntity
+            dbContext.GetDbSet<StockProcessDetailEntity>().Add(new StockProcessDetailEntity
             {
                 stock_process_id = process.id,
                 sku_id = skuId,
@@ -90,7 +90,7 @@ namespace ModernWMS.UnitTests.Services.Stock
         private static async Task SeedMoveLockAsync(
             ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId, int skuId, int origLocationId, int qty)
         {
-            dbContext.GetDbSet<StockmoveEntity>().Add(new StockmoveEntity
+            dbContext.GetDbSet<StockMoveEntity>().Add(new StockMoveEntity
             {
                 sku_id = skuId,
                 orig_goods_location_id = origLocationId,

@@ -35,11 +35,11 @@ namespace ModernWMS.UnitTests.Services.Stockadjust
             return location;
         }
 
-        private static async Task<StockadjustEntity> SeedStockadjustAsync(
+        private static async Task<StockAdjustEntity> SeedStockadjustAsync(
             ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId, int skuId, int locationId,
             int qty = 5, byte jobType = 1, int sourceTableId = 0)
         {
-            var entity = new StockadjustEntity
+            var entity = new StockAdjustEntity
             {
                 job_code = "J1",
                 sku_id = skuId,
@@ -49,7 +49,7 @@ namespace ModernWMS.UnitTests.Services.Stockadjust
                 source_table_id = sourceTableId,
                 tenant_id = tenantId,
             };
-            dbContext.GetDbSet<StockadjustEntity>().Add(entity);
+            dbContext.GetDbSet<StockAdjustEntity>().Add(entity);
             await dbContext.SaveChangesAsync();
             return entity;
         }
@@ -134,11 +134,11 @@ namespace ModernWMS.UnitTests.Services.Stockadjust
             var currentUser = new CurrentUser { tenant_id = 1, user_name = "alice" };
 
             var (id, _) = await service.AddAsync(
-                new StockadjustViewModel { sku_id = sku.id, goods_location_id = location.id, qty = 5, job_type = 1 },
+                new StockAdjustViewModel { sku_id = sku.id, goods_location_id = location.id, qty = 5, job_type = 1 },
                 currentUser);
 
             id.ShouldBeGreaterThan(0);
-            var saved = await scope.DbContext.GetDbSet<StockadjustEntity>().FindAsync(id);
+            var saved = await scope.DbContext.GetDbSet<StockAdjustEntity>().FindAsync(id);
             saved!.creator.ShouldBe("alice");
             saved.tenant_id.ShouldBe(1);
         }
@@ -151,7 +151,7 @@ namespace ModernWMS.UnitTests.Services.Stockadjust
             using var scope = new SqliteTestDbContextScope();
             var service = CreateService(scope.DbContext);
 
-            var (flag, _) = await service.UpdateAsync(new StockadjustViewModel { id = 999 }, new CurrentUser { tenant_id = 1 });
+            var (flag, _) = await service.UpdateAsync(new StockAdjustViewModel { id = 999 }, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
         }
@@ -166,11 +166,11 @@ namespace ModernWMS.UnitTests.Services.Stockadjust
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.UpdateAsync(
-                new StockadjustViewModel { id = entity.id, sku_id = sku.id, goods_location_id = location.id, qty = 9 },
+                new StockAdjustViewModel { id = entity.id, sku_id = sku.id, goods_location_id = location.id, qty = 9 },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<StockadjustEntity>().FindAsync(entity.id))!.qty.ShouldBe(9);
+            (await scope.DbContext.GetDbSet<StockAdjustEntity>().FindAsync(entity.id))!.qty.ShouldBe(9);
         }
 
         [Fact]
@@ -184,11 +184,11 @@ namespace ModernWMS.UnitTests.Services.Stockadjust
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.UpdateAsync(
-                new StockadjustViewModel { id = entity.id, qty = 99 },
+                new StockAdjustViewModel { id = entity.id, qty = 99 },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<StockadjustEntity>().FindAsync(entity.id))!.qty.ShouldBe(5);
+            (await scope.DbContext.GetDbSet<StockAdjustEntity>().FindAsync(entity.id))!.qty.ShouldBe(5);
         }
 
         // DeleteAsync
@@ -205,7 +205,7 @@ namespace ModernWMS.UnitTests.Services.Stockadjust
             var (flag, _) = await service.DeleteAsync(entity.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<StockadjustEntity>().AsNoTracking().AnyAsync(t => t.id == entity.id)).ShouldBeFalse();
+            (await scope.DbContext.GetDbSet<StockAdjustEntity>().AsNoTracking().AnyAsync(t => t.id == entity.id)).ShouldBeFalse();
         }
 
         [Fact]
@@ -232,7 +232,7 @@ namespace ModernWMS.UnitTests.Services.Stockadjust
             var (flag, _) = await service.DeleteAsync(entity.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<StockadjustEntity>().AsNoTracking().AnyAsync(t => t.id == entity.id)).ShouldBeTrue();
+            (await scope.DbContext.GetDbSet<StockAdjustEntity>().AsNoTracking().AnyAsync(t => t.id == entity.id)).ShouldBeTrue();
         }
 
         // ConfirmAdjustment
@@ -257,7 +257,7 @@ namespace ModernWMS.UnitTests.Services.Stockadjust
             stock.goods_location_id.ShouldBe(location.id);
             stock.qty.ShouldBe(8);
             stock.tenant_id.ShouldBe(1);
-            (await scope.DbContext.GetDbSet<StockadjustEntity>().FindAsync(entity.id))!.is_update_stock.ShouldBeTrue();
+            (await scope.DbContext.GetDbSet<StockAdjustEntity>().FindAsync(entity.id))!.is_update_stock.ShouldBeTrue();
         }
 
         [Fact]
@@ -285,11 +285,11 @@ namespace ModernWMS.UnitTests.Services.Stockadjust
             using var scope = new SqliteTestDbContextScope();
             var (_, sku) = await SeedSpuSkuAsync(scope.DbContext, 1);
             var location = await SeedLocationAsync(scope.DbContext, 1);
-            var process = new StockprocessEntity { job_code = "P1", tenant_id = 1 };
-            scope.DbContext.GetDbSet<StockprocessEntity>().Add(process);
+            var process = new StockProcessEntity { job_code = "P1", tenant_id = 1 };
+            scope.DbContext.GetDbSet<StockProcessEntity>().Add(process);
             await scope.DbContext.SaveChangesAsync();
-            var processDetail = new StockprocessdetailEntity { stock_process_id = process.id, sku_id = sku.id, goods_location_id = location.id, qty = 3, is_update_stock = false, tenant_id = 1 };
-            scope.DbContext.GetDbSet<StockprocessdetailEntity>().Add(processDetail);
+            var processDetail = new StockProcessDetailEntity { stock_process_id = process.id, sku_id = sku.id, goods_location_id = location.id, qty = 3, is_update_stock = false, tenant_id = 1 };
+            scope.DbContext.GetDbSet<StockProcessDetailEntity>().Add(processDetail);
             await scope.DbContext.SaveChangesAsync();
             var entity = await SeedStockadjustAsync(scope.DbContext, 1, sku.id, location.id, qty: 3, jobType: 2, sourceTableId: processDetail.id);
 
@@ -297,7 +297,7 @@ namespace ModernWMS.UnitTests.Services.Stockadjust
             var (flag, _) = await service.ConfirmAdjustment(entity.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<StockprocessdetailEntity>().FindAsync(processDetail.id))!.is_update_stock.ShouldBeTrue();
+            (await scope.DbContext.GetDbSet<StockProcessDetailEntity>().FindAsync(processDetail.id))!.is_update_stock.ShouldBeTrue();
         }
 
         [Fact]

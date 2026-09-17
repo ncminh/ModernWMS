@@ -44,20 +44,20 @@ namespace ModernWMS.UnitTests.Services.Stockprocess
             return stock;
         }
 
-        private static async Task<StockprocessEntity> SeedProcessAsync(
+        private static async Task<StockProcessEntity> SeedProcessAsync(
             ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId, bool processStatus = false)
         {
-            var process = new StockprocessEntity { job_code = "P1", tenant_id = tenantId, process_status = processStatus };
-            dbContext.GetDbSet<StockprocessEntity>().Add(process);
+            var process = new StockProcessEntity { job_code = "P1", tenant_id = tenantId, process_status = processStatus };
+            dbContext.GetDbSet<StockProcessEntity>().Add(process);
             await dbContext.SaveChangesAsync();
             return process;
         }
 
-        private static async Task<StockprocessdetailEntity> SeedDetailAsync(
+        private static async Task<StockProcessDetailEntity> SeedDetailAsync(
             ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId, int processId, int skuId, int locationId,
             int qty, bool isSource, bool isUpdateStock = false)
         {
-            var detail = new StockprocessdetailEntity
+            var detail = new StockProcessDetailEntity
             {
                 stock_process_id = processId,
                 sku_id = skuId,
@@ -67,7 +67,7 @@ namespace ModernWMS.UnitTests.Services.Stockprocess
                 is_update_stock = isUpdateStock,
                 tenant_id = tenantId,
             };
-            dbContext.GetDbSet<StockprocessdetailEntity>().Add(detail);
+            dbContext.GetDbSet<StockProcessDetailEntity>().Add(detail);
             await dbContext.SaveChangesAsync();
             return detail;
         }
@@ -145,10 +145,10 @@ namespace ModernWMS.UnitTests.Services.Stockprocess
 
             var service = CreateService(scope.DbContext);
             var currentUser = new CurrentUser { tenant_id = 1, user_name = "alice" };
-            var viewModel = new StockprocessViewModel
+            var viewModel = new StockProcessViewModel
             {
                 job_type = true,
-                detailList = new List<StockprocessdetailViewModel>
+                detailList = new List<StockProcessDetailViewModel>
                 {
                     new() { sku_id = sku.id, goods_location_id = location.id, qty = 5, is_source = true },
                 },
@@ -157,10 +157,10 @@ namespace ModernWMS.UnitTests.Services.Stockprocess
             var (id, _) = await service.AddAsync(viewModel, currentUser);
 
             id.ShouldBeGreaterThan(0);
-            var saved = await scope.DbContext.GetDbSet<StockprocessEntity>().FindAsync(id);
+            var saved = await scope.DbContext.GetDbSet<StockProcessEntity>().FindAsync(id);
             saved!.creator.ShouldBe("alice");
             saved.job_code.ShouldNotBeNullOrEmpty();
-            var details = await scope.DbContext.GetDbSet<StockprocessdetailEntity>().AsNoTracking().Where(t => t.stock_process_id == id).ToListAsync();
+            var details = await scope.DbContext.GetDbSet<StockProcessDetailEntity>().AsNoTracking().Where(t => t.stock_process_id == id).ToListAsync();
             details.ShouldHaveSingleItem().qty.ShouldBe(5);
         }
 
@@ -173,9 +173,9 @@ namespace ModernWMS.UnitTests.Services.Stockprocess
             await SeedStockAsync(scope.DbContext, 1, sku.id, location.id, qty: 3);
 
             var service = CreateService(scope.DbContext);
-            var viewModel = new StockprocessViewModel
+            var viewModel = new StockProcessViewModel
             {
-                detailList = new List<StockprocessdetailViewModel>
+                detailList = new List<StockProcessDetailViewModel>
                 {
                     new() { sku_id = sku.id, goods_location_id = location.id, qty = 5, is_source = true },
                 },
@@ -184,7 +184,7 @@ namespace ModernWMS.UnitTests.Services.Stockprocess
             var (id, _) = await service.AddAsync(viewModel, new CurrentUser { tenant_id = 1 });
 
             id.ShouldBe(0);
-            (await scope.DbContext.GetDbSet<StockprocessEntity>().AsNoTracking().AnyAsync()).ShouldBeFalse();
+            (await scope.DbContext.GetDbSet<StockProcessEntity>().AsNoTracking().AnyAsync()).ShouldBeFalse();
         }
 
         [Fact]
@@ -196,9 +196,9 @@ namespace ModernWMS.UnitTests.Services.Stockprocess
             await SeedStockAsync(scope.DbContext, 1, sku.id, location.id, qty: 10, isFreeze: true);
 
             var service = CreateService(scope.DbContext);
-            var viewModel = new StockprocessViewModel
+            var viewModel = new StockProcessViewModel
             {
-                detailList = new List<StockprocessdetailViewModel>
+                detailList = new List<StockProcessDetailViewModel>
                 {
                     new() { sku_id = sku.id, goods_location_id = location.id, qty = 5, is_source = true },
                 },
@@ -219,9 +219,9 @@ namespace ModernWMS.UnitTests.Services.Stockprocess
             await SeedStockAsync(scope.DbContext, 2, sku.id, location.id, qty: 10);
 
             var service = CreateService(scope.DbContext);
-            var viewModel = new StockprocessViewModel
+            var viewModel = new StockProcessViewModel
             {
-                detailList = new List<StockprocessdetailViewModel>
+                detailList = new List<StockProcessDetailViewModel>
                 {
                     new() { sku_id = sku.id, goods_location_id = location.id, qty = 5, is_source = true },
                 },
@@ -243,9 +243,9 @@ namespace ModernWMS.UnitTests.Services.Stockprocess
             await SeedDetailAsync(scope.DbContext, 1, otherProcess.id, sku.id, location.id, qty: 8, isSource: true, isUpdateStock: false);
 
             var service = CreateService(scope.DbContext);
-            var viewModel = new StockprocessViewModel
+            var viewModel = new StockProcessViewModel
             {
-                detailList = new List<StockprocessdetailViewModel>
+                detailList = new List<StockProcessDetailViewModel>
                 {
                     new() { sku_id = sku.id, goods_location_id = location.id, qty = 5, is_source = true },
                 },
@@ -264,7 +264,7 @@ namespace ModernWMS.UnitTests.Services.Stockprocess
             using var scope = new SqliteTestDbContextScope();
             var service = CreateService(scope.DbContext);
 
-            var (flag, _) = await service.UpdateAsync(new StockprocessViewModel { id = 999 }, new CurrentUser { tenant_id = 1 });
+            var (flag, _) = await service.UpdateAsync(new StockProcessViewModel { id = 999 }, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
         }
@@ -277,11 +277,11 @@ namespace ModernWMS.UnitTests.Services.Stockprocess
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.UpdateAsync(
-                new StockprocessViewModel { id = process.id, job_code = "P2", processor = "bob" },
+                new StockProcessViewModel { id = process.id, job_code = "P2", processor = "bob" },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            var saved = await scope.DbContext.GetDbSet<StockprocessEntity>().FindAsync(process.id);
+            var saved = await scope.DbContext.GetDbSet<StockProcessEntity>().FindAsync(process.id);
             saved!.job_code.ShouldBe("P2");
             saved.processor.ShouldBe("bob");
         }
@@ -295,7 +295,7 @@ namespace ModernWMS.UnitTests.Services.Stockprocess
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.UpdateAsync(
-                new StockprocessViewModel { id = process.id, processor = "eve" },
+                new StockProcessViewModel { id = process.id, processor = "eve" },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
@@ -313,7 +313,7 @@ namespace ModernWMS.UnitTests.Services.Stockprocess
             var (flag, _) = await service.DeleteAsync(process.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<StockprocessEntity>().AsNoTracking().AnyAsync(t => t.id == process.id)).ShouldBeFalse();
+            (await scope.DbContext.GetDbSet<StockProcessEntity>().AsNoTracking().AnyAsync(t => t.id == process.id)).ShouldBeFalse();
         }
 
         [Fact]
@@ -341,7 +341,7 @@ namespace ModernWMS.UnitTests.Services.Stockprocess
             var (flag, _) = await service.DeleteAsync(process.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<StockprocessEntity>().AsNoTracking().AnyAsync(t => t.id == process.id)).ShouldBeTrue();
+            (await scope.DbContext.GetDbSet<StockProcessEntity>().AsNoTracking().AnyAsync(t => t.id == process.id)).ShouldBeTrue();
         }
 
         [Fact]
@@ -355,7 +355,7 @@ namespace ModernWMS.UnitTests.Services.Stockprocess
             var (flag, _) = await service.DeleteAsync(process.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<StockprocessEntity>().AsNoTracking().AnyAsync(t => t.id == process.id)).ShouldBeTrue();
+            (await scope.DbContext.GetDbSet<StockProcessEntity>().AsNoTracking().AnyAsync(t => t.id == process.id)).ShouldBeTrue();
         }
 
         // ConfirmProcess
@@ -370,7 +370,7 @@ namespace ModernWMS.UnitTests.Services.Stockprocess
             var (flag, _) = await service.ConfirmProcess(process.id, new CurrentUser { tenant_id = 1, user_name = "alice" });
 
             flag.ShouldBeTrue();
-            var saved = await scope.DbContext.GetDbSet<StockprocessEntity>().FindAsync(process.id);
+            var saved = await scope.DbContext.GetDbSet<StockProcessEntity>().FindAsync(process.id);
             saved!.process_status.ShouldBeTrue();
             saved.processor.ShouldBe("alice");
         }
@@ -398,7 +398,7 @@ namespace ModernWMS.UnitTests.Services.Stockprocess
             var (flag, _) = await service.ConfirmProcess(process.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<StockprocessEntity>().FindAsync(process.id))!.process_status.ShouldBeFalse();
+            (await scope.DbContext.GetDbSet<StockProcessEntity>().FindAsync(process.id))!.process_status.ShouldBeFalse();
         }
 
         // ConfirmAdjustment
@@ -418,8 +418,8 @@ namespace ModernWMS.UnitTests.Services.Stockprocess
 
             flag.ShouldBeTrue();
             (await scope.DbContext.GetDbSet<StockEntity>().FindAsync(stock.id))!.qty.ShouldBe(5);
-            (await scope.DbContext.GetDbSet<StockprocessdetailEntity>().FindAsync(detail.id))!.is_update_stock.ShouldBeTrue();
-            var adjust = await scope.DbContext.GetDbSet<StockadjustEntity>().AsNoTracking().SingleAsync();
+            (await scope.DbContext.GetDbSet<StockProcessDetailEntity>().FindAsync(detail.id))!.is_update_stock.ShouldBeTrue();
+            var adjust = await scope.DbContext.GetDbSet<StockAdjustEntity>().AsNoTracking().SingleAsync();
             adjust.source_table_id.ShouldBe(detail.id);
             adjust.qty.ShouldBe(-5);
             adjust.job_type.ShouldBe((byte)2);
@@ -499,7 +499,7 @@ namespace ModernWMS.UnitTests.Services.Stockprocess
             var location = await SeedLocationAsync(scope.DbContext, 1);
             var process = await SeedProcessAsync(scope.DbContext, 1, processStatus: true);
             var detail = await SeedDetailAsync(scope.DbContext, 1, process.id, sku.id, location.id, qty: 5, isSource: true, isUpdateStock: true);
-            scope.DbContext.GetDbSet<StockadjustEntity>().Add(new StockadjustEntity
+            scope.DbContext.GetDbSet<StockAdjustEntity>().Add(new StockAdjustEntity
             {
                 sku_id = sku.id,
                 source_table_id = detail.id,

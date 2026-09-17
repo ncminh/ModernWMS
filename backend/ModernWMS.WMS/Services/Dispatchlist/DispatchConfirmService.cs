@@ -121,8 +121,8 @@ namespace ModernWMS.WMS.Services
             var dispatch_DBSet = _dBContext.GetDbSet<DispatchlistEntity>();
             var sku_DBSet = _dBContext.GetDbSet<SkuEntity>().AsNoTracking();
             var spu_DBSet = _dBContext.GetDbSet<SpuEntity>().AsNoTracking();
-            var processdetail_DBSet = _dBContext.GetDbSet<StockprocessdetailEntity>().AsNoTracking();
-            var move_DBSet = _dBContext.GetDbSet<StockmoveEntity>();
+            var processdetail_DBSet = _dBContext.GetDbSet<StockProcessDetailEntity>().AsNoTracking();
+            var move_DBSet = _dBContext.GetDbSet<StockMoveEntity>();
             var owner_DBSet = _dBContext.GetDbSet<GoodsownerEntity>();
             var location_DBSet = _dBContext.GetDbSet<GoodslocationEntity>();
             var stock_group_datas = from stock in stock_DbSet.AsNoTracking()
@@ -314,8 +314,8 @@ namespace ModernWMS.WMS.Services
             var stock_DBSet = _dBContext.GetDbSet<StockEntity>();
             var pick_datas = new List<DispatchpicklistEntity>();
             var stock_id_list = new List<int>();
-            var processdetail_DBSet = _dBContext.GetDbSet<StockprocessdetailEntity>().AsNoTracking();
-            var move_DBSet = _dBContext.GetDbSet<StockmoveEntity>();
+            var processdetail_DBSet = _dBContext.GetDbSet<StockProcessDetailEntity>().AsNoTracking();
+            var move_DBSet = _dBContext.GetDbSet<StockMoveEntity>();
             var new_dispatchlists = new List<DispatchlistEntity>();
             var topick_viewmodels = new List<StockViewModel>();
             var sku_id_list = viewModels.Select(t => t.sku_id).ToList();

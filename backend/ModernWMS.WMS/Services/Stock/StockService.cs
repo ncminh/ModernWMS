@@ -86,8 +86,8 @@ namespace ModernWMS.WMS.Services
             var dispatch_DBSet = _dBContext.GetDbSet<DispatchlistEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
             var sku_DBSet = _dBContext.GetDbSet<SkuEntity>().AsNoTracking();
             var spu_DBSet = _dBContext.GetDbSet<SpuEntity>().AsNoTracking();
-            var processdetail_DBSet = _dBContext.GetDbSet<StockprocessdetailEntity>().AsNoTracking();
-            var move_DBSet = _dBContext.GetDbSet<StockmoveEntity>();
+            var processdetail_DBSet = _dBContext.GetDbSet<StockProcessDetailEntity>().AsNoTracking();
+            var move_DBSet = _dBContext.GetDbSet<StockMoveEntity>();
             var stock_group_datas = from stock in DbSet.AsNoTracking()
                                     join gl in _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking() on stock.goods_location_id equals gl.id
                                     group new { stock, gl } by stock.sku_id into sg
@@ -199,8 +199,8 @@ namespace ModernWMS.WMS.Services
             var sku_DBSet = _dBContext.GetDbSet<SkuEntity>().AsNoTracking();
             var spu_DBSet = _dBContext.GetDbSet<SpuEntity>().AsNoTracking();
             var location_DBSet = _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking();
-            var processdetail_DBSet = _dBContext.GetDbSet<StockprocessdetailEntity>().AsNoTracking();
-            var move_DBSet = _dBContext.GetDbSet<StockmoveEntity>();
+            var processdetail_DBSet = _dBContext.GetDbSet<StockProcessDetailEntity>().AsNoTracking();
+            var move_DBSet = _dBContext.GetDbSet<StockMoveEntity>();
 
             var stock_group_datas = from stock in DbSet.AsNoTracking()
                                     join gw in _dBContext.GetDbSet<GoodsownerEntity>().AsNoTracking() on stock.goods_owner_id equals gw.id into gw_left
@@ -326,8 +326,8 @@ namespace ModernWMS.WMS.Services
             var sku_DBSet = _dBContext.GetDbSet<SkuEntity>().AsNoTracking();
             var spu_DBSet = _dBContext.GetDbSet<SpuEntity>().AsNoTracking();
             var location_DBSet = _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking();
-            var processdetail_DBSet = _dBContext.GetDbSet<StockprocessdetailEntity>().AsNoTracking();
-            var move_DBSet = _dBContext.GetDbSet<StockmoveEntity>();
+            var processdetail_DBSet = _dBContext.GetDbSet<StockProcessDetailEntity>().AsNoTracking();
+            var move_DBSet = _dBContext.GetDbSet<StockMoveEntity>();
             var sku_safety_DBSet = _dBContext.GetDbSet<SkuSafetyStockEntity>();
             var warehouse_DBSet = _dBContext.GetDbSet<WarehouseEntity>().AsNoTracking();
             var stock_group_datas = from stock in DbSet.AsNoTracking()
@@ -434,8 +434,8 @@ namespace ModernWMS.WMS.Services
             var sku_DBSet = _dBContext.GetDbSet<SkuEntity>().AsNoTracking();
             var spu_DBSet = _dBContext.GetDbSet<SpuEntity>().AsNoTracking();
             var location_DBSet = _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking();
-            var processdetail_DBSet = _dBContext.GetDbSet<StockprocessdetailEntity>().AsNoTracking();
-            var move_DBSet = _dBContext.GetDbSet<StockmoveEntity>();
+            var processdetail_DBSet = _dBContext.GetDbSet<StockProcessDetailEntity>().AsNoTracking();
+            var move_DBSet = _dBContext.GetDbSet<StockMoveEntity>();
 
             var dispatch_group_datas = from dp in dispatch_DBSet.AsNoTracking()
                                        join dpp in dispatchpick_DBSet.AsNoTracking() on dp.id equals dpp.dispatchlist_id
@@ -616,8 +616,8 @@ namespace ModernWMS.WMS.Services
             var sku_DBSet = _dBContext.GetDbSet<SkuEntity>().AsNoTracking();
             var spu_DBSet = _dBContext.GetDbSet<SpuEntity>().AsNoTracking();
             var location_DBSet = _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking();
-            var processdetail_DBSet = _dBContext.GetDbSet<StockprocessdetailEntity>().AsNoTracking();
-            var move_DBSet = _dBContext.GetDbSet<StockmoveEntity>();
+            var processdetail_DBSet = _dBContext.GetDbSet<StockProcessDetailEntity>().AsNoTracking();
+            var move_DBSet = _dBContext.GetDbSet<StockMoveEntity>();
 
             var stock_group_datas = from stock in DbSet.AsNoTracking()
                                     join gw in _dBContext.GetDbSet<GoodsownerEntity>().AsNoTracking() on stock.goods_owner_id equals gw.id into gw_left

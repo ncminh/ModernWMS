@@ -25,7 +25,7 @@ namespace ModernWMS.WMS.Services
     /// <summary>
     ///  Stockmove Service
     /// </summary>
-    public class StockmoveService : BaseService<StockmoveEntity>, IStockmoveService
+    public class StockmoveService : BaseService<StockMoveEntity>, IStockMoveService
     {
         #region Args
 
@@ -74,7 +74,7 @@ namespace ModernWMS.WMS.Services
         /// <param name="pageSearch">args</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        public async Task<(List<StockmoveViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser)
+        public async Task<(List<StockMoveViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser)
         {
             QueryCollection queries = new QueryCollection();
             if (pageSearch.searchObjects.Any())
@@ -84,14 +84,14 @@ namespace ModernWMS.WMS.Services
                     queries.Add(s);
                 });
             }
-            var DbSet = _dBContext.GetDbSet<StockmoveEntity>();
+            var DbSet = _dBContext.GetDbSet<StockMoveEntity>();
             var location_DBSet = _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking();
             var query = from m in DbSet.AsNoTracking()
                         join sku in _dBContext.GetDbSet<SkuEntity>().AsNoTracking() on m.sku_id equals sku.id
                         join spu in _dBContext.GetDbSet<SpuEntity>().AsNoTracking() on sku.spu_id equals spu.id
                         join orig_location in location_DBSet on m.orig_goods_location_id equals orig_location.id
                         join dest_location in location_DBSet on m.dest_googs_location_id equals dest_location.id
-                        select new StockmoveViewModel
+                        select new StockMoveViewModel
                         {
                             id = m.id,
                             job_code = m.job_code,
@@ -121,7 +121,7 @@ namespace ModernWMS.WMS.Services
                             //putaway_date = m.putaway_date,
                         };
             query = query.Where(t => t.tenant_id.Equals(currentUser.tenant_id))
-                .Where(queries.AsExpression<StockmoveViewModel>());
+                .Where(queries.AsExpression<StockMoveViewModel>());
             int totals = await query.CountAsync();
             var list = await query.OrderByDescending(t => t.last_update_time)
                        .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
@@ -134,16 +134,16 @@ namespace ModernWMS.WMS.Services
         /// Get all records
         /// </summary>
         /// <returns></returns>
-        public async Task<List<StockmoveViewModel>> GetAllAsync(CurrentUser currentUser)
+        public async Task<List<StockMoveViewModel>> GetAllAsync(CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<StockmoveEntity>();
+            var DbSet = _dBContext.GetDbSet<StockMoveEntity>();
             var location_DBSet = _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking();
             var data = await (from m in DbSet.AsNoTracking().Where(t => t.tenant_id.Equals(currentUser.tenant_id))
                               join sku in _dBContext.GetDbSet<SkuEntity>().AsNoTracking() on m.sku_id equals sku.id
                               join spu in _dBContext.GetDbSet<SpuEntity>().AsNoTracking() on sku.spu_id equals spu.id
                               join orig_location in location_DBSet on m.orig_goods_location_id equals orig_location.id
                               join dest_location in location_DBSet on m.dest_googs_location_id equals dest_location.id
-                              select new StockmoveViewModel
+                              select new StockMoveViewModel
                               {
                                   id = m.id,
                                   job_code = m.job_code,
@@ -173,7 +173,7 @@ namespace ModernWMS.WMS.Services
                                   putaway_date = m.putaway_date,
                               }
             ).ToListAsync();
-            return data.Adapt<List<StockmoveViewModel>>();
+            return data.Adapt<List<StockMoveViewModel>>();
         }
 
         /// <summary>
@@ -182,9 +182,9 @@ namespace ModernWMS.WMS.Services
         /// <param name="id">primary key</param>
         /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        public async Task<StockmoveViewModel> GetAsync(int id, CurrentUser currentUser)
+        public async Task<StockMoveViewModel> GetAsync(int id, CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<StockmoveEntity>();
+            var DbSet = _dBContext.GetDbSet<StockMoveEntity>();
             var location_DBSet = _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking();
             var data = await (from m in DbSet.AsNoTracking()
                               join sku in _dBContext.GetDbSet<SkuEntity>().AsNoTracking() on m.sku_id equals sku.id
@@ -192,7 +192,7 @@ namespace ModernWMS.WMS.Services
                               join orig_location in location_DBSet on m.orig_goods_location_id equals orig_location.id
                               join dest_location in location_DBSet on m.dest_googs_location_id equals dest_location.id
                               where m.id == id && m.tenant_id == currentUser.tenant_id
-                              select new StockmoveViewModel
+                              select new StockMoveViewModel
                               {
                                   id = m.id,
                                   job_code = m.job_code,
@@ -231,11 +231,11 @@ namespace ModernWMS.WMS.Services
         /// <param name="viewModel">viewmodel</param>
         /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        public async Task<(int id, string msg)> AddAsync(StockmoveViewModel viewModel, CurrentUser currentUser)
+        public async Task<(int id, string msg)> AddAsync(StockMoveViewModel viewModel, CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<StockmoveEntity>();
+            var DbSet = _dBContext.GetDbSet<StockMoveEntity>();
             var stock_DBSet = _dBContext.GetDbSet<StockEntity>();
-            var entity = viewModel.Adapt<StockmoveEntity>();
+            var entity = viewModel.Adapt<StockMoveEntity>();
             var location_DBSet = _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking();
             var locationsCount = await location_DBSet.CountAsync(t => t.tenant_id == currentUser.tenant_id
                 && (t.id == entity.orig_goods_location_id || t.id == entity.dest_googs_location_id));
@@ -244,7 +244,7 @@ namespace ModernWMS.WMS.Services
             {
                 return (0, "[202]" + _stringLocalizer["not_exists_entity"]);
             }
-            var processdetail_DBSet = _dBContext.GetDbSet<StockprocessdetailEntity>().AsNoTracking();
+            var processdetail_DBSet = _dBContext.GetDbSet<StockProcessDetailEntity>().AsNoTracking();
             var dispatchpick_DBSet = _dBContext.GetDbSet<DispatchpicklistEntity>();
             var dispatch_DBSet = _dBContext.GetDbSet<DispatchlistEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
             var dispatch_group_datas = from dp in dispatch_DBSet.AsNoTracking()
@@ -333,7 +333,7 @@ namespace ModernWMS.WMS.Services
         /// <returns></returns>
         public async Task<(bool flag, string msg)> Confirm(int id, CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<StockmoveEntity>();
+            var DbSet = _dBContext.GetDbSet<StockMoveEntity>();
             var stock_DBSet = _dBContext.GetDbSet<StockEntity>();
             var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id);
             if (entity == null)
@@ -448,7 +448,7 @@ namespace ModernWMS.WMS.Services
         /// <returns></returns>
         public async Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser)
         {
-            var qty = await _dBContext.GetDbSet<StockmoveEntity>().Where(t => t.id.Equals(id) && t.move_status == 0 && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
+            var qty = await _dBContext.GetDbSet<StockMoveEntity>().Where(t => t.id.Equals(id) && t.move_status == 0 && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
             if (qty > 0)
             {
                 return (true, _stringLocalizer["delete_success"]);
@@ -467,7 +467,7 @@ namespace ModernWMS.WMS.Services
         {
             string code;
             string date = DateTime.Now.ToString("yyyy" + "MM" + "dd");
-            string maxNo = await _dBContext.GetDbSet<StockmoveEntity>().AsNoTracking().Where(t => t.tenant_id == currentUser.tenant_id).MaxAsync(t => t.job_code);
+            string maxNo = await _dBContext.GetDbSet<StockMoveEntity>().AsNoTracking().Where(t => t.tenant_id == currentUser.tenant_id).MaxAsync(t => t.job_code);
             if (maxNo == null)
             {
                 code = date + "-0001";

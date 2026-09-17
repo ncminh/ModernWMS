@@ -44,11 +44,11 @@ namespace ModernWMS.UnitTests.Services.Stockfreeze
             return stock;
         }
 
-        private static async Task<StockfreezeEntity> SeedFreezeAsync(
+        private static async Task<StockFreezeEntity> SeedFreezeAsync(
             ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId, int skuId, int locationId, bool jobType = true)
         {
-            var entity = new StockfreezeEntity { job_code = "F1", job_type = jobType, sku_id = skuId, goods_location_id = locationId, tenant_id = tenantId };
-            dbContext.GetDbSet<StockfreezeEntity>().Add(entity);
+            var entity = new StockFreezeEntity { job_code = "F1", job_type = jobType, sku_id = skuId, goods_location_id = locationId, tenant_id = tenantId };
+            dbContext.GetDbSet<StockFreezeEntity>().Add(entity);
             await dbContext.SaveChangesAsync();
             return entity;
         }
@@ -135,12 +135,12 @@ namespace ModernWMS.UnitTests.Services.Stockfreeze
             var service = CreateService(scope.DbContext);
             var currentUser = new CurrentUser { tenant_id = 1, user_name = "alice" };
             var (id, _) = await service.AddAsync(
-                new StockfreezeViewModel { sku_id = sku.id, goods_location_id = location.id, job_type = true },
+                new StockFreezeViewModel { sku_id = sku.id, goods_location_id = location.id, job_type = true },
                 currentUser);
 
             id.ShouldBeGreaterThan(0);
             (await scope.DbContext.GetDbSet<StockEntity>().AsNoTracking().FirstAsync(t => t.id == stock.id)).is_freeze.ShouldBeTrue();
-            var saved = await scope.DbContext.GetDbSet<StockfreezeEntity>().FindAsync(id);
+            var saved = await scope.DbContext.GetDbSet<StockFreezeEntity>().FindAsync(id);
             saved!.handler.ShouldBe("alice");
             saved.job_code.ShouldNotBeNullOrEmpty();
         }
@@ -155,7 +155,7 @@ namespace ModernWMS.UnitTests.Services.Stockfreeze
 
             var service = CreateService(scope.DbContext);
             var (id, _) = await service.AddAsync(
-                new StockfreezeViewModel { sku_id = sku.id, goods_location_id = location.id, job_type = false },
+                new StockFreezeViewModel { sku_id = sku.id, goods_location_id = location.id, job_type = false },
                 new CurrentUser { tenant_id = 1, user_name = "alice" });
 
             id.ShouldBeGreaterThan(0);
@@ -169,10 +169,10 @@ namespace ModernWMS.UnitTests.Services.Stockfreeze
             var (_, sku) = await SeedSpuSkuAsync(scope.DbContext, 1);
             var location = await SeedLocationAsync(scope.DbContext, 1);
             var stock = await SeedStockAsync(scope.DbContext, 1, sku.id, location.id, qty: 10);
-            var process = new StockprocessEntity { job_code = "P1", tenant_id = 1 };
-            scope.DbContext.GetDbSet<StockprocessEntity>().Add(process);
+            var process = new StockProcessEntity { job_code = "P1", tenant_id = 1 };
+            scope.DbContext.GetDbSet<StockProcessEntity>().Add(process);
             await scope.DbContext.SaveChangesAsync();
-            scope.DbContext.GetDbSet<StockprocessdetailEntity>().Add(new StockprocessdetailEntity
+            scope.DbContext.GetDbSet<StockProcessDetailEntity>().Add(new StockProcessDetailEntity
             {
                 stock_process_id = process.id,
                 sku_id = sku.id,
@@ -184,12 +184,12 @@ namespace ModernWMS.UnitTests.Services.Stockfreeze
 
             var service = CreateService(scope.DbContext);
             var (id, _) = await service.AddAsync(
-                new StockfreezeViewModel { sku_id = sku.id, goods_location_id = location.id, job_type = true },
+                new StockFreezeViewModel { sku_id = sku.id, goods_location_id = location.id, job_type = true },
                 new CurrentUser { tenant_id = 1 });
 
             id.ShouldBe(0);
             (await scope.DbContext.GetDbSet<StockEntity>().AsNoTracking().FirstAsync(t => t.id == stock.id)).is_freeze.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<StockfreezeEntity>().AsNoTracking().AnyAsync()).ShouldBeFalse();
+            (await scope.DbContext.GetDbSet<StockFreezeEntity>().AsNoTracking().AnyAsync()).ShouldBeFalse();
         }
 
         [Fact]
@@ -213,7 +213,7 @@ namespace ModernWMS.UnitTests.Services.Stockfreeze
 
             var service = CreateService(scope.DbContext);
             var (id, _) = await service.AddAsync(
-                new StockfreezeViewModel { sku_id = sku.id, goods_location_id = location.id, job_type = true },
+                new StockFreezeViewModel { sku_id = sku.id, goods_location_id = location.id, job_type = true },
                 new CurrentUser { tenant_id = 1 });
 
             id.ShouldBe(0);
@@ -228,7 +228,7 @@ namespace ModernWMS.UnitTests.Services.Stockfreeze
             var location = await SeedLocationAsync(scope.DbContext, 1);
             var otherLocation = await SeedLocationAsync(scope.DbContext, 1, "L2");
             var stock = await SeedStockAsync(scope.DbContext, 1, sku.id, location.id, qty: 10);
-            scope.DbContext.GetDbSet<StockmoveEntity>().Add(new StockmoveEntity
+            scope.DbContext.GetDbSet<StockMoveEntity>().Add(new StockMoveEntity
             {
                 sku_id = sku.id,
                 orig_goods_location_id = location.id,
@@ -241,7 +241,7 @@ namespace ModernWMS.UnitTests.Services.Stockfreeze
 
             var service = CreateService(scope.DbContext);
             var (id, _) = await service.AddAsync(
-                new StockfreezeViewModel { sku_id = sku.id, goods_location_id = location.id, job_type = true },
+                new StockFreezeViewModel { sku_id = sku.id, goods_location_id = location.id, job_type = true },
                 new CurrentUser { tenant_id = 1 });
 
             id.ShouldBe(0);
@@ -259,7 +259,7 @@ namespace ModernWMS.UnitTests.Services.Stockfreeze
 
             var service = CreateService(scope.DbContext);
             var (id, _) = await service.AddAsync(
-                new StockfreezeViewModel { sku_id = sku1.id, goods_location_id = location1.id, job_type = true },
+                new StockFreezeViewModel { sku_id = sku1.id, goods_location_id = location1.id, job_type = true },
                 new CurrentUser { tenant_id = 1 });
 
             id.ShouldBeGreaterThan(0);
@@ -274,7 +274,7 @@ namespace ModernWMS.UnitTests.Services.Stockfreeze
             using var scope = new SqliteTestDbContextScope();
             var service = CreateService(scope.DbContext);
 
-            var (flag, _) = await service.UpdateAsync(new StockfreezeViewModel { id = 999 }, new CurrentUser { tenant_id = 1 });
+            var (flag, _) = await service.UpdateAsync(new StockFreezeViewModel { id = 999 }, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
         }
@@ -289,11 +289,11 @@ namespace ModernWMS.UnitTests.Services.Stockfreeze
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.UpdateAsync(
-                new StockfreezeViewModel { id = entity.id, sku_id = sku.id, goods_location_id = location.id, job_type = false, handler = "bob" },
+                new StockFreezeViewModel { id = entity.id, sku_id = sku.id, goods_location_id = location.id, job_type = false, handler = "bob" },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            var saved = await scope.DbContext.GetDbSet<StockfreezeEntity>().FindAsync(entity.id);
+            var saved = await scope.DbContext.GetDbSet<StockFreezeEntity>().FindAsync(entity.id);
             saved!.job_type.ShouldBeFalse();
             saved.handler.ShouldBe("bob");
         }
@@ -309,7 +309,7 @@ namespace ModernWMS.UnitTests.Services.Stockfreeze
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.UpdateAsync(
-                new StockfreezeViewModel { id = entity.id, handler = "eve" },
+                new StockFreezeViewModel { id = entity.id, handler = "eve" },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
@@ -329,7 +329,7 @@ namespace ModernWMS.UnitTests.Services.Stockfreeze
             var (flag, _) = await service.DeleteAsync(entity.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<StockfreezeEntity>().AsNoTracking().AnyAsync(t => t.id == entity.id)).ShouldBeFalse();
+            (await scope.DbContext.GetDbSet<StockFreezeEntity>().AsNoTracking().AnyAsync(t => t.id == entity.id)).ShouldBeFalse();
         }
 
         [Fact]
@@ -345,7 +345,7 @@ namespace ModernWMS.UnitTests.Services.Stockfreeze
             var (flag, _) = await service.DeleteAsync(entity.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<StockfreezeEntity>().AsNoTracking().AnyAsync(t => t.id == entity.id)).ShouldBeTrue();
+            (await scope.DbContext.GetDbSet<StockFreezeEntity>().AsNoTracking().AnyAsync(t => t.id == entity.id)).ShouldBeTrue();
         }
     }
 }

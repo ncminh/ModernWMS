@@ -387,3 +387,8 @@ FodyWeavers.xsd
 # JetBrains Rider
 .idea/
 *.sln.iml
+
+# ModernWMS local SQLite dev database
+backend/ModernWMS/wms.db
+backend/ModernWMS/wms.db-shm
+backend/ModernWMS/wms.db-wal

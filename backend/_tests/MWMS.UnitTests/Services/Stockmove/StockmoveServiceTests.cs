@@ -44,11 +44,11 @@ namespace ModernWMS.UnitTests.Services.Stockmove
             return stock;
         }
 
-        private static async Task<StockmoveEntity> SeedMoveAsync(
+        private static async Task<StockMoveEntity> SeedMoveAsync(
             ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId, int skuId, int origLocationId, int destLocationId,
             int qty, byte moveStatus = 0)
         {
-            var move = new StockmoveEntity
+            var move = new StockMoveEntity
             {
                 job_code = "M1",
                 move_status = moveStatus,
@@ -58,7 +58,7 @@ namespace ModernWMS.UnitTests.Services.Stockmove
                 qty = qty,
                 tenant_id = tenantId,
             };
-            dbContext.GetDbSet<StockmoveEntity>().Add(move);
+            dbContext.GetDbSet<StockMoveEntity>().Add(move);
             await dbContext.SaveChangesAsync();
             return move;
         }
@@ -153,11 +153,11 @@ namespace ModernWMS.UnitTests.Services.Stockmove
             var service = CreateService(scope.DbContext);
             var currentUser = new CurrentUser { tenant_id = 1, user_name = "alice" };
             var (id, _) = await service.AddAsync(
-                new StockmoveViewModel { sku_id = sku.id, orig_goods_location_id = orig.id, dest_googs_location_id = dest.id, qty = 5 },
+                new StockMoveViewModel { sku_id = sku.id, orig_goods_location_id = orig.id, dest_googs_location_id = dest.id, qty = 5 },
                 currentUser);
 
             id.ShouldBeGreaterThan(0);
-            var saved = await scope.DbContext.GetDbSet<StockmoveEntity>().FindAsync(id);
+            var saved = await scope.DbContext.GetDbSet<StockMoveEntity>().FindAsync(id);
             saved!.creator.ShouldBe("alice");
             saved.tenant_id.ShouldBe(1);
             saved.job_code.ShouldNotBeNullOrEmpty();
@@ -175,7 +175,7 @@ namespace ModernWMS.UnitTests.Services.Stockmove
 
             var service = CreateService(scope.DbContext);
             var (id, _) = await service.AddAsync(
-                new StockmoveViewModel { sku_id = sku.id, orig_goods_location_id = orig.id, dest_googs_location_id = dest.id, qty = 5 },
+                new StockMoveViewModel { sku_id = sku.id, orig_goods_location_id = orig.id, dest_googs_location_id = dest.id, qty = 5 },
                 new CurrentUser { tenant_id = 1 });
 
             id.ShouldBe(0);
@@ -193,7 +193,7 @@ namespace ModernWMS.UnitTests.Services.Stockmove
 
             var service = CreateService(scope.DbContext);
             var (id, _) = await service.AddAsync(
-                new StockmoveViewModel { sku_id = sku.id, orig_goods_location_id = orig.id, dest_googs_location_id = dest.id, qty = 5 },
+                new StockMoveViewModel { sku_id = sku.id, orig_goods_location_id = orig.id, dest_googs_location_id = dest.id, qty = 5 },
                 new CurrentUser { tenant_id = 1 });
 
             id.ShouldBe(0);
@@ -212,7 +212,7 @@ namespace ModernWMS.UnitTests.Services.Stockmove
 
             var service = CreateService(scope.DbContext);
             var (id, _) = await service.AddAsync(
-                new StockmoveViewModel { sku_id = sku.id, orig_goods_location_id = orig.id, dest_googs_location_id = otherTenantDest.id, qty = 5 },
+                new StockMoveViewModel { sku_id = sku.id, orig_goods_location_id = orig.id, dest_googs_location_id = otherTenantDest.id, qty = 5 },
                 new CurrentUser { tenant_id = 1 });
 
             id.ShouldBe(0);
@@ -238,7 +238,7 @@ namespace ModernWMS.UnitTests.Services.Stockmove
             var destStock = await scope.DbContext.GetDbSet<StockEntity>().AsNoTracking().SingleAsync();
             destStock.goods_location_id.ShouldBe(dest.id);
             destStock.qty.ShouldBe(5);
-            (await scope.DbContext.GetDbSet<StockmoveEntity>().FindAsync(move.id))!.move_status.ShouldBe((byte)1);
+            (await scope.DbContext.GetDbSet<StockMoveEntity>().FindAsync(move.id))!.move_status.ShouldBe((byte)1);
         }
 
         [Fact]
@@ -326,7 +326,7 @@ namespace ModernWMS.UnitTests.Services.Stockmove
             var (flag, _) = await service.Confirm(move.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<StockmoveEntity>().FindAsync(move.id))!.move_status.ShouldBe((byte)0);
+            (await scope.DbContext.GetDbSet<StockMoveEntity>().FindAsync(move.id))!.move_status.ShouldBe((byte)0);
         }
 
         // DeleteAsync
@@ -344,7 +344,7 @@ namespace ModernWMS.UnitTests.Services.Stockmove
             var (flag, _) = await service.DeleteAsync(move.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<StockmoveEntity>().AsNoTracking().AnyAsync(t => t.id == move.id)).ShouldBeFalse();
+            (await scope.DbContext.GetDbSet<StockMoveEntity>().AsNoTracking().AnyAsync(t => t.id == move.id)).ShouldBeFalse();
         }
 
         [Fact]
@@ -360,7 +360,7 @@ namespace ModernWMS.UnitTests.Services.Stockmove
             var (flag, _) = await service.DeleteAsync(move.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<StockmoveEntity>().AsNoTracking().AnyAsync(t => t.id == move.id)).ShouldBeTrue();
+            (await scope.DbContext.GetDbSet<StockMoveEntity>().AsNoTracking().AnyAsync(t => t.id == move.id)).ShouldBeTrue();
         }
 
         [Fact]
@@ -377,7 +377,7 @@ namespace ModernWMS.UnitTests.Services.Stockmove
             var (flag, _) = await service.DeleteAsync(move.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<StockmoveEntity>().AsNoTracking().AnyAsync(t => t.id == move.id)).ShouldBeTrue();
+            (await scope.DbContext.GetDbSet<StockMoveEntity>().AsNoTracking().AnyAsync(t => t.id == move.id)).ShouldBeTrue();
         }
     }
 }
