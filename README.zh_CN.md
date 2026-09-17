@@ -26,7 +26,7 @@
 ![Gitee Stars](https://gitee.com/modernwms/ModernWMS/badge/star.svg?theme=social)
 ![Gitee Forks](https://gitee.com/modernwms/ModernWMS/badge/fork.svg?theme=social)
 
-![.NET](https://img.shields.io/badge/.NET-7.0.0-green)
+![.NET](https://img.shields.io/badge/.NET-8.0.0-green)
 ![Vuetify Cli](https://img.shields.io/badge/Vuetify/cli-3.0.4-green)
 ![Vue](https://img.shields.io/badge/Vue-3.2.45-green)
 ![TypeScript](https://img.shields.io/badge/TypeScript-4.1.2-green)
@@ -95,7 +95,7 @@
   ```bash
   wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
   sudo dpkg -i packages-microsoft-prod.deb
-  sudo apt-get update && sudo apt-get install -y dotnet-sdk-7.0
+  sudo apt-get update && sudo apt-get install -y dotnet-sdk-8.0
   curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
   sudo apt install -y nodejs
   sudo apt-get install gcc g++ make
@@ -111,7 +111,7 @@
   cd /tmp/ModernWMS-master/frontend/ 
   sed -i 's#http://127.0.0.1#http://前部署服务器的IP地址#g' ./.env.production
   yarn && yarn build && cp -rf /tmp/ModernWMS-master/frontend/dist/* /ModernWMS/frontend/
-  cd /tmp/ModernWMS-master/backend/ && sudo dotnet publish && cp -rf /tmp/ModernWMS-master/backend/ModernWMS/bin/Debug/net7.0/publish/* /ModernWMS/backend/
+  cd /tmp/ModernWMS-master/backend/ && sudo dotnet publish && cp -rf /tmp/ModernWMS-master/backend/ModernWMS/bin/Debug/net8.0/publish/* /ModernWMS/backend/
   cp -rf /tmp/ModernWMS-master/backend/ModernWMS/wms.db /ModernWMS/backend/
   ```  
 
@@ -137,8 +137,8 @@
   ```
   + 第二步，安装.NET SDK 和 NodeJS
   ```CMD
-  wget -Uri https://download.visualstudio.microsoft.com/download/pr/35660869-0942-4c5d-8692-6e0d4040137a/4921a36b578d8358dac4c27598519832/dotnet-sdk-7.0.101-win-x64.exe  -OutFile dotnet-sdk-7.0.101-win-x64.exe
-  .\dotnet-sdk-7.0.101-win-x64.exe /install /quiet /norestart
+  wget -Uri https://dot.net/v1/dotnet-install.ps1 -OutFile dotnet-install.ps1
+  .\dotnet-install.ps1 -Channel 8.0 -InstallDir "$env:ProgramFiles\dotnet"
   wget -Uri https://nodejs.org/dist/v16.13.1/node-v16.13.1-x64.msi  -OutFile node-v16.13.1-x64.msi
   msiexec /i .\node-v16.13.1-x64.msi /passive /norestart
   npm install -g yarn
@@ -149,7 +149,7 @@
   md C:\ModernWMS\backend\
   cd C:\ModernWMS-master\backend
   dotnet publish 
-  copy-item -path "C:\ModernWMS-master\backend\ModernWMS\bin\Debug\net7.0\publish\*" -destination "C:\ModernWMS\backend\" -recurse
+  copy-item -path "C:\ModernWMS-master\backend\ModernWMS\bin\Debug\net8.0\publish\*" -destination "C:\ModernWMS\backend\" -recurse
   copy-Item "C:\ModernWMS-master\backend\ModernWMS\wms.db" -Destination "C:\ModernWMS\backend\"
   cd C:\ModernWMS-master\frontend  
   yarn

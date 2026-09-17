@@ -4,7 +4,7 @@ RUN apt-get update && apt-get install -y wget curl
 RUN wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
     && dpkg -i packages-microsoft-prod.deb \
     && apt-get update \
-    && apt-get install -y aspnetcore-runtime-7.0 nginx \
+    && apt-get install -y aspnetcore-runtime-8.0 nginx \
     && curl -fsSL https://deb.nodesource.com/setup_16.x | /bin/bash - \
     && apt install -y nodejs \
     && mkdir -p /app/  /frontend/
