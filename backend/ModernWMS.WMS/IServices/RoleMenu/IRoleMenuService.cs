@@ -8,7 +8,7 @@ namespace ModernWMS.WMS.IServices
     /// <summary>
     /// Interface of RoleMenuService
     /// </summary>
-    public interface IRoleMenuService : IBaseService<RolemenuEntity>
+    public interface IRoleMenuService : IBaseService<RoleMenuEntity>
     {
         #region Api
         /// <summary>
@@ -16,7 +16,7 @@ namespace ModernWMS.WMS.IServices
         /// </summary>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<List<RolemenuListViewModel>> GetAllAsync(CurrentUser currentUser);
+        Task<List<RoleMenuListViewModel>> GetAllAsync(CurrentUser currentUser);
 
         /// <summary>
         /// Get a record by id
@@ -24,7 +24,7 @@ namespace ModernWMS.WMS.IServices
         /// <param name="userrole_id">userrole id</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<RolemenuBothViewModel> GetAsync(int userrole_id, CurrentUser currentUser);
+        Task<RoleMenuBothViewModel> GetAsync(int userrole_id, CurrentUser currentUser);
 
         /// <summary>
         /// add a new record
@@ -32,7 +32,7 @@ namespace ModernWMS.WMS.IServices
         /// <param name="viewModel">args</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<(int id, string msg)> AddAsync(RolemenuBothViewModel viewModel, CurrentUser currentUser);
+        Task<(int id, string msg)> AddAsync(RoleMenuBothViewModel viewModel, CurrentUser currentUser);
 
         /// <summary>
         /// Get all menus
@@ -55,7 +55,7 @@ namespace ModernWMS.WMS.IServices
         /// <param name="viewModel">args</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<(bool flag, string msg)> UpdateAsync(RolemenuBothViewModel viewModel, CurrentUser currentUser);
+        Task<(bool flag, string msg)> UpdateAsync(RoleMenuBothViewModel viewModel, CurrentUser currentUser);
 
         /// <summary>
         /// delete a record

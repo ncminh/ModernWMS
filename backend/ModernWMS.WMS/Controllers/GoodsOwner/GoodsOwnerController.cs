@@ -52,11 +52,11 @@ namespace ModernWMS.WMS.Controllers
         /// <param name="pageSearch">args</param>
         /// <returns></returns>
         [HttpPost("list")]
-        public async Task<ResultModel<PageData<GoodsownerViewModel>>> PageAsync(PageSearch pageSearch)
+        public async Task<ResultModel<PageData<GoodsOwnerViewModel>>> PageAsync(PageSearch pageSearch)
         {
             var (data, totals) = await _goodsownerService.PageAsync(pageSearch, CurrentUser);
 
-            return ResultModel<PageData<GoodsownerViewModel>>.Success(new PageData<GoodsownerViewModel>
+            return ResultModel<PageData<GoodsOwnerViewModel>>.Success(new PageData<GoodsOwnerViewModel>
             {
                 Rows = data,
                 Totals = totals
@@ -67,16 +67,16 @@ namespace ModernWMS.WMS.Controllers
         /// </summary>
         /// <returns>args</returns>
         [HttpGet("all")]
-        public async Task<ResultModel<List<GoodsownerViewModel>>> GetAllAsync()
+        public async Task<ResultModel<List<GoodsOwnerViewModel>>> GetAllAsync()
         {
             var data = await _goodsownerService.GetAllAsync(CurrentUser);
             if (data.Any())
             {
-                return ResultModel<List<GoodsownerViewModel>>.Success(data);
+                return ResultModel<List<GoodsOwnerViewModel>>.Success(data);
             }
             else
             {
-                return ResultModel<List<GoodsownerViewModel>>.Success(new List<GoodsownerViewModel>());
+                return ResultModel<List<GoodsOwnerViewModel>>.Success(new List<GoodsOwnerViewModel>());
             }
         }
 
@@ -85,16 +85,16 @@ namespace ModernWMS.WMS.Controllers
         /// </summary>
         /// <returns>args</returns>
         [HttpGet]
-        public async Task<ResultModel<GoodsownerViewModel>> GetAsync(int id)
+        public async Task<ResultModel<GoodsOwnerViewModel>> GetAsync(int id)
         {
             var data = await _goodsownerService.GetAsync(id, CurrentUser);
             if (data != null && data.id > 0)
             {
-                return ResultModel<GoodsownerViewModel>.Success(data);
+                return ResultModel<GoodsOwnerViewModel>.Success(data);
             }
             else
             {
-                return ResultModel<GoodsownerViewModel>.Error(_stringLocalizer["not_exists_entity"]);
+                return ResultModel<GoodsOwnerViewModel>.Error(_stringLocalizer["not_exists_entity"]);
             }
         }
         /// <summary>
@@ -103,7 +103,7 @@ namespace ModernWMS.WMS.Controllers
         /// <param name="viewModel">args</param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ResultModel<int>> AddAsync(GoodsownerViewModel viewModel)
+        public async Task<ResultModel<int>> AddAsync(GoodsOwnerViewModel viewModel)
         {
             var (id, msg) = await _goodsownerService.AddAsync(viewModel, CurrentUser);
             if (id > 0)
@@ -122,7 +122,7 @@ namespace ModernWMS.WMS.Controllers
         /// <param name="viewModel">args</param>
         /// <returns></returns>
         [HttpPut]
-        public async Task<ResultModel<bool>> UpdateAsync(GoodsownerViewModel viewModel)
+        public async Task<ResultModel<bool>> UpdateAsync(GoodsOwnerViewModel viewModel)
         {
             var (flag, msg) = await _goodsownerService.UpdateAsync(viewModel, CurrentUser);
             if (flag)
@@ -162,16 +162,16 @@ namespace ModernWMS.WMS.Controllers
         /// <param name="input">excel data</param>
         /// <returns></returns>
         [HttpPost("excel")]
-        public async Task<ResultModel<List<GoodsownerImportViewModel>>> ExcelAsync(List<GoodsownerImportViewModel> input)
+        public async Task<ResultModel<List<GoodsOwnerImportViewModel>>> ExcelAsync(List<GoodsOwnerImportViewModel> input)
         {
             var (flag, errorData) = await _goodsownerService.ExcelAsync(input, CurrentUser);
             if (flag)
             {
-                return ResultModel<List<GoodsownerImportViewModel>>.Success(errorData);
+                return ResultModel<List<GoodsOwnerImportViewModel>>.Success(errorData);
             }
             else
             {
-                return ResultModel<List<GoodsownerImportViewModel>>.Error("", 400, errorData);
+                return ResultModel<List<GoodsOwnerImportViewModel>>.Error("", 400, errorData);
             }
         }
         #endregion

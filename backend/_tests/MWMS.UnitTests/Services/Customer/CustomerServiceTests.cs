@@ -76,7 +76,7 @@ namespace ModernWMS.UnitTests.Services.Customer
             var customer = new CustomerEntity { customer_name = "Customer1", tenant_id = 1 };
             scope.DbContext.GetDbSet<CustomerEntity>().Add(customer);
             await scope.DbContext.SaveChangesAsync();
-            scope.DbContext.GetDbSet<DispatchlistEntity>().Add(new DispatchlistEntity { customer_id = customer.id });
+            scope.DbContext.GetDbSet<DispatchListEntity>().Add(new DispatchListEntity { customer_id = customer.id });
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);

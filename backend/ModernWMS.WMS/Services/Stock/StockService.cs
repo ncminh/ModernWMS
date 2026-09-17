@@ -83,13 +83,13 @@ namespace ModernWMS.WMS.Services
 
             var DbSet = _dBContext.GetDbSet<StockEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
             var asn_DBSet = _dBContext.GetDbSet<AsnEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
-            var dispatch_DBSet = _dBContext.GetDbSet<DispatchlistEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
+            var dispatch_DBSet = _dBContext.GetDbSet<DispatchListEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
             var sku_DBSet = _dBContext.GetDbSet<SkuEntity>().AsNoTracking();
             var spu_DBSet = _dBContext.GetDbSet<SpuEntity>().AsNoTracking();
             var processdetail_DBSet = _dBContext.GetDbSet<StockProcessDetailEntity>().AsNoTracking();
             var move_DBSet = _dBContext.GetDbSet<StockMoveEntity>();
             var stock_group_datas = from stock in DbSet.AsNoTracking()
-                                    join gl in _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking() on stock.goods_location_id equals gl.id
+                                    join gl in _dBContext.GetDbSet<GoodsLocationEntity>().AsNoTracking() on stock.goods_location_id equals gl.id
                                     group new { stock, gl } by stock.sku_id into sg
                                     select new
                                     {
@@ -118,7 +118,7 @@ namespace ModernWMS.WMS.Services
                                            qty_locked = dg.Sum(t => t.lock_qty)
                                        };
             var process_locked_group_datas = from pd in processdetail_DBSet
-                                             join gl in _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking() on pd.goods_location_id equals gl.id
+                                             join gl in _dBContext.GetDbSet<GoodsLocationEntity>().AsNoTracking() on pd.goods_location_id equals gl.id
                                              where pd.is_update_stock == false && pd.is_source == true
                                              group new { pd, gl } by pd.sku_id into pdg
                                              select new
@@ -128,7 +128,7 @@ namespace ModernWMS.WMS.Services
                                                  qty_normal_locked = pdg.Where(t => t.gl.warehouse_area_property != 5).Sum(t => t.pd.qty),
                                              };
             var move_locked_group_datas = from m in move_DBSet.AsNoTracking()
-                                          join gl in _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking() on m.orig_goods_location_id equals gl.id
+                                          join gl in _dBContext.GetDbSet<GoodsLocationEntity>().AsNoTracking() on m.orig_goods_location_id equals gl.id
                                           where m.move_status == 0
                                           group new { m, gl } by m.sku_id into mg
                                           select new
@@ -194,16 +194,16 @@ namespace ModernWMS.WMS.Services
             }
 
             var DbSet = _dBContext.GetDbSet<StockEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
-            var dispatchpick_DBSet = _dBContext.GetDbSet<DispatchpicklistEntity>();
-            var dispatch_DBSet = _dBContext.GetDbSet<DispatchlistEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
+            var dispatchpick_DBSet = _dBContext.GetDbSet<DispatchPickListEntity>();
+            var dispatch_DBSet = _dBContext.GetDbSet<DispatchListEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
             var sku_DBSet = _dBContext.GetDbSet<SkuEntity>().AsNoTracking();
             var spu_DBSet = _dBContext.GetDbSet<SpuEntity>().AsNoTracking();
-            var location_DBSet = _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking();
+            var location_DBSet = _dBContext.GetDbSet<GoodsLocationEntity>().AsNoTracking();
             var processdetail_DBSet = _dBContext.GetDbSet<StockProcessDetailEntity>().AsNoTracking();
             var move_DBSet = _dBContext.GetDbSet<StockMoveEntity>();
 
             var stock_group_datas = from stock in DbSet.AsNoTracking()
-                                    join gw in _dBContext.GetDbSet<GoodsownerEntity>().AsNoTracking() on stock.goods_owner_id equals gw.id into gw_left
+                                    join gw in _dBContext.GetDbSet<GoodsOwnerEntity>().AsNoTracking() on stock.goods_owner_id equals gw.id into gw_left
                                     from gw in gw_left.DefaultIfEmpty()
                                     where stock.tenant_id == currentUser.tenant_id
                                     group new { stock, gw } by new { stock.sku_id, stock.goods_location_id, stock.goods_owner_id, stock.series_number, gw.goods_owner_name, stock.expiry_date, stock.price, stock.putaway_date } into sg
@@ -321,11 +321,11 @@ namespace ModernWMS.WMS.Services
             }
 
             var DbSet = _dBContext.GetDbSet<StockEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
-            var dispatchpick_DBSet = _dBContext.GetDbSet<DispatchpicklistEntity>();
-            var dispatch_DBSet = _dBContext.GetDbSet<DispatchlistEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
+            var dispatchpick_DBSet = _dBContext.GetDbSet<DispatchPickListEntity>();
+            var dispatch_DBSet = _dBContext.GetDbSet<DispatchListEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
             var sku_DBSet = _dBContext.GetDbSet<SkuEntity>().AsNoTracking();
             var spu_DBSet = _dBContext.GetDbSet<SpuEntity>().AsNoTracking();
-            var location_DBSet = _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking();
+            var location_DBSet = _dBContext.GetDbSet<GoodsLocationEntity>().AsNoTracking();
             var processdetail_DBSet = _dBContext.GetDbSet<StockProcessDetailEntity>().AsNoTracking();
             var move_DBSet = _dBContext.GetDbSet<StockMoveEntity>();
             var sku_safety_DBSet = _dBContext.GetDbSet<SkuSafetyStockEntity>();
@@ -429,11 +429,11 @@ namespace ModernWMS.WMS.Services
             }
 
             var DbSet = _dBContext.GetDbSet<StockEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
-            var dispatchpick_DBSet = _dBContext.GetDbSet<DispatchpicklistEntity>();
-            var dispatch_DBSet = _dBContext.GetDbSet<DispatchlistEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
+            var dispatchpick_DBSet = _dBContext.GetDbSet<DispatchPickListEntity>();
+            var dispatch_DBSet = _dBContext.GetDbSet<DispatchListEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
             var sku_DBSet = _dBContext.GetDbSet<SkuEntity>().AsNoTracking();
             var spu_DBSet = _dBContext.GetDbSet<SpuEntity>().AsNoTracking();
-            var location_DBSet = _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking();
+            var location_DBSet = _dBContext.GetDbSet<GoodsLocationEntity>().AsNoTracking();
             var processdetail_DBSet = _dBContext.GetDbSet<StockProcessDetailEntity>().AsNoTracking();
             var move_DBSet = _dBContext.GetDbSet<StockMoveEntity>();
 
@@ -490,7 +490,7 @@ namespace ModernWMS.WMS.Services
                         join sku in sku_DBSet on sg.sku_id equals sku.id
                         join spu in spu_DBSet on sku.spu_id equals spu.id
                         join gl in location_DBSet on sg.goods_location_id equals gl.id
-                        join owner in _dBContext.GetDbSet<GoodsownerEntity>().AsNoTracking() on sg.goods_owner_id equals owner.id into o_left
+                        join owner in _dBContext.GetDbSet<GoodsOwnerEntity>().AsNoTracking() on sg.goods_owner_id equals owner.id into o_left
                         from owner in o_left.DefaultIfEmpty()
                         where sg.tenant_id == currentUser.tenant_id
                         group new { sg, dp, pl, m, sku, spu, gl } by new
@@ -611,18 +611,18 @@ namespace ModernWMS.WMS.Services
         public async Task<List<LocationStockManagementViewModel>> LocationStockForPhoneAsync(LocationStockForPhoneSearchViewModel input, CurrentUser currentUser)
         {
             var DbSet = _dBContext.GetDbSet<StockEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
-            var dispatchpick_DBSet = _dBContext.GetDbSet<DispatchpicklistEntity>();
-            var dispatch_DBSet = _dBContext.GetDbSet<DispatchlistEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
+            var dispatchpick_DBSet = _dBContext.GetDbSet<DispatchPickListEntity>();
+            var dispatch_DBSet = _dBContext.GetDbSet<DispatchListEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
             var sku_DBSet = _dBContext.GetDbSet<SkuEntity>().AsNoTracking();
             var spu_DBSet = _dBContext.GetDbSet<SpuEntity>().AsNoTracking();
-            var location_DBSet = _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking();
+            var location_DBSet = _dBContext.GetDbSet<GoodsLocationEntity>().AsNoTracking();
             var processdetail_DBSet = _dBContext.GetDbSet<StockProcessDetailEntity>().AsNoTracking();
             var move_DBSet = _dBContext.GetDbSet<StockMoveEntity>();
 
             var stock_group_datas = from stock in DbSet.AsNoTracking()
-                                    join gw in _dBContext.GetDbSet<GoodsownerEntity>().AsNoTracking() on stock.goods_owner_id equals gw.id into gw_left
+                                    join gw in _dBContext.GetDbSet<GoodsOwnerEntity>().AsNoTracking() on stock.goods_owner_id equals gw.id into gw_left
                                     from gw in gw_left.DefaultIfEmpty()
-                                    join gl in _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking() on stock.goods_location_id equals gl.id
+                                    join gl in _dBContext.GetDbSet<GoodsLocationEntity>().AsNoTracking() on stock.goods_location_id equals gl.id
                                     join sku in _dBContext.GetDbSet<SkuEntity>().AsNoTracking() on stock.sku_id equals sku.id
                                     join spu in _dBContext.GetDbSet<SpuEntity>().AsNoTracking() on sku.spu_id equals spu.id
                                     where stock.tenant_id == currentUser.tenant_id && (input.sku_id == 0 || stock.sku_id == input.sku_id)
@@ -734,13 +734,13 @@ namespace ModernWMS.WMS.Services
         /// <returns></returns>
         public async Task<(List<DeliveryStatisticViewModel> datas, int totals)> DeliveryStatistic(DeliveryStatisticSearchViewModel input, CurrentUser currentUser)
         {
-            var dispatch_DBSet = _dBContext.GetDbSet<DispatchlistEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
-            var dispatchpick_DBSet = _dBContext.GetDbSet<DispatchpicklistEntity>();
+            var dispatch_DBSet = _dBContext.GetDbSet<DispatchListEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
+            var dispatchpick_DBSet = _dBContext.GetDbSet<DispatchPickListEntity>();
             var sku_DBSet = _dBContext.GetDbSet<SkuEntity>();
             var spu_DBSet = _dBContext.GetDbSet<SpuEntity>();
-            var location_DBSet = _dBContext.GetDbSet<GoodslocationEntity>();
+            var location_DBSet = _dBContext.GetDbSet<GoodsLocationEntity>();
             var warehouse_DBSet = _dBContext.GetDbSet<WarehouseEntity>();
-            var owner_DbSet = _dBContext.GetDbSet<GoodsownerEntity>();
+            var owner_DbSet = _dBContext.GetDbSet<GoodsOwnerEntity>();
             if (input.delivery_date_from > UtilConvert.MinDate)
             {
                 dispatch_DBSet = dispatch_DBSet.Where(t => t.create_time >= input.delivery_date_from);
@@ -844,7 +844,7 @@ namespace ModernWMS.WMS.Services
             var DbSet = _dBContext.GetDbSet<StockEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
             var sku_DBSet = _dBContext.GetDbSet<SkuEntity>().AsNoTracking();
             var spu_DBSet = _dBContext.GetDbSet<SpuEntity>().AsNoTracking();
-            var location_DBSet = _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking();
+            var location_DBSet = _dBContext.GetDbSet<GoodsLocationEntity>().AsNoTracking();
             if (input.expiry_date_from > UtilConvert.MinDate)
             {
                 DbSet = DbSet.Where(t => t.expiry_date >= input.expiry_date_from);
@@ -854,7 +854,7 @@ namespace ModernWMS.WMS.Services
                 DbSet = DbSet.Where(t => t.expiry_date <= input.expiry_date_to);
             }
             var stock_group_datas = from stock in DbSet.AsNoTracking()
-                                    join gw in _dBContext.GetDbSet<GoodsownerEntity>().AsNoTracking() on stock.goods_owner_id equals gw.id into gw_left
+                                    join gw in _dBContext.GetDbSet<GoodsOwnerEntity>().AsNoTracking() on stock.goods_owner_id equals gw.id into gw_left
                                     from gw in gw_left.DefaultIfEmpty()
                                     where stock.tenant_id == currentUser.tenant_id
                                     group new { stock, gw } by new { stock.sku_id, stock.goods_location_id, stock.goods_owner_id, stock.series_number, gw.goods_owner_name, stock.expiry_date, stock.price, stock.putaway_date } into sg

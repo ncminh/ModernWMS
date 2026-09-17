@@ -24,7 +24,7 @@ namespace ModernWMS.WMS.Entities.Models
         /// foreign table
         /// </summary>
         [ForeignKey("asnmaster_id")]
-        public AsnmasterEntity Asnmaster { get; set; }
+        public AsnMasterEntity Asnmaster { get; set; }
 
         #endregion
 

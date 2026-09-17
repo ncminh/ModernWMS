@@ -11,7 +11,7 @@ namespace ModernWMS.UnitTests.Services.Asn
 {
     public class AsnmasterServiceTests
     {
-        private static AsnmasterService CreateService(ModernWMS.Core.DBContext.SqlDBContext dbContext) =>
+        private static AsnMasterService CreateService(ModernWMS.Core.DBContext.SqlDBContext dbContext) =>
             new(dbContext, new FakeStringLocalizer<MultiLanguage>(), TestFunctionHelperFactory.Create(dbContext));
 
         private static async Task<(SpuEntity spu, SkuEntity sku)> SeedSpuSkuAsync(ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId)
@@ -25,12 +25,12 @@ namespace ModernWMS.UnitTests.Services.Asn
             return (spu, sku);
         }
 
-        private static async Task<AsnmasterEntity> SeedAsnmasterWithDetailAsync(
+        private static async Task<AsnMasterEntity> SeedAsnmasterWithDetailAsync(
             ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId, byte asnStatus = 0)
         {
             var (spu, sku) = await SeedSpuSkuAsync(dbContext, tenantId);
-            var asnmaster = new AsnmasterEntity { asn_no = "ASNM1", tenant_id = tenantId, asn_status = asnStatus };
-            dbContext.GetDbSet<AsnmasterEntity>().Add(asnmaster);
+            var asnmaster = new AsnMasterEntity { asn_no = "ASNM1", tenant_id = tenantId, asn_status = asnStatus };
+            dbContext.GetDbSet<AsnMasterEntity>().Add(asnmaster);
             await dbContext.SaveChangesAsync();
             var asn = new AsnEntity
             {
@@ -103,13 +103,13 @@ namespace ModernWMS.UnitTests.Services.Asn
             using var scope = new SqliteTestDbContextScope();
             var service = CreateService(scope.DbContext);
             var currentUser = new CurrentUser { tenant_id = 1, user_name = "alice" };
-            var viewModel = new AsnmasterBothViewModel { asn_batch = "Batch1" };
-            viewModel.detailList.Add(new AsnmasterDetailViewModel { spu_id = 1, sku_id = 1, asn_qty = 10 });
+            var viewModel = new AsnMasterBothViewModel { asn_batch = "Batch1" };
+            viewModel.detailList.Add(new AsnMasterDetailViewModel { spu_id = 1, sku_id = 1, asn_qty = 10 });
 
             var (id, _) = await service.AddAsnmasterAsync(viewModel, currentUser);
 
             id.ShouldBeGreaterThan(0);
-            var saved = await scope.DbContext.GetDbSet<AsnmasterEntity>().FindAsync(id);
+            var saved = await scope.DbContext.GetDbSet<AsnMasterEntity>().FindAsync(id);
             saved!.creator.ShouldBe("alice");
             saved.tenant_id.ShouldBe(1);
             saved.asn_no.ShouldNotBeNullOrEmpty();
@@ -122,7 +122,7 @@ namespace ModernWMS.UnitTests.Services.Asn
             using var scope = new SqliteTestDbContextScope();
             var service = CreateService(scope.DbContext);
 
-            var (flag, _) = await service.UpdateAsnmasterAsync(new AsnmasterBothViewModel { id = 999 }, new CurrentUser { tenant_id = 1 });
+            var (flag, _) = await service.UpdateAsnmasterAsync(new AsnMasterBothViewModel { id = 999 }, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
         }
@@ -139,10 +139,10 @@ namespace ModernWMS.UnitTests.Services.Asn
             scope.DbContext.ChangeTracker.Clear();
 
             var service = CreateService(scope.DbContext);
-            var viewModel = new AsnmasterBothViewModel { id = asnmaster.id, asn_batch = "Updated" };
-            viewModel.detailList.Add(new AsnmasterDetailViewModel { id = existingAsn.id, spu_id = existingAsn.spu_id, sku_id = existingAsn.sku_id, asn_qty = 55 });
-            viewModel.detailList.Add(new AsnmasterDetailViewModel { id = -toDelete.id });
-            viewModel.detailList.Add(new AsnmasterDetailViewModel { id = 0, spu_id = existingAsn.spu_id, sku_id = existingAsn.sku_id, asn_qty = 7 });
+            var viewModel = new AsnMasterBothViewModel { id = asnmaster.id, asn_batch = "Updated" };
+            viewModel.detailList.Add(new AsnMasterDetailViewModel { id = existingAsn.id, spu_id = existingAsn.spu_id, sku_id = existingAsn.sku_id, asn_qty = 55 });
+            viewModel.detailList.Add(new AsnMasterDetailViewModel { id = -toDelete.id });
+            viewModel.detailList.Add(new AsnMasterDetailViewModel { id = 0, spu_id = existingAsn.spu_id, sku_id = existingAsn.sku_id, asn_qty = 7 });
 
             var (flag, _) = await service.UpdateAsnmasterAsync(viewModel, new CurrentUser { tenant_id = 1 });
 
@@ -161,7 +161,7 @@ namespace ModernWMS.UnitTests.Services.Asn
             var asnmaster = await SeedAsnmasterWithDetailAsync(scope.DbContext, 1);
 
             var service = CreateService(scope.DbContext);
-            var (flag, _) = await service.UpdateAsnmasterAsync(new AsnmasterBothViewModel { id = asnmaster.id, asn_batch = "Hijacked" }, new CurrentUser { tenant_id = 2 });
+            var (flag, _) = await service.UpdateAsnmasterAsync(new AsnMasterBothViewModel { id = asnmaster.id, asn_batch = "Hijacked" }, new CurrentUser { tenant_id = 2 });
 
             flag.ShouldBeFalse();
         }
@@ -176,7 +176,7 @@ namespace ModernWMS.UnitTests.Services.Asn
             var (flag, _) = await service.DeleteAsnmasterAsync(asnmaster.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<AsnmasterEntity>().AsNoTracking().FirstOrDefaultAsync(t => t.id == asnmaster.id)).ShouldBeNull();
+            (await scope.DbContext.GetDbSet<AsnMasterEntity>().AsNoTracking().FirstOrDefaultAsync(t => t.id == asnmaster.id)).ShouldBeNull();
             (await scope.DbContext.GetDbSet<AsnEntity>().AsNoTracking().CountAsync(t => t.asnmaster_id == asnmaster.id)).ShouldBe(0);
         }
 
@@ -190,7 +190,7 @@ namespace ModernWMS.UnitTests.Services.Asn
             var (flag, _) = await service.DeleteAsnmasterAsync(asnmaster.id, new CurrentUser { tenant_id = 2 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<AsnmasterEntity>().AsNoTracking().FirstOrDefaultAsync(t => t.id == asnmaster.id)).ShouldNotBeNull();
+            (await scope.DbContext.GetDbSet<AsnMasterEntity>().AsNoTracking().FirstOrDefaultAsync(t => t.id == asnmaster.id)).ShouldNotBeNull();
             (await scope.DbContext.GetDbSet<AsnEntity>().AsNoTracking().CountAsync(t => t.asnmaster_id == asnmaster.id)).ShouldBe(1);
         }
     }

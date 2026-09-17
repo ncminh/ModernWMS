@@ -18,9 +18,9 @@ namespace ModernWMS.UnitTests.Services.GoodsOwner
         public async Task PageAsync_OnlyReturnsRowsForCurrentTenant()
         {
             using var scope = new SqliteTestDbContextScope();
-            scope.DbContext.GetDbSet<GoodsownerEntity>().AddRange(
-                new GoodsownerEntity { goods_owner_name = "Tenant1-Owner", tenant_id = 1 },
-                new GoodsownerEntity { goods_owner_name = "Tenant2-Owner", tenant_id = 2 });
+            scope.DbContext.GetDbSet<GoodsOwnerEntity>().AddRange(
+                new GoodsOwnerEntity { goods_owner_name = "Tenant1-Owner", tenant_id = 1 },
+                new GoodsOwnerEntity { goods_owner_name = "Tenant2-Owner", tenant_id = 2 });
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
@@ -37,10 +37,10 @@ namespace ModernWMS.UnitTests.Services.GoodsOwner
             var service = CreateService(scope.DbContext);
             var currentUser = new CurrentUser { tenant_id = 1, user_name = "alice" };
 
-            var (id, _) = await service.AddAsync(new GoodsownerViewModel { goods_owner_name = "Owner1" }, currentUser);
+            var (id, _) = await service.AddAsync(new GoodsOwnerViewModel { goods_owner_name = "Owner1" }, currentUser);
 
             id.ShouldBeGreaterThan(0);
-            var saved = await scope.DbContext.GetDbSet<GoodsownerEntity>().FindAsync(id);
+            var saved = await scope.DbContext.GetDbSet<GoodsOwnerEntity>().FindAsync(id);
             saved!.creator.ShouldBe("alice");
             saved.tenant_id.ShouldBe(1);
         }
@@ -49,11 +49,11 @@ namespace ModernWMS.UnitTests.Services.GoodsOwner
         public async Task AddAsync_DuplicateNameInSameTenant_IsRejected()
         {
             using var scope = new SqliteTestDbContextScope();
-            scope.DbContext.GetDbSet<GoodsownerEntity>().Add(new GoodsownerEntity { goods_owner_name = "Owner1", tenant_id = 1 });
+            scope.DbContext.GetDbSet<GoodsOwnerEntity>().Add(new GoodsOwnerEntity { goods_owner_name = "Owner1", tenant_id = 1 });
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
-            var (id, _) = await service.AddAsync(new GoodsownerViewModel { goods_owner_name = "Owner1" }, new CurrentUser { tenant_id = 1 });
+            var (id, _) = await service.AddAsync(new GoodsOwnerViewModel { goods_owner_name = "Owner1" }, new CurrentUser { tenant_id = 1 });
 
             id.ShouldBe(0);
         }
@@ -64,7 +64,7 @@ namespace ModernWMS.UnitTests.Services.GoodsOwner
             using var scope = new SqliteTestDbContextScope();
             var service = CreateService(scope.DbContext);
 
-            var (flag, _) = await service.UpdateAsync(new GoodsownerViewModel { id = 999 }, new CurrentUser { tenant_id = 1 });
+            var (flag, _) = await service.UpdateAsync(new GoodsOwnerViewModel { id = 999 }, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
         }
@@ -73,13 +73,13 @@ namespace ModernWMS.UnitTests.Services.GoodsOwner
         public async Task UpdateAsync_DuplicateNameWithinSameTenant_IsRejected()
         {
             using var scope = new SqliteTestDbContextScope();
-            scope.DbContext.GetDbSet<GoodsownerEntity>().Add(new GoodsownerEntity { goods_owner_name = "Owner1", tenant_id = 1 });
-            var target = new GoodsownerEntity { goods_owner_name = "Owner2", tenant_id = 1 };
-            scope.DbContext.GetDbSet<GoodsownerEntity>().Add(target);
+            scope.DbContext.GetDbSet<GoodsOwnerEntity>().Add(new GoodsOwnerEntity { goods_owner_name = "Owner1", tenant_id = 1 });
+            var target = new GoodsOwnerEntity { goods_owner_name = "Owner2", tenant_id = 1 };
+            scope.DbContext.GetDbSet<GoodsOwnerEntity>().Add(target);
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
-            var (flag, _) = await service.UpdateAsync(new GoodsownerViewModel { id = target.id, goods_owner_name = "Owner1" }, new CurrentUser { tenant_id = 1 });
+            var (flag, _) = await service.UpdateAsync(new GoodsOwnerViewModel { id = target.id, goods_owner_name = "Owner1" }, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
         }
@@ -88,26 +88,26 @@ namespace ModernWMS.UnitTests.Services.GoodsOwner
         public async Task DeleteAsync_ExistingRecord_Succeeds()
         {
             using var scope = new SqliteTestDbContextScope();
-            var owner = new GoodsownerEntity { goods_owner_name = "Owner1", tenant_id = 1 };
-            scope.DbContext.GetDbSet<GoodsownerEntity>().Add(owner);
+            var owner = new GoodsOwnerEntity { goods_owner_name = "Owner1", tenant_id = 1 };
+            scope.DbContext.GetDbSet<GoodsOwnerEntity>().Add(owner);
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.DeleteAsync(owner.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<GoodsownerEntity>().AsNoTracking().FirstOrDefaultAsync(t => t.id == owner.id)).ShouldBeNull();
+            (await scope.DbContext.GetDbSet<GoodsOwnerEntity>().AsNoTracking().FirstOrDefaultAsync(t => t.id == owner.id)).ShouldBeNull();
         }
 
         [Fact]
         public async Task ExcelAsync_DuplicateAgainstExistingRow_ReportsErrorWithoutInsertingAnyRow()
         {
             using var scope = new SqliteTestDbContextScope();
-            scope.DbContext.GetDbSet<GoodsownerEntity>().Add(new GoodsownerEntity { goods_owner_name = "Owner1", tenant_id = 1 });
+            scope.DbContext.GetDbSet<GoodsOwnerEntity>().Add(new GoodsOwnerEntity { goods_owner_name = "Owner1", tenant_id = 1 });
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
-            var input = new List<GoodsownerImportViewModel>
+            var input = new List<GoodsOwnerImportViewModel>
             {
                 new() { goods_owner_name = "Owner1" },
                 new() { goods_owner_name = "Owner2" },
@@ -117,7 +117,7 @@ namespace ModernWMS.UnitTests.Services.GoodsOwner
 
             flag.ShouldBeFalse();
             errorData.ShouldHaveSingleItem().goods_owner_name.ShouldBe("Owner1");
-            (await scope.DbContext.GetDbSet<GoodsownerEntity>().CountAsync()).ShouldBe(1);
+            (await scope.DbContext.GetDbSet<GoodsOwnerEntity>().CountAsync()).ShouldBe(1);
         }
 
         [Fact]
@@ -125,7 +125,7 @@ namespace ModernWMS.UnitTests.Services.GoodsOwner
         {
             using var scope = new SqliteTestDbContextScope();
             var service = CreateService(scope.DbContext);
-            var input = new List<GoodsownerImportViewModel>
+            var input = new List<GoodsOwnerImportViewModel>
             {
                 new() { goods_owner_name = "Owner1" },
                 new() { goods_owner_name = "Owner2" },
@@ -135,15 +135,15 @@ namespace ModernWMS.UnitTests.Services.GoodsOwner
 
             flag.ShouldBeTrue();
             errorData.ShouldBeEmpty();
-            (await scope.DbContext.GetDbSet<GoodsownerEntity>().CountAsync()).ShouldBe(2);
+            (await scope.DbContext.GetDbSet<GoodsOwnerEntity>().CountAsync()).ShouldBe(2);
         }
 
         [Fact]
         public async Task GetAsync_BelongsToDifferentTenant_ReturnsEmptyViewModel()
         {
             using var scope = new SqliteTestDbContextScope();
-            var owner = new GoodsownerEntity { goods_owner_name = "Owner1", tenant_id = 1 };
-            scope.DbContext.GetDbSet<GoodsownerEntity>().Add(owner);
+            var owner = new GoodsOwnerEntity { goods_owner_name = "Owner1", tenant_id = 1 };
+            scope.DbContext.GetDbSet<GoodsOwnerEntity>().Add(owner);
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
@@ -156,12 +156,12 @@ namespace ModernWMS.UnitTests.Services.GoodsOwner
         public async Task UpdateAsync_BelongsToDifferentTenant_ReturnsNotExists()
         {
             using var scope = new SqliteTestDbContextScope();
-            var owner = new GoodsownerEntity { goods_owner_name = "Owner1", tenant_id = 1 };
-            scope.DbContext.GetDbSet<GoodsownerEntity>().Add(owner);
+            var owner = new GoodsOwnerEntity { goods_owner_name = "Owner1", tenant_id = 1 };
+            scope.DbContext.GetDbSet<GoodsOwnerEntity>().Add(owner);
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
-            var (flag, _) = await service.UpdateAsync(new GoodsownerViewModel { id = owner.id, goods_owner_name = "Hijacked" }, new CurrentUser { tenant_id = 2 });
+            var (flag, _) = await service.UpdateAsync(new GoodsOwnerViewModel { id = owner.id, goods_owner_name = "Hijacked" }, new CurrentUser { tenant_id = 2 });
 
             flag.ShouldBeFalse();
         }
@@ -170,15 +170,15 @@ namespace ModernWMS.UnitTests.Services.GoodsOwner
         public async Task DeleteAsync_BelongsToDifferentTenant_DoesNotDelete()
         {
             using var scope = new SqliteTestDbContextScope();
-            var owner = new GoodsownerEntity { goods_owner_name = "Owner1", tenant_id = 1 };
-            scope.DbContext.GetDbSet<GoodsownerEntity>().Add(owner);
+            var owner = new GoodsOwnerEntity { goods_owner_name = "Owner1", tenant_id = 1 };
+            scope.DbContext.GetDbSet<GoodsOwnerEntity>().Add(owner);
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.DeleteAsync(owner.id, new CurrentUser { tenant_id = 2 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<GoodsownerEntity>().AsNoTracking().FirstOrDefaultAsync(t => t.id == owner.id)).ShouldNotBeNull();
+            (await scope.DbContext.GetDbSet<GoodsOwnerEntity>().AsNoTracking().FirstOrDefaultAsync(t => t.id == owner.id)).ShouldNotBeNull();
         }
     }
 }

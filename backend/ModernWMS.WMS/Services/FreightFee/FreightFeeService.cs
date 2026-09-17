@@ -20,7 +20,7 @@ namespace ModernWMS.WMS.Services
     /// <summary>
     ///  Freightfee Service
     /// </summary>
-    public class FreightFeeService : BaseService<FreightfeeEntity>, IFreightFeeService
+    public class FreightFeeService : BaseService<FreightFeeEntity>, IFreightFeeService
     {
         #region Args
         /// <summary>
@@ -57,7 +57,7 @@ namespace ModernWMS.WMS.Services
         /// <param name="pageSearch">args</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        public async Task<(List<FreightfeeViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser)
+        public async Task<(List<FreightFeeViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser)
         {
             QueryCollection queries = new QueryCollection();
             if (pageSearch.searchObjects.Any())
@@ -67,42 +67,42 @@ namespace ModernWMS.WMS.Services
                     queries.Add(s);
                 });
             }
-            var DbSet = _dBContext.GetDbSet<FreightfeeEntity>();
+            var DbSet = _dBContext.GetDbSet<FreightFeeEntity>();
             var query = DbSet.AsNoTracking()
                 .Where(t => t.tenant_id.Equals(currentUser.tenant_id))
-                .Where(queries.AsExpression<FreightfeeEntity>());
+                .Where(queries.AsExpression<FreightFeeEntity>());
             int totals = await query.CountAsync();
             var list = await query.OrderByDescending(t => t.create_time)
                        .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
                        .Take(pageSearch.pageSize)
                        .ToListAsync();
-            return (list.Adapt<List<FreightfeeViewModel>>(), totals);
+            return (list.Adapt<List<FreightFeeViewModel>>(), totals);
         }
 
         /// <summary>
         /// Get all records
         /// </summary>
         /// <returns></returns>
-        public async Task<List<FreightfeeViewModel>> GetAllAsync(CurrentUser currentUser)
+        public async Task<List<FreightFeeViewModel>> GetAllAsync(CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<FreightfeeEntity>();
+            var DbSet = _dBContext.GetDbSet<FreightFeeEntity>();
             var data = await DbSet.AsNoTracking().Where(t => t.tenant_id.Equals(currentUser.tenant_id)).ToListAsync();
-            return data.Adapt<List<FreightfeeViewModel>>();
+            return data.Adapt<List<FreightFeeViewModel>>();
         }
 
         /// <summary>
         /// Get a record by id
         /// </summary>
         /// <returns></returns>
-        public async Task<FreightfeeViewModel> GetAsync(int id, CurrentUser currentUser)
+        public async Task<FreightFeeViewModel> GetAsync(int id, CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<FreightfeeEntity>();
+            var DbSet = _dBContext.GetDbSet<FreightFeeEntity>();
             var entity = await DbSet.AsNoTracking().FirstOrDefaultAsync(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id);
             if (entity == null)
             {
                 return null;
             }
-            return entity.Adapt<FreightfeeViewModel>();
+            return entity.Adapt<FreightFeeViewModel>();
         }
         /// <summary>
         /// add a new record
@@ -110,10 +110,10 @@ namespace ModernWMS.WMS.Services
         /// <param name="viewModel">viewmodel</param>
         /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        public async Task<(int id, string msg)> AddAsync(FreightfeeViewModel viewModel, CurrentUser currentUser)
+        public async Task<(int id, string msg)> AddAsync(FreightFeeViewModel viewModel, CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<FreightfeeEntity>();
-            var entity = viewModel.Adapt<FreightfeeEntity>();
+            var DbSet = _dBContext.GetDbSet<FreightFeeEntity>();
+            var entity = viewModel.Adapt<FreightFeeEntity>();
             entity.id = 0;
             entity.create_time = DateTime.Now;
             entity.creator = currentUser.user_name;
@@ -135,9 +135,9 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="viewModel">args</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> UpdateAsync(FreightfeeViewModel viewModel, CurrentUser currentUser)
+        public async Task<(bool flag, string msg)> UpdateAsync(FreightFeeViewModel viewModel, CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<FreightfeeEntity>();
+            var DbSet = _dBContext.GetDbSet<FreightFeeEntity>();
             var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id) && t.tenant_id == currentUser.tenant_id);
             if (entity == null)
             {
@@ -169,7 +169,7 @@ namespace ModernWMS.WMS.Services
         /// <returns></returns>
         public async Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser)
         {
-            var qty = await _dBContext.GetDbSet<FreightfeeEntity>().Where(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
+            var qty = await _dBContext.GetDbSet<FreightFeeEntity>().Where(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
             if (qty > 0)
             {
                 return (true, _stringLocalizer["delete_success"]);
@@ -186,10 +186,10 @@ namespace ModernWMS.WMS.Services
         /// <param name="datas">excel datas</param>
         /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> ExcelAsync(List<FreightfeeExcelmportViewModel> datas, CurrentUser currentUser)
+        public async Task<(bool flag, string msg)> ExcelAsync(List<FreightFeeExcelmportViewModel> datas, CurrentUser currentUser)
         {
             StringBuilder sb = new StringBuilder();
-            var DbSet = _dBContext.GetDbSet<FreightfeeEntity>();
+            var DbSet = _dBContext.GetDbSet<FreightFeeEntity>();
             /*        var user_num_repeat_excel = datas.GroupBy(t => t.warehouse_name).Select(t => new { warehouse_name = t.Key, cnt = t.Count() }).Where(t => t.cnt > 1).ToList();
                     foreach (var repeat in user_num_repeat_excel)
                     {
@@ -210,7 +210,7 @@ namespace ModernWMS.WMS.Services
                         return (false, sb.ToString());
                     }*/
 
-            var entities = datas.Adapt<List<FreightfeeEntity>>();
+            var entities = datas.Adapt<List<FreightFeeEntity>>();
             entities.ForEach(t =>
             {
                 t.creator = currentUser.user_name;

@@ -25,11 +25,11 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             return (spu, sku);
         }
 
-        private static async Task<DispatchlistEntity> SeedDispatchlistAsync(
+        private static async Task<DispatchListEntity> SeedDispatchlistAsync(
             ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId, int skuId,
             string dispatchNo = "D1", byte dispatchStatus = 0, int qty = 5, int lockQty = 0, int pickedQty = 0)
         {
-            var entity = new DispatchlistEntity
+            var entity = new DispatchListEntity
             {
                 dispatch_no = dispatchNo,
                 dispatch_status = dispatchStatus,
@@ -39,16 +39,16 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
                 picked_qty = pickedQty,
                 tenant_id = tenantId,
             };
-            dbContext.GetDbSet<DispatchlistEntity>().Add(entity);
+            dbContext.GetDbSet<DispatchListEntity>().Add(entity);
             await dbContext.SaveChangesAsync();
             return entity;
         }
 
-        private static async Task<GoodslocationEntity> SeedLocationAsync(
+        private static async Task<GoodsLocationEntity> SeedLocationAsync(
             ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId)
         {
-            var location = new GoodslocationEntity { location_name = "L1", warehouse_name = "W1", warehouse_area_name = "A1", warehouse_area_property = 1, tenant_id = tenantId };
-            dbContext.GetDbSet<GoodslocationEntity>().Add(location);
+            var location = new GoodsLocationEntity { location_name = "L1", warehouse_name = "W1", warehouse_area_name = "A1", warehouse_area_property = 1, tenant_id = tenantId };
+            dbContext.GetDbSet<GoodsLocationEntity>().Add(location);
             await dbContext.SaveChangesAsync();
             return location;
         }
@@ -62,12 +62,12 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             return stock;
         }
 
-        private static async Task<DispatchpicklistEntity> SeedPicklistAsync(
+        private static async Task<DispatchPickListEntity> SeedPicklistAsync(
             ModernWMS.Core.DBContext.SqlDBContext dbContext, int dispatchlistId, int skuId,
             int pickQty = 5, int pickedQty = 0, int pickerId = 0)
         {
-            var pick = new DispatchpicklistEntity { dispatchlist_id = dispatchlistId, sku_id = skuId, pick_qty = pickQty, picked_qty = pickedQty, picker_id = pickerId };
-            dbContext.GetDbSet<DispatchpicklistEntity>().Add(pick);
+            var pick = new DispatchPickListEntity { dispatchlist_id = dispatchlistId, sku_id = skuId, pick_qty = pickQty, picked_qty = pickedQty, picker_id = pickerId };
+            dbContext.GetDbSet<DispatchPickListEntity>().Add(pick);
             await dbContext.SaveChangesAsync();
             return pick;
         }
@@ -152,25 +152,25 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var dispatchlist = await SeedDispatchlistAsync(scope.DbContext, 1, sku.id, qty: 5);
 
             var service = CreateService(scope.DbContext);
-            var viewModel = new DispatchlistConfirmDetailViewModel
+            var viewModel = new DispatchListConfirmDetailViewModel
             {
                 dispatchlist_id = dispatchlist.id,
                 sku_id = sku.id,
                 qty = 5,
                 confirm = true,
-                pick_list = new List<DispatchlistConfirmPickDetailViewModel>
+                pick_list = new List<DispatchListConfirmPickDetailViewModel>
                 {
                     new() { stock_id = stock.id, dispatchlist_id = dispatchlist.id, goods_location_id = location.id, pick_qty = 5 },
                 },
             };
 
-            var (flag, _) = await service.ConfirmOrder(new List<DispatchlistConfirmDetailViewModel> { viewModel }, new CurrentUser { tenant_id = 1 });
+            var (flag, _) = await service.ConfirmOrder(new List<DispatchListConfirmDetailViewModel> { viewModel }, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            var saved = (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(dispatchlist.id))!;
+            var saved = (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(dispatchlist.id))!;
             saved.dispatch_status.ShouldBe((byte)2);
             saved.lock_qty.ShouldBe(5);
-            var pick = await scope.DbContext.GetDbSet<DispatchpicklistEntity>().AsNoTracking().FirstAsync();
+            var pick = await scope.DbContext.GetDbSet<DispatchPickListEntity>().AsNoTracking().FirstAsync();
             pick.dispatchlist_id.ShouldBe(dispatchlist.id);
             pick.pick_qty.ShouldBe(5);
         }
@@ -185,22 +185,22 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var dispatchlist = await SeedDispatchlistAsync(scope.DbContext, 1, sku.id, qty: 10);
 
             var service = CreateService(scope.DbContext);
-            var viewModel = new DispatchlistConfirmDetailViewModel
+            var viewModel = new DispatchListConfirmDetailViewModel
             {
                 dispatchlist_id = dispatchlist.id,
                 sku_id = sku.id,
                 qty = 10,
                 confirm = true,
-                pick_list = new List<DispatchlistConfirmPickDetailViewModel>
+                pick_list = new List<DispatchListConfirmPickDetailViewModel>
                 {
                     new() { stock_id = stock.id, dispatchlist_id = dispatchlist.id, goods_location_id = location.id, pick_qty = 6 },
                 },
             };
 
-            var (flag, _) = await service.ConfirmOrder(new List<DispatchlistConfirmDetailViewModel> { viewModel }, new CurrentUser { tenant_id = 1 });
+            var (flag, _) = await service.ConfirmOrder(new List<DispatchListConfirmDetailViewModel> { viewModel }, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            var rows = await scope.DbContext.GetDbSet<DispatchlistEntity>().AsNoTracking().ToListAsync();
+            var rows = await scope.DbContext.GetDbSet<DispatchListEntity>().AsNoTracking().ToListAsync();
             rows.Count.ShouldBe(2);
             rows.Sum(t => t.qty).ShouldBe(10);
             rows.ShouldContain(t => t.dispatch_status == 2 && t.qty == 6);
@@ -215,7 +215,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var dispatchlist = await SeedDispatchlistAsync(scope.DbContext, 1, sku.id, qty: 5);
 
             var service = CreateService(scope.DbContext);
-            var viewModel = new DispatchlistConfirmDetailViewModel
+            var viewModel = new DispatchListConfirmDetailViewModel
             {
                 dispatchlist_id = dispatchlist.id,
                 sku_id = sku.id,
@@ -223,11 +223,11 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
                 confirm = false,
             };
 
-            var (flag, _) = await service.ConfirmOrder(new List<DispatchlistConfirmDetailViewModel> { viewModel }, new CurrentUser { tenant_id = 1 });
+            var (flag, _) = await service.ConfirmOrder(new List<DispatchListConfirmDetailViewModel> { viewModel }, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().AsNoTracking().AnyAsync(t => t.id == dispatchlist.id)).ShouldBeFalse();
-            var requeued = await scope.DbContext.GetDbSet<DispatchlistEntity>().AsNoTracking().FirstAsync();
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().AsNoTracking().AnyAsync(t => t.id == dispatchlist.id)).ShouldBeFalse();
+            var requeued = await scope.DbContext.GetDbSet<DispatchListEntity>().AsNoTracking().FirstAsync();
             requeued.dispatch_status.ShouldBe((byte)1);
             requeued.qty.ShouldBe(5);
         }
@@ -241,12 +241,12 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var dispatchlist = await SeedDispatchlistAsync(scope.DbContext, 2, sku.id, qty: 5);
 
             var service = CreateService(scope.DbContext);
-            var viewModel = new DispatchlistConfirmDetailViewModel { dispatchlist_id = dispatchlist.id, sku_id = sku.id, qty = 5, confirm = true };
+            var viewModel = new DispatchListConfirmDetailViewModel { dispatchlist_id = dispatchlist.id, sku_id = sku.id, qty = 5, confirm = true };
 
-            var (flag, _) = await service.ConfirmOrder(new List<DispatchlistConfirmDetailViewModel> { viewModel }, new CurrentUser { tenant_id = 1 });
+            var (flag, _) = await service.ConfirmOrder(new List<DispatchListConfirmDetailViewModel> { viewModel }, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(dispatchlist.id))!.dispatch_status.ShouldBe((byte)0);
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(dispatchlist.id))!.dispatch_status.ShouldBe((byte)0);
         }
 
         // ConfirmPickByDispatchNo
@@ -263,12 +263,12 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var (flag, _) = await service.ConfirmPickByDispatchNo("D1", new CurrentUser { tenant_id = 1, user_id = 7, user_name = "alice" });
 
             flag.ShouldBeTrue();
-            var saved = (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(dispatchlist.id))!;
+            var saved = (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(dispatchlist.id))!;
             saved.dispatch_status.ShouldBe((byte)3);
             saved.picked_qty.ShouldBe(5);
             saved.pick_checker.ShouldBe("alice");
             saved.pick_checker_id.ShouldBe(7);
-            (await scope.DbContext.GetDbSet<DispatchpicklistEntity>().FindAsync(pick.id))!.picked_qty.ShouldBe(5);
+            (await scope.DbContext.GetDbSet<DispatchPickListEntity>().FindAsync(pick.id))!.picked_qty.ShouldBe(5);
         }
 
         [Fact]
@@ -282,7 +282,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var (flag, _) = await service.ConfirmPickByDispatchNo("D1", new CurrentUser { tenant_id = 1, user_id = 7, user_name = "alice" });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(dispatchlist.id))!.dispatch_status.ShouldBe((byte)2);
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(dispatchlist.id))!.dispatch_status.ShouldBe((byte)2);
         }
 
         // ConfirmPickDetail
@@ -299,7 +299,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var (flag, _) = await service.ConfirmPickDetail(new List<int> { pick.id }, new CurrentUser { tenant_id = 1, user_id = 3, user_name = "bob" });
 
             flag.ShouldBeTrue();
-            var saved = (await scope.DbContext.GetDbSet<DispatchpicklistEntity>().FindAsync(pick.id))!;
+            var saved = (await scope.DbContext.GetDbSet<DispatchPickListEntity>().FindAsync(pick.id))!;
             saved.picker.ShouldBe("bob");
             saved.picker_id.ShouldBe(3);
         }
@@ -331,7 +331,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var (flag, _) = await service.ConfirmPickDetail(new List<int> { pick.id }, new CurrentUser { tenant_id = 1, user_id = 3, user_name = "bob" });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<DispatchpicklistEntity>().FindAsync(pick.id))!.picker_id.ShouldBe(0);
+            (await scope.DbContext.GetDbSet<DispatchPickListEntity>().FindAsync(pick.id))!.picker_id.ShouldBe(0);
         }
 
         // CancelConfirmPickDetail
@@ -348,7 +348,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var (flag, _) = await service.CancelConfirmPickDetail(new List<int> { pick.id }, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            var saved = (await scope.DbContext.GetDbSet<DispatchpicklistEntity>().FindAsync(pick.id))!;
+            var saved = (await scope.DbContext.GetDbSet<DispatchPickListEntity>().FindAsync(pick.id))!;
             saved.picker.ShouldBe("");
             saved.picker_id.ShouldBe(0);
         }
@@ -379,7 +379,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var (flag, _) = await service.CancelConfirmPickDetail(new List<int> { pick.id }, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<DispatchpicklistEntity>().FindAsync(pick.id))!.picker_id.ShouldBe(5);
+            (await scope.DbContext.GetDbSet<DispatchPickListEntity>().FindAsync(pick.id))!.picker_id.ShouldBe(5);
         }
 
         // CancelOrderOpration
@@ -396,10 +396,10 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var (flag, _) = await service.CancelOrderOpration(new CancelOrderOprationViewModel { dispatch_no = "D1", dispatch_status = 3 }, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            var saved = (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(dispatchlist.id))!;
+            var saved = (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(dispatchlist.id))!;
             saved.dispatch_status.ShouldBe((byte)2);
             saved.picked_qty.ShouldBe(0);
-            (await scope.DbContext.GetDbSet<DispatchpicklistEntity>().FindAsync(pick.id))!.picked_qty.ShouldBe(0);
+            (await scope.DbContext.GetDbSet<DispatchPickListEntity>().FindAsync(pick.id))!.picked_qty.ShouldBe(0);
         }
 
         [Fact]
@@ -414,10 +414,10 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var (flag, _) = await service.CancelOrderOpration(new CancelOrderOprationViewModel { dispatch_no = "D1", dispatch_status = 2 }, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            var saved = (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(dispatchlist.id))!;
+            var saved = (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(dispatchlist.id))!;
             saved.dispatch_status.ShouldBe((byte)1);
             saved.lock_qty.ShouldBe(0);
-            (await scope.DbContext.GetDbSet<DispatchpicklistEntity>().AsNoTracking().AnyAsync()).ShouldBeFalse();
+            (await scope.DbContext.GetDbSet<DispatchPickListEntity>().AsNoTracking().AnyAsync()).ShouldBeFalse();
         }
 
         [Fact]
@@ -457,7 +457,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var (flag, _) = await service.CancelDispatchlistDetailOpration(dispatchlist.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(dispatchlist.id))!.dispatch_status.ShouldBe((byte)3);
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(dispatchlist.id))!.dispatch_status.ShouldBe((byte)3);
         }
 
         [Fact]
@@ -473,7 +473,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var (flag, _) = await service.CancelDispatchlistDetailOpration(dispatchlist.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(dispatchlist.id))!.dispatch_status.ShouldBe((byte)5);
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(dispatchlist.id))!.dispatch_status.ShouldBe((byte)5);
         }
 
         [Fact]
@@ -487,7 +487,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var (flag, _) = await service.CancelDispatchlistDetailOpration(dispatchlist.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(dispatchlist.id))!.dispatch_status.ShouldBe((byte)3);
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(dispatchlist.id))!.dispatch_status.ShouldBe((byte)3);
         }
 
         [Fact]
@@ -503,7 +503,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var (flag, _) = await service.CancelDispatchlistDetailOpration(dispatchlist.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(dispatchlist.id))!.dispatch_status.ShouldBe((byte)4);
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(dispatchlist.id))!.dispatch_status.ShouldBe((byte)4);
         }
 
         [Fact]
@@ -542,7 +542,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var (flag, _) = await service.CancelDispatchlistDetailOpration(dispatchlist.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(dispatchlist.id))!.dispatch_status.ShouldBe((byte)4);
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(dispatchlist.id))!.dispatch_status.ShouldBe((byte)4);
         }
 
         // GetPickListByDispatchID
@@ -554,8 +554,8 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var (_, sku) = await SeedSpuSkuAsync(scope.DbContext, 1);
             var location = await SeedLocationAsync(scope.DbContext, 1);
             var dispatchlist = await SeedDispatchlistAsync(scope.DbContext, 1, sku.id);
-            var pick = new DispatchpicklistEntity { dispatchlist_id = dispatchlist.id, sku_id = sku.id, goods_location_id = location.id, pick_qty = 5 };
-            scope.DbContext.GetDbSet<DispatchpicklistEntity>().Add(pick);
+            var pick = new DispatchPickListEntity { dispatchlist_id = dispatchlist.id, sku_id = sku.id, goods_location_id = location.id, pick_qty = 5 };
+            scope.DbContext.GetDbSet<DispatchPickListEntity>().Add(pick);
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
@@ -574,8 +574,8 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var (_, sku) = await SeedSpuSkuAsync(scope.DbContext, 2);
             var location = await SeedLocationAsync(scope.DbContext, 2);
             var dispatchlist = await SeedDispatchlistAsync(scope.DbContext, 2, sku.id);
-            var pick = new DispatchpicklistEntity { dispatchlist_id = dispatchlist.id, sku_id = sku.id, goods_location_id = location.id, pick_qty = 5 };
-            scope.DbContext.GetDbSet<DispatchpicklistEntity>().Add(pick);
+            var pick = new DispatchPickListEntity { dispatchlist_id = dispatchlist.id, sku_id = sku.id, goods_location_id = location.id, pick_qty = 5 };
+            scope.DbContext.GetDbSet<DispatchPickListEntity>().Add(pick);
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);

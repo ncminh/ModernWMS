@@ -13,11 +13,11 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
         private static DispatchDeliveryService CreateService(ModernWMS.Core.DBContext.SqlDBContext dbContext) =>
             new(dbContext, new FakeStringLocalizer<MultiLanguage>());
 
-        private static async Task<DispatchlistEntity> SeedDispatchlistAsync(
+        private static async Task<DispatchListEntity> SeedDispatchlistAsync(
             ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId,
             byte dispatchStatus = 3, int pickedQty = 10, decimal weight = 5, decimal volume = 2)
         {
-            var entity = new DispatchlistEntity
+            var entity = new DispatchListEntity
             {
                 dispatch_no = "D1",
                 dispatch_status = dispatchStatus,
@@ -26,16 +26,16 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
                 volume = volume,
                 tenant_id = tenantId,
             };
-            dbContext.GetDbSet<DispatchlistEntity>().Add(entity);
+            dbContext.GetDbSet<DispatchListEntity>().Add(entity);
             await dbContext.SaveChangesAsync();
             return entity;
         }
 
-        private static async Task<DispatchpicklistEntity> SeedPicklistAsync(
+        private static async Task<DispatchPickListEntity> SeedPicklistAsync(
             ModernWMS.Core.DBContext.SqlDBContext dbContext, int dispatchlistId, int pickedQty)
         {
-            var pick = new DispatchpicklistEntity { dispatchlist_id = dispatchlistId, picked_qty = pickedQty };
-            dbContext.GetDbSet<DispatchpicklistEntity>().Add(pick);
+            var pick = new DispatchPickListEntity { dispatchlist_id = dispatchlistId, picked_qty = pickedQty };
+            dbContext.GetDbSet<DispatchPickListEntity>().Add(pick);
             await dbContext.SaveChangesAsync();
             return pick;
         }
@@ -59,11 +59,11 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.Package(
-                new List<DispatchlistPackageViewModel> { new() { id = entity.id, dispatch_status = 3, package_qty = 10 } },
+                new List<DispatchListPackageViewModel> { new() { id = entity.id, dispatch_status = 3, package_qty = 10 } },
                 new CurrentUser { tenant_id = 1, user_name = "alice" });
 
             flag.ShouldBeTrue();
-            var saved = (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(entity.id))!;
+            var saved = (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(entity.id))!;
             saved.package_qty.ShouldBe(10);
             saved.dispatch_status.ShouldBe((byte)4);
             saved.package_person.ShouldBe("alice");
@@ -78,7 +78,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.Package(
-                new List<DispatchlistPackageViewModel> { new() { id = entity.id, dispatch_status = 3, package_qty = 10 } },
+                new List<DispatchListPackageViewModel> { new() { id = entity.id, dispatch_status = 3, package_qty = 10 } },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
@@ -92,7 +92,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.Package(
-                new List<DispatchlistPackageViewModel> { new() { id = entity.id, dispatch_status = 3, package_qty = 5 } },
+                new List<DispatchListPackageViewModel> { new() { id = entity.id, dispatch_status = 3, package_qty = 5 } },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
@@ -107,11 +107,11 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.Package(
-                new List<DispatchlistPackageViewModel> { new() { id = entity.id, dispatch_status = 3, package_qty = 10 } },
+                new List<DispatchListPackageViewModel> { new() { id = entity.id, dispatch_status = 3, package_qty = 10 } },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(entity.id))!.package_qty.ShouldBe(0);
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(entity.id))!.package_qty.ShouldBe(0);
         }
 
         // Weight
@@ -124,11 +124,11 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.Weight(
-                new List<DispatchlistWeightViewModel> { new() { id = entity.id, dispatch_status = 3, weighing_qty = 10, weighing_weight = 25.5m } },
+                new List<DispatchListWeightViewModel> { new() { id = entity.id, dispatch_status = 3, weighing_qty = 10, weighing_weight = 25.5m } },
                 new CurrentUser { tenant_id = 1, user_name = "bob" });
 
             flag.ShouldBeTrue();
-            var saved = (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(entity.id))!;
+            var saved = (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(entity.id))!;
             saved.weighing_qty.ShouldBe(10);
             saved.weighing_weight.ShouldBe(25.5m);
             saved.dispatch_status.ShouldBe((byte)5);
@@ -144,7 +144,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.Weight(
-                new List<DispatchlistWeightViewModel> { new() { id = entity.id, dispatch_status = 3, weighing_qty = 10, weighing_weight = 1 } },
+                new List<DispatchListWeightViewModel> { new() { id = entity.id, dispatch_status = 3, weighing_qty = 10, weighing_weight = 1 } },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
@@ -158,11 +158,11 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.Weight(
-                new List<DispatchlistWeightViewModel> { new() { id = entity.id, dispatch_status = 3, weighing_qty = 10, weighing_weight = 1 } },
+                new List<DispatchListWeightViewModel> { new() { id = entity.id, dispatch_status = 3, weighing_qty = 10, weighing_weight = 1 } },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(entity.id))!.weighing_qty.ShouldBe(0);
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(entity.id))!.weighing_qty.ShouldBe(0);
         }
 
         // Delivery
@@ -177,17 +177,17 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.Delivery(
-                new List<DispatchlistDeliveryViewModel> { new() { id = entity.id, dispatch_status = 3, picked_qty = 5 } },
+                new List<DispatchListDeliveryViewModel> { new() { id = entity.id, dispatch_status = 3, picked_qty = 5 } },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            var saved = (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(entity.id))!;
+            var saved = (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(entity.id))!;
             saved.dispatch_status.ShouldBe((byte)6);
             saved.actual_qty.ShouldBe(5);
             saved.intrasit_qty.ShouldBe(5);
             saved.lock_qty.ShouldBe(0);
             (await scope.DbContext.GetDbSet<StockEntity>().FindAsync(stock.id))!.qty.ShouldBe(5);
-            (await scope.DbContext.GetDbSet<DispatchpicklistEntity>().AsNoTracking().FirstAsync()).is_update_stock.ShouldBeTrue();
+            (await scope.DbContext.GetDbSet<DispatchPickListEntity>().AsNoTracking().FirstAsync()).is_update_stock.ShouldBeTrue();
         }
 
         [Fact]
@@ -198,7 +198,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.Delivery(
-                new List<DispatchlistDeliveryViewModel> { new() { id = entity.id, dispatch_status = 1, picked_qty = 5 } },
+                new List<DispatchListDeliveryViewModel> { new() { id = entity.id, dispatch_status = 1, picked_qty = 5 } },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
@@ -214,7 +214,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.Delivery(
-                new List<DispatchlistDeliveryViewModel> { new() { id = entity.id, dispatch_status = 3, picked_qty = 5 } },
+                new List<DispatchListDeliveryViewModel> { new() { id = entity.id, dispatch_status = 3, picked_qty = 5 } },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
@@ -228,11 +228,11 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.Delivery(
-                new List<DispatchlistDeliveryViewModel> { new() { id = entity.id, dispatch_status = 3, picked_qty = 5 } },
+                new List<DispatchListDeliveryViewModel> { new() { id = entity.id, dispatch_status = 3, picked_qty = 5 } },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(entity.id))!.dispatch_status.ShouldBe((byte)3);
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(entity.id))!.dispatch_status.ShouldBe((byte)3);
         }
 
         // SetFreightfee
@@ -242,17 +242,17 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
         {
             using var scope = new SqliteTestDbContextScope();
             var entity = await SeedDispatchlistAsync(scope.DbContext, 1, weight: 10, volume: 2);
-            var freightfee = new FreightfeeEntity { carrier = "DHL", price_per_weight = 3, price_per_volume = 1, min_payment = 5, tenant_id = 1 };
-            scope.DbContext.GetDbSet<FreightfeeEntity>().Add(freightfee);
+            var freightfee = new FreightFeeEntity { carrier = "DHL", price_per_weight = 3, price_per_volume = 1, min_payment = 5, tenant_id = 1 };
+            scope.DbContext.GetDbSet<FreightFeeEntity>().Add(freightfee);
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.SetFreightfee(
-                new List<DispatchlistFreightfeeViewModel> { new() { id = entity.id, freightfee_id = freightfee.id, waybill_no = "WB1" } },
+                new List<DispatchListFreightFeeViewModel> { new() { id = entity.id, freightfee_id = freightfee.id, waybill_no = "WB1" } },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            var saved = (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(entity.id))!;
+            var saved = (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(entity.id))!;
             saved.carrier.ShouldBe("DHL");
             saved.waybill_no.ShouldBe("WB1");
             saved.freightfee.ShouldBe(30m); // max(10*3, 2*1, 5) = 30
@@ -266,17 +266,17 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             entity.weighing_no = "W1";
             entity.weighing_weight = 20;
             await scope.DbContext.SaveChangesAsync();
-            var freightfee = new FreightfeeEntity { carrier = "DHL", price_per_weight = 3, price_per_volume = 1, min_payment = 5, tenant_id = 1 };
-            scope.DbContext.GetDbSet<FreightfeeEntity>().Add(freightfee);
+            var freightfee = new FreightFeeEntity { carrier = "DHL", price_per_weight = 3, price_per_volume = 1, min_payment = 5, tenant_id = 1 };
+            scope.DbContext.GetDbSet<FreightFeeEntity>().Add(freightfee);
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.SetFreightfee(
-                new List<DispatchlistFreightfeeViewModel> { new() { id = entity.id, freightfee_id = freightfee.id, waybill_no = "WB1" } },
+                new List<DispatchListFreightFeeViewModel> { new() { id = entity.id, freightfee_id = freightfee.id, waybill_no = "WB1" } },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(entity.id))!.freightfee.ShouldBe(60m); // 20 * 3
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(entity.id))!.freightfee.ShouldBe(60m); // 20 * 3
         }
 
         [Fact]
@@ -285,17 +285,17 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             // Regression test: this method took no CurrentUser at all before the Phase 5 fix.
             using var scope = new SqliteTestDbContextScope();
             var entity = await SeedDispatchlistAsync(scope.DbContext, 2, weight: 10, volume: 2);
-            var freightfee = new FreightfeeEntity { carrier = "DHL", price_per_weight = 3, price_per_volume = 1, min_payment = 5, tenant_id = 2 };
-            scope.DbContext.GetDbSet<FreightfeeEntity>().Add(freightfee);
+            var freightfee = new FreightFeeEntity { carrier = "DHL", price_per_weight = 3, price_per_volume = 1, min_payment = 5, tenant_id = 2 };
+            scope.DbContext.GetDbSet<FreightFeeEntity>().Add(freightfee);
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.SetFreightfee(
-                new List<DispatchlistFreightfeeViewModel> { new() { id = entity.id, freightfee_id = freightfee.id, waybill_no = "WB1" } },
+                new List<DispatchListFreightFeeViewModel> { new() { id = entity.id, freightfee_id = freightfee.id, waybill_no = "WB1" } },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(entity.id))!.carrier.ShouldBe("");
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(entity.id))!.carrier.ShouldBe("");
         }
 
         // SignForArrival
@@ -310,11 +310,11 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.SignForArrival(
-                new List<DispatchlistSignViewModel> { new() { id = entity.id, dispatch_status = 6, damage_qty = 2 } },
+                new List<DispatchListSignViewModel> { new() { id = entity.id, dispatch_status = 6, damage_qty = 2 } },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            var saved = (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(entity.id))!;
+            var saved = (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(entity.id))!;
             saved.dispatch_status.ShouldBe((byte)7);
             saved.damage_qty.ShouldBe(2);
             saved.sign_qty.ShouldBe(8);
@@ -328,13 +328,13 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             using var scope = new SqliteTestDbContextScope();
             var entity1 = await SeedDispatchlistAsync(scope.DbContext, 1, dispatchStatus: 6);
             entity1.actual_qty = 10;
-            var entity2 = new DispatchlistEntity { dispatch_no = "D2", dispatch_status = 6, actual_qty = 20, tenant_id = 1 };
-            scope.DbContext.GetDbSet<DispatchlistEntity>().Add(entity2);
+            var entity2 = new DispatchListEntity { dispatch_no = "D2", dispatch_status = 6, actual_qty = 20, tenant_id = 1 };
+            scope.DbContext.GetDbSet<DispatchListEntity>().Add(entity2);
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.SignForArrival(
-                new List<DispatchlistSignViewModel>
+                new List<DispatchListSignViewModel>
                 {
                     new() { id = entity1.id, dispatch_status = 6, damage_qty = 1 },
                     new() { id = entity2.id, dispatch_status = 6, damage_qty = 5 },
@@ -342,8 +342,8 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(entity1.id))!.damage_qty.ShouldBe(1);
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(entity2.id))!.damage_qty.ShouldBe(5);
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(entity1.id))!.damage_qty.ShouldBe(1);
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(entity2.id))!.damage_qty.ShouldBe(5);
         }
 
         [Fact]
@@ -354,7 +354,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.SignForArrival(
-                new List<DispatchlistSignViewModel> { new() { id = entity.id, dispatch_status = 5, damage_qty = 0 } },
+                new List<DispatchListSignViewModel> { new() { id = entity.id, dispatch_status = 5, damage_qty = 0 } },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
@@ -369,11 +369,11 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.SignForArrival(
-                new List<DispatchlistSignViewModel> { new() { id = entity.id, dispatch_status = 6, damage_qty = 3 } },
+                new List<DispatchListSignViewModel> { new() { id = entity.id, dispatch_status = 6, damage_qty = 3 } },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(entity.id))!.damage_qty.ShouldBe(0);
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(entity.id))!.damage_qty.ShouldBe(0);
         }
     }
 }

@@ -72,16 +72,16 @@
         /// </summary>
         /// <returns>args</returns>
         [HttpGet("all")]
-        public async Task<ResultModel<List<RolemenuListViewModel>>> GetAllAsync()
+        public async Task<ResultModel<List<RoleMenuListViewModel>>> GetAllAsync()
         {
             var data = await _rolemenuService.GetAllAsync(CurrentUser);
             if (data.Any())
             {
-                return ResultModel<List<RolemenuListViewModel>>.Success(data);
+                return ResultModel<List<RoleMenuListViewModel>>.Success(data);
             }
             else
             {
-                return ResultModel<List<RolemenuListViewModel>>.Success(new List<RolemenuListViewModel>());
+                return ResultModel<List<RoleMenuListViewModel>>.Success(new List<RoleMenuListViewModel>());
             }
         }
         /// <summary>
@@ -106,16 +106,16 @@
         /// </summary>
         /// <returns>args</returns>
         [HttpGet]
-        public async Task<ResultModel<RolemenuBothViewModel>> GetAsync(int userrole_id)
+        public async Task<ResultModel<RoleMenuBothViewModel>> GetAsync(int userrole_id)
         {
             var data = await _rolemenuService.GetAsync(userrole_id, CurrentUser);
             if (data != null && data.userrole_id > 0)
             {
-                return ResultModel<RolemenuBothViewModel>.Success(data);
+                return ResultModel<RoleMenuBothViewModel>.Success(data);
             }
             else
             {
-                return ResultModel<RolemenuBothViewModel>.Error(_stringLocalizer["not_exists_entity"]);
+                return ResultModel<RoleMenuBothViewModel>.Error(_stringLocalizer["not_exists_entity"]);
             }
         }
         /// <summary>
@@ -124,7 +124,7 @@
         /// <param name="viewModel">args</param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ResultModel<int>> AddAsync(RolemenuBothViewModel viewModel)
+        public async Task<ResultModel<int>> AddAsync(RoleMenuBothViewModel viewModel)
         {
             var (id, msg) = await _rolemenuService.AddAsync(viewModel, CurrentUser);
             if (id > 0)
@@ -143,7 +143,7 @@
         /// <param name="viewModel">args</param>
         /// <returns></returns>
         [HttpPut]
-        public async Task<ResultModel<bool>> UpdateAsync(RolemenuBothViewModel viewModel)
+        public async Task<ResultModel<bool>> UpdateAsync(RoleMenuBothViewModel viewModel)
         {
             var (flag, msg) = await _rolemenuService.UpdateAsync(viewModel, CurrentUser);
             if (flag)

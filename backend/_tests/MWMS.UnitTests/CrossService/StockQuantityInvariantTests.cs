@@ -30,11 +30,11 @@ namespace ModernWMS.UnitTests.CrossService
             return (spu, sku);
         }
 
-        private static async Task<GoodslocationEntity> SeedLocationAsync(
+        private static async Task<GoodsLocationEntity> SeedLocationAsync(
             ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId, string name)
         {
-            var location = new GoodslocationEntity { location_name = name, warehouse_name = "W1", tenant_id = tenantId };
-            dbContext.GetDbSet<GoodslocationEntity>().Add(location);
+            var location = new GoodsLocationEntity { location_name = name, warehouse_name = "W1", tenant_id = tenantId };
+            dbContext.GetDbSet<GoodsLocationEntity>().Add(location);
             await dbContext.SaveChangesAsync();
             return location;
         }

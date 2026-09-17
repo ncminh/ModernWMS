@@ -18,7 +18,7 @@ namespace ModernWMS.WMS.Services
     /// <summary>
     ///  Asn sorting Service (part of the "Flow Api" region, split out of AsnService)
     /// </summary>
-    public class AsnSortingService : BaseService<AsnsortEntity>, IAsnSortingService
+    public class AsnSortingService : BaseService<AsnSortEntity>, IAsnSortingService
     {
         #region Args
 
@@ -66,10 +66,10 @@ namespace ModernWMS.WMS.Services
         /// <param name="viewModels">args</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> SortingAsync(List<AsnsortInputViewModel> viewModels, CurrentUser currentUser)
+        public async Task<(bool flag, string msg)> SortingAsync(List<AsnSortInputViewModel> viewModels, CurrentUser currentUser)
         {
             var Asns = _dBContext.GetDbSet<AsnEntity>();
-            var Asnsorts = _dBContext.GetDbSet<AsnsortEntity>();
+            var Asnsorts = _dBContext.GetDbSet<AsnSortEntity>();
             var idList = viewModels.Select(t => t.asn_id).ToList().Distinct().ToList();
             var entities = await Asns.Where(t => idList.Contains(t.id) && t.tenant_id == currentUser.tenant_id).ToListAsync();
 
@@ -82,7 +82,7 @@ namespace ModernWMS.WMS.Services
                 return (false, "[202]" + $"{_stringLocalizer["ASN_Status_Is_Not_Pre_Sort"]}");
             }
             var models = viewModels.Where(v => entities.Select(e => e.id).ToList().Contains(v.asn_id)).ToList();
-            List<AsnsortEntity> sortEntities = new List<AsnsortEntity>();
+            List<AsnSortEntity> sortEntities = new List<AsnSortEntity>();
             foreach (var v in models)
             {
                 if (v.sorted_qty > 1 && v.is_auto_num)
@@ -90,7 +90,7 @@ namespace ModernWMS.WMS.Services
                     List<string> snlist = await _functionHelper.GetFormNoListAsync("Asnsort", v.sorted_qty, currentUser.tenant_id, "sn");
                     for (int i = 0; i < v.sorted_qty; i++)
                     {
-                        sortEntities.Add(new AsnsortEntity
+                        sortEntities.Add(new AsnSortEntity
                         {
                             id = 0,
                             asn_id = v.asn_id,
@@ -107,7 +107,7 @@ namespace ModernWMS.WMS.Services
                 else
                 {
                     string sn = await _functionHelper.GetFormNoAsync("Asnsort", "sn");
-                    sortEntities.Add(new AsnsortEntity
+                    sortEntities.Add(new AsnSortEntity
                     {
                         id = 0,
                         asn_id = v.asn_id,
@@ -147,15 +147,15 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="asn_id">asn id</param>
         /// <returns></returns>
-        public async Task<List<AsnsortViewModel>> GetAsnsortsAsync(int asn_id, CurrentUser currentUser)
+        public async Task<List<AsnSortViewModel>> GetAsnsortsAsync(int asn_id, CurrentUser currentUser)
         {
-            var Asnsorts = _dBContext.GetDbSet<AsnsortEntity>();
+            var Asnsorts = _dBContext.GetDbSet<AsnSortEntity>();
             var asns = _dBContext.Set<AsnEntity>().AsNoTracking();
 
             var data = await (from m in asns
                               join d in Asnsorts on m.id equals d.asn_id
                               where m.id == asn_id && m.tenant_id == currentUser.tenant_id
-                              select new AsnsortViewModel
+                              select new AsnSortViewModel
                               {
                                   id = d.id,
                                   asn_id = asn_id,
@@ -175,7 +175,7 @@ namespace ModernWMS.WMS.Services
             }
             else
             {
-                return new List<AsnsortViewModel>();
+                return new List<AsnSortViewModel>();
             }
         }
 
@@ -185,9 +185,9 @@ namespace ModernWMS.WMS.Services
         /// <param name="entities">data</param>
         /// <param name="user">CurrentUser</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> ModifyAsnsortsAsync(List<AsnsortEntity> entities, CurrentUser user)
+        public async Task<(bool flag, string msg)> ModifyAsnsortsAsync(List<AsnSortEntity> entities, CurrentUser user)
         {
-            var Asnsorts = _dBContext.GetDbSet<AsnsortEntity>();
+            var Asnsorts = _dBContext.GetDbSet<AsnSortEntity>();
             if (entities.Any(t => t.id < 0 || t.sorted_qty == 0))
             {
                 var delIDList = entities.Where(t => t.id < 0).Select(t => Math.Abs(t.id)).ToList();
@@ -323,7 +323,7 @@ namespace ModernWMS.WMS.Services
             var qty = await _dBContext.SaveChangesAsync();
             if (qty > 0)
             {
-                var Asnsorts = _dBContext.GetDbSet<AsnsortEntity>();
+                var Asnsorts = _dBContext.GetDbSet<AsnSortEntity>();
                 await Asnsorts.Where(t => idList.Contains(t.asn_id)).ExecuteDeleteAsync();
                 return (true, _stringLocalizer["save_success"]);
             }
@@ -343,8 +343,8 @@ namespace ModernWMS.WMS.Services
             var Spus = _dBContext.GetDbSet<SpuEntity>().AsNoTracking();
             var Skus = _dBContext.GetDbSet<SkuEntity>().AsNoTracking();
             var Asns = _dBContext.GetDbSet<AsnEntity>().AsNoTracking();
-            var Asnmasters = _dBContext.GetDbSet<AsnmasterEntity>().AsNoTracking();
-            var sorts = _dBContext.GetDbSet<AsnsortEntity>().AsNoTracking();
+            var Asnmasters = _dBContext.GetDbSet<AsnMasterEntity>().AsNoTracking();
+            var sorts = _dBContext.GetDbSet<AsnSortEntity>().AsNoTracking();
 
             var query = from m in Asnmasters
                         join a in Asns on m.id equals a.asnmaster_id

@@ -13,10 +13,10 @@ namespace ModernWMS.UnitTests.Services.Asn
         private static AsnConfirmService CreateService(ModernWMS.Core.DBContext.SqlDBContext dbContext) =>
             new(dbContext, new FakeStringLocalizer<MultiLanguage>());
 
-        private static async Task<AsnmasterEntity> SeedAsnmasterAsync(ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId)
+        private static async Task<AsnMasterEntity> SeedAsnmasterAsync(ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId)
         {
-            var asnmaster = new AsnmasterEntity { asn_no = "ASNM1", tenant_id = tenantId };
-            dbContext.GetDbSet<AsnmasterEntity>().Add(asnmaster);
+            var asnmaster = new AsnMasterEntity { asn_no = "ASNM1", tenant_id = tenantId };
+            dbContext.GetDbSet<AsnMasterEntity>().Add(asnmaster);
             await dbContext.SaveChangesAsync();
             return asnmaster;
         }

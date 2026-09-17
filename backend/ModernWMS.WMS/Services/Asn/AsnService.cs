@@ -96,7 +96,7 @@ namespace ModernWMS.WMS.Services
             }
             var Spus = _dBContext.GetDbSet<SpuEntity>().AsNoTracking();
             var Skus = _dBContext.GetDbSet<SkuEntity>().AsNoTracking();
-            var Asnmasters = _dBContext.GetDbSet<AsnmasterEntity>().AsNoTracking();
+            var Asnmasters = _dBContext.GetDbSet<AsnMasterEntity>().AsNoTracking();
 
             var query = from m in Asns
                         join am in Asnmasters on m.asnmaster_id equals am.id
@@ -162,7 +162,7 @@ namespace ModernWMS.WMS.Services
             var Spus = _dBContext.GetDbSet<SpuEntity>();
             var Skus = _dBContext.GetDbSet<SkuEntity>();
             var Asns = _dBContext.GetDbSet<AsnEntity>();
-            var Asnmasters = _dBContext.GetDbSet<AsnmasterEntity>();
+            var Asnmasters = _dBContext.GetDbSet<AsnMasterEntity>();
             var query = from m in Asns.AsNoTracking()
                         join am in Asnmasters.AsNoTracking() on m.asnmaster_id equals am.id
                         join p in Spus.AsNoTracking() on m.spu_id equals p.id

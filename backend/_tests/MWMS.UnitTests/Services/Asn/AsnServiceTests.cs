@@ -14,7 +14,7 @@ namespace ModernWMS.UnitTests.Services.Asn
         private static AsnService CreateService(ModernWMS.Core.DBContext.SqlDBContext dbContext) =>
             new(dbContext, new FakeStringLocalizer<MultiLanguage>(), TestFunctionHelperFactory.Create(dbContext));
 
-        private static async Task<(SpuEntity spu, SkuEntity sku, AsnmasterEntity asnmaster)> SeedAsnPrerequisitesAsync(
+        private static async Task<(SpuEntity spu, SkuEntity sku, AsnMasterEntity asnmaster)> SeedAsnPrerequisitesAsync(
             ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId)
         {
             var spu = new SpuEntity { spu_code = "SPU1", tenant_id = tenantId };
@@ -23,8 +23,8 @@ namespace ModernWMS.UnitTests.Services.Asn
             var sku = new SkuEntity { spu_id = spu.id, sku_code = "SKU1" };
             dbContext.GetDbSet<SkuEntity>().Add(sku);
             await dbContext.SaveChangesAsync();
-            var asnmaster = new AsnmasterEntity { asn_no = "ASNM1", tenant_id = tenantId };
-            dbContext.GetDbSet<AsnmasterEntity>().Add(asnmaster);
+            var asnmaster = new AsnMasterEntity { asn_no = "ASNM1", tenant_id = tenantId };
+            dbContext.GetDbSet<AsnMasterEntity>().Add(asnmaster);
             await dbContext.SaveChangesAsync();
             return (spu, sku, asnmaster);
         }

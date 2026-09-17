@@ -95,12 +95,12 @@ namespace ModernWMS.UnitTests.Services.Warehouse
             scope.DbContext.GetDbSet<WarehouseEntity>().Add(warehouse);
             await scope.DbContext.SaveChangesAsync();
 
-            var area = new WarehouseareaEntity { warehouse_id = warehouse.id, area_name = "A1", tenant_id = 1, is_valid = true };
-            scope.DbContext.GetDbSet<WarehouseareaEntity>().Add(area);
+            var area = new WarehouseAreaEntity { warehouse_id = warehouse.id, area_name = "A1", tenant_id = 1, is_valid = true };
+            scope.DbContext.GetDbSet<WarehouseAreaEntity>().Add(area);
             await scope.DbContext.SaveChangesAsync();
 
-            var location = new GoodslocationEntity { warehouse_area_id = area.id, location_name = "L1", tenant_id = 1, is_valid = true };
-            scope.DbContext.GetDbSet<GoodslocationEntity>().Add(location);
+            var location = new GoodsLocationEntity { warehouse_area_id = area.id, location_name = "L1", tenant_id = 1, is_valid = true };
+            scope.DbContext.GetDbSet<GoodsLocationEntity>().Add(location);
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
@@ -108,8 +108,8 @@ namespace ModernWMS.UnitTests.Services.Warehouse
             var (flag, _) = await service.UpdateAsync(viewModel, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<WarehouseareaEntity>().FindAsync(area.id))!.is_valid.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<GoodslocationEntity>().FindAsync(location.id))!.is_valid.ShouldBeFalse();
+            (await scope.DbContext.GetDbSet<WarehouseAreaEntity>().FindAsync(area.id))!.is_valid.ShouldBeFalse();
+            (await scope.DbContext.GetDbSet<GoodsLocationEntity>().FindAsync(location.id))!.is_valid.ShouldBeFalse();
         }
 
         [Fact]
@@ -119,7 +119,7 @@ namespace ModernWMS.UnitTests.Services.Warehouse
             var warehouse = new WarehouseEntity { warehouse_name = "Main WH", tenant_id = 1 };
             scope.DbContext.GetDbSet<WarehouseEntity>().Add(warehouse);
             await scope.DbContext.SaveChangesAsync();
-            scope.DbContext.GetDbSet<GoodslocationEntity>().Add(new GoodslocationEntity { warehouse_id = warehouse.id, location_name = "L1", tenant_id = 1 });
+            scope.DbContext.GetDbSet<GoodsLocationEntity>().Add(new GoodsLocationEntity { warehouse_id = warehouse.id, location_name = "L1", tenant_id = 1 });
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);

@@ -65,11 +65,11 @@ namespace ModernWMS.WMS.Controllers
         /// <param name="pageSearch">args</param>
         /// <returns></returns>
         [HttpPost("list")]
-         public async Task<ResultModel<PageData<GoodslocationViewModel>>> PageAsync(PageSearch pageSearch)
+         public async Task<ResultModel<PageData<GoodsLocationViewModel>>> PageAsync(PageSearch pageSearch)
          {
              var (data, totals) = await _goodslocationService.PageAsync(pageSearch, CurrentUser);
               
-             return ResultModel<PageData<GoodslocationViewModel>>.Success(new PageData<GoodslocationViewModel>
+             return ResultModel<PageData<GoodsLocationViewModel>>.Success(new PageData<GoodsLocationViewModel>
              {
                  Rows = data,
                  Totals = totals
@@ -81,16 +81,16 @@ namespace ModernWMS.WMS.Controllers
          /// </summary>
          /// <returns>args</returns>
         [HttpGet("all")]
-         public async Task<ResultModel<List<GoodslocationViewModel>>> GetAllAsync()
+         public async Task<ResultModel<List<GoodsLocationViewModel>>> GetAllAsync()
          {
              var data = await _goodslocationService.GetAllAsync(CurrentUser);
              if (data.Any())
              {
-                 return ResultModel<List<GoodslocationViewModel>>.Success(data);
+                 return ResultModel<List<GoodsLocationViewModel>>.Success(data);
              }
              else
              {
-                 return ResultModel<List<GoodslocationViewModel>>.Success(new List<GoodslocationViewModel>());
+                 return ResultModel<List<GoodsLocationViewModel>>.Success(new List<GoodsLocationViewModel>());
              }
          }
  
@@ -99,16 +99,16 @@ namespace ModernWMS.WMS.Controllers
          /// </summary>
          /// <returns>args</returns>
          [HttpGet]
-         public async Task<ResultModel<GoodslocationViewModel>> GetAsync(int id)
+         public async Task<ResultModel<GoodsLocationViewModel>> GetAsync(int id)
          {
              var data = await _goodslocationService.GetAsync(id, CurrentUser);
              if (data!=null)
              {
-                 return ResultModel<GoodslocationViewModel>.Success(data);
+                 return ResultModel<GoodsLocationViewModel>.Success(data);
              }
              else
              {
-                 return ResultModel<GoodslocationViewModel>.Error(_stringLocalizer["not_exists_entity"]);
+                 return ResultModel<GoodsLocationViewModel>.Error(_stringLocalizer["not_exists_entity"]);
              }
          }
          /// <summary>
@@ -117,7 +117,7 @@ namespace ModernWMS.WMS.Controllers
          /// <param name="viewModel">args</param>
          /// <returns></returns>
          [HttpPost]
-         public async Task<ResultModel<int>> AddAsync(GoodslocationViewModel viewModel)
+         public async Task<ResultModel<int>> AddAsync(GoodsLocationViewModel viewModel)
          {
              var (id, msg) = await _goodslocationService.AddAsync(viewModel,CurrentUser);
              if (id > 0)
@@ -136,7 +136,7 @@ namespace ModernWMS.WMS.Controllers
          /// <param name="viewModel">args</param>
          /// <returns></returns>
          [HttpPut]
-         public async Task<ResultModel<bool>> UpdateAsync(GoodslocationViewModel viewModel)
+         public async Task<ResultModel<bool>> UpdateAsync(GoodsLocationViewModel viewModel)
          {
              var (flag, msg) = await _goodslocationService.UpdateAsync(viewModel, CurrentUser);
              if (flag)

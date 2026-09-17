@@ -9,7 +9,7 @@ namespace ModernWMS.WMS.IServices
     /// <summary>
     /// Interface of GoodsOwnerService
     /// </summary>
-    public interface IGoodsOwnerService : IBaseService<GoodsownerEntity>
+    public interface IGoodsOwnerService : IBaseService<GoodsOwnerEntity>
     {
         #region Api
         /// <summary>
@@ -18,34 +18,34 @@ namespace ModernWMS.WMS.IServices
         /// <param name="pageSearch">args</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<(List<GoodsownerViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser);
+        Task<(List<GoodsOwnerViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser);
         /// <summary>
         /// Get all records
         /// </summary>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<List<GoodsownerViewModel>> GetAllAsync(CurrentUser currentUser);
+        Task<List<GoodsOwnerViewModel>> GetAllAsync(CurrentUser currentUser);
         /// <summary>
         /// Get a record by id
         /// </summary>
         /// <param name="id">id</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<GoodsownerViewModel> GetAsync(int id, CurrentUser currentUser);
+        Task<GoodsOwnerViewModel> GetAsync(int id, CurrentUser currentUser);
         /// <summary>
         /// add a new record
         /// </summary>
         /// <param name="viewModel">args</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<(int id, string msg)> AddAsync(GoodsownerViewModel viewModel, CurrentUser currentUser);
+        Task<(int id, string msg)> AddAsync(GoodsOwnerViewModel viewModel, CurrentUser currentUser);
         /// <summary>
         /// update a record
         /// </summary>
         /// <param name="viewModel">args</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<(bool flag, string msg)> UpdateAsync(GoodsownerViewModel viewModel, CurrentUser currentUser);
+        Task<(bool flag, string msg)> UpdateAsync(GoodsOwnerViewModel viewModel, CurrentUser currentUser);
 
         /// <summary>
         /// delete a record
@@ -63,7 +63,7 @@ namespace ModernWMS.WMS.IServices
         /// <param name="input">excel data</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<(bool flag, List<GoodsownerImportViewModel> errorData)> ExcelAsync(List<GoodsownerImportViewModel> input, CurrentUser currentUser);
+        Task<(bool flag, List<GoodsOwnerImportViewModel> errorData)> ExcelAsync(List<GoodsOwnerImportViewModel> input, CurrentUser currentUser);
         #endregion
     }
 }

@@ -186,13 +186,13 @@ namespace ModernWMS.WMS.Services
             entity.contact_tel = viewModel.contact_tel;
             entity.is_valid = viewModel.is_valid;
             entity.last_update_time = DateTime.Now;
-            var warehousearea_DBSet = _dBContext.GetDbSet<WarehouseareaEntity>();
+            var warehousearea_DBSet = _dBContext.GetDbSet<WarehouseAreaEntity>();
             var wadatas =await warehousearea_DBSet.Where(t => t.warehouse_id == entity.id).ToListAsync();
             wadatas.ForEach(t =>
             {
                 t.is_valid = entity.is_valid;
             });
-            var goodslocation_DBSet = _dBContext.GetDbSet<GoodslocationEntity>();
+            var goodslocation_DBSet = _dBContext.GetDbSet<GoodsLocationEntity>();
             var gldatas = await goodslocation_DBSet.Where(t => t.warehouse_area_id == entity.id).ToListAsync();
             gldatas.ForEach(t =>
             {
@@ -216,7 +216,7 @@ namespace ModernWMS.WMS.Services
         /// <returns></returns>
         public async Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser)
         {
-            if (await _dBContext.GetDbSet<GoodslocationEntity>().AnyAsync(t => t.warehouse_id == id))
+            if (await _dBContext.GetDbSet<GoodsLocationEntity>().AnyAsync(t => t.warehouse_id == id))
             {
                 return (false, _stringLocalizer["exist_warehousearea_not_delete"]);
             }

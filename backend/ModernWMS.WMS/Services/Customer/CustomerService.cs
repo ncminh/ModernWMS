@@ -176,7 +176,7 @@ namespace ModernWMS.WMS.Services
         /// <returns></returns>
         public async Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser)
         {
-            var Dispatchlists = _dBContext.GetDbSet<DispatchlistEntity>();
+            var Dispatchlists = _dBContext.GetDbSet<DispatchListEntity>();
             if(await Dispatchlists.AsNoTracking().AnyAsync(t => t.customer_id.Equals(id)))
             {
                 return (false, _stringLocalizer["delete_referenced"]);

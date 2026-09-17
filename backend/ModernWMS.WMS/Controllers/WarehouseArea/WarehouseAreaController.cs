@@ -65,11 +65,11 @@ namespace ModernWMS.WMS.Controllers
         /// <param name="pageSearch">args</param>
         /// <returns></returns>
         [HttpPost("list")]
-         public async Task<ResultModel<PageData<WarehouseareaViewModel>>> PageAsync(PageSearch pageSearch)
+         public async Task<ResultModel<PageData<WarehouseAreaViewModel>>> PageAsync(PageSearch pageSearch)
          {
              var (data, totals) = await _warehouseareaService.PageAsync(pageSearch, CurrentUser);
               
-             return ResultModel<PageData<WarehouseareaViewModel>>.Success(new PageData<WarehouseareaViewModel>
+             return ResultModel<PageData<WarehouseAreaViewModel>>.Success(new PageData<WarehouseAreaViewModel>
              {
                  Rows = data,
                  Totals = totals
@@ -81,16 +81,16 @@ namespace ModernWMS.WMS.Controllers
          /// </summary>
          /// <returns>args</returns>
         [HttpGet("all")]
-         public async Task<ResultModel<List<WarehouseareaViewModel>>> GetAllAsync(int warehouse_id)
+         public async Task<ResultModel<List<WarehouseAreaViewModel>>> GetAllAsync(int warehouse_id)
          {
              var data = await _warehouseareaService.GetAllAsync( warehouse_id, CurrentUser);
              if (data.Any())
              {
-                 return ResultModel<List<WarehouseareaViewModel>>.Success(data);
+                 return ResultModel<List<WarehouseAreaViewModel>>.Success(data);
              }
              else
              {
-                 return ResultModel<List<WarehouseareaViewModel>>.Success(new List<WarehouseareaViewModel>());
+                 return ResultModel<List<WarehouseAreaViewModel>>.Success(new List<WarehouseAreaViewModel>());
              }
          }
  
@@ -99,16 +99,16 @@ namespace ModernWMS.WMS.Controllers
          /// </summary>
          /// <returns>args</returns>
          [HttpGet]
-         public async Task<ResultModel<WarehouseareaViewModel>> GetAsync(int id)
+         public async Task<ResultModel<WarehouseAreaViewModel>> GetAsync(int id)
          {
              var data = await _warehouseareaService.GetAsync(id, CurrentUser);
              if (data!=null)
              {
-                 return ResultModel<WarehouseareaViewModel>.Success(data);
+                 return ResultModel<WarehouseAreaViewModel>.Success(data);
              }
              else
              {
-                 return ResultModel<WarehouseareaViewModel>.Error(_stringLocalizer["not_exists_entity"]);
+                 return ResultModel<WarehouseAreaViewModel>.Error(_stringLocalizer["not_exists_entity"]);
              }
          }
          /// <summary>
@@ -117,7 +117,7 @@ namespace ModernWMS.WMS.Controllers
          /// <param name="viewModel">args</param>
          /// <returns></returns>
          [HttpPost]
-         public async Task<ResultModel<int>> AddAsync(WarehouseareaViewModel viewModel)
+         public async Task<ResultModel<int>> AddAsync(WarehouseAreaViewModel viewModel)
          {
              var (id, msg) = await _warehouseareaService.AddAsync(viewModel,CurrentUser);
              if (id > 0)
@@ -136,7 +136,7 @@ namespace ModernWMS.WMS.Controllers
          /// <param name="viewModel">args</param>
          /// <returns></returns>
          [HttpPut]
-         public async Task<ResultModel<bool>> UpdateAsync(WarehouseareaViewModel viewModel)
+         public async Task<ResultModel<bool>> UpdateAsync(WarehouseAreaViewModel viewModel)
          {
              var (flag, msg) = await _warehouseareaService.UpdateAsync(viewModel,CurrentUser);
              if (flag)

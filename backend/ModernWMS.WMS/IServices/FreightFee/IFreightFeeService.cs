@@ -13,7 +13,7 @@
      /// <summary>
      /// Interface of FreightFeeService
      /// </summary>
-     public interface IFreightFeeService : IBaseService<FreightfeeEntity>
+     public interface IFreightFeeService : IBaseService<FreightFeeEntity>
      {
          #region Api
          /// <summary>
@@ -22,33 +22,33 @@
          /// <param name="pageSearch">args</param>
          /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         Task<(List<FreightfeeViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser);
+         Task<(List<FreightFeeViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser);
          /// <summary>
          /// Get all records
          /// </summary>
          /// <returns></returns>
-         Task<List<FreightfeeViewModel>> GetAllAsync(CurrentUser currentUser);
+         Task<List<FreightFeeViewModel>> GetAllAsync(CurrentUser currentUser);
          /// <summary>
          /// Get a record by id
          /// </summary>
          /// <param name="id">primary key</param>
          /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         Task<FreightfeeViewModel> GetAsync(int id, CurrentUser currentUser);
+         Task<FreightFeeViewModel> GetAsync(int id, CurrentUser currentUser);
          /// <summary>
          /// add a new record
          /// </summary>
          /// <param name="viewModel">viewmodel</param>
          /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         Task<(int id, string msg)> AddAsync(FreightfeeViewModel viewModel, CurrentUser currentUser);
+         Task<(int id, string msg)> AddAsync(FreightFeeViewModel viewModel, CurrentUser currentUser);
          /// <summary>
          /// update a record
          /// </summary>
          /// <param name="viewModel">viewmodel</param>
          /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         Task<(bool flag, string msg)> UpdateAsync(FreightfeeViewModel viewModel, CurrentUser currentUser);
+         Task<(bool flag, string msg)> UpdateAsync(FreightFeeViewModel viewModel, CurrentUser currentUser);
 
          /// <summary>
          /// delete a record
@@ -64,7 +64,7 @@
         /// <param name="datas">excel datas</param>
         /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        Task<(bool flag, string msg)> ExcelAsync(List<FreightfeeExcelmportViewModel> datas, CurrentUser currentUser);
+        Task<(bool flag, string msg)> ExcelAsync(List<FreightFeeExcelmportViewModel> datas, CurrentUser currentUser);
          #endregion
      }
  }

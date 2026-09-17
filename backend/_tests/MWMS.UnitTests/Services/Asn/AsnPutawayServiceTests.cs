@@ -14,18 +14,18 @@ namespace ModernWMS.UnitTests.Services.Asn
         private static AsnPutawayService CreateService(ModernWMS.Core.DBContext.SqlDBContext dbContext) =>
             new(dbContext, new FakeStringLocalizer<MultiLanguage>());
 
-        private static async Task<GoodslocationEntity> SeedLocationAsync(ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId, byte warehouseAreaProperty = 0)
+        private static async Task<GoodsLocationEntity> SeedLocationAsync(ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId, byte warehouseAreaProperty = 0)
         {
-            var location = new GoodslocationEntity { location_name = "L1", tenant_id = tenantId, warehouse_area_property = warehouseAreaProperty };
-            dbContext.GetDbSet<GoodslocationEntity>().Add(location);
+            var location = new GoodsLocationEntity { location_name = "L1", tenant_id = tenantId, warehouse_area_property = warehouseAreaProperty };
+            dbContext.GetDbSet<GoodsLocationEntity>().Add(location);
             await dbContext.SaveChangesAsync();
             return location;
         }
 
         private static async Task<AsnEntity> SeedAsnAsync(ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId, byte asnStatus = 3, int sortedQty = 10, int actualQty = 0, int skuId = 1)
         {
-            var asnmaster = new AsnmasterEntity { asn_no = "ASNM1", tenant_id = tenantId };
-            dbContext.GetDbSet<AsnmasterEntity>().Add(asnmaster);
+            var asnmaster = new AsnMasterEntity { asn_no = "ASNM1", tenant_id = tenantId };
+            dbContext.GetDbSet<AsnMasterEntity>().Add(asnmaster);
             await dbContext.SaveChangesAsync();
             var asn = new AsnEntity
             {
@@ -47,7 +47,7 @@ namespace ModernWMS.UnitTests.Services.Asn
         {
             using var scope = new SqliteTestDbContextScope();
             var asn = await SeedAsnAsync(scope.DbContext, 1);
-            scope.DbContext.GetDbSet<AsnsortEntity>().Add(new AsnsortEntity { asn_id = asn.id, sorted_qty = 10, putaway_qty = 3, series_number = "SN1", tenant_id = 1 });
+            scope.DbContext.GetDbSet<AsnSortEntity>().Add(new AsnSortEntity { asn_id = asn.id, sorted_qty = 10, putaway_qty = 3, series_number = "SN1", tenant_id = 1 });
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
@@ -63,7 +63,7 @@ namespace ModernWMS.UnitTests.Services.Asn
         {
             using var scope = new SqliteTestDbContextScope();
             var asn = await SeedAsnAsync(scope.DbContext, 1);
-            scope.DbContext.GetDbSet<AsnsortEntity>().Add(new AsnsortEntity { asn_id = asn.id, sorted_qty = 10, putaway_qty = 10, series_number = "SN1", tenant_id = 1 });
+            scope.DbContext.GetDbSet<AsnSortEntity>().Add(new AsnSortEntity { asn_id = asn.id, sorted_qty = 10, putaway_qty = 10, series_number = "SN1", tenant_id = 1 });
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
@@ -77,7 +77,7 @@ namespace ModernWMS.UnitTests.Services.Asn
         {
             using var scope = new SqliteTestDbContextScope();
             var asn = await SeedAsnAsync(scope.DbContext, 1);
-            scope.DbContext.GetDbSet<AsnsortEntity>().Add(new AsnsortEntity { asn_id = asn.id, sorted_qty = 10, putaway_qty = 3, series_number = "SN1", tenant_id = 1 });
+            scope.DbContext.GetDbSet<AsnSortEntity>().Add(new AsnSortEntity { asn_id = asn.id, sorted_qty = 10, putaway_qty = 3, series_number = "SN1", tenant_id = 1 });
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
@@ -261,8 +261,8 @@ namespace ModernWMS.UnitTests.Services.Asn
             using var scope = new SqliteTestDbContextScope();
             var location = await SeedLocationAsync(scope.DbContext, 1);
             var asn = await SeedAsnAsync(scope.DbContext, 1, sortedQty: 10, actualQty: 0);
-            var sort = new AsnsortEntity { asn_id = asn.id, sorted_qty = 10, putaway_qty = 0, series_number = "SN1", tenant_id = 1 };
-            scope.DbContext.GetDbSet<AsnsortEntity>().Add(sort);
+            var sort = new AsnSortEntity { asn_id = asn.id, sorted_qty = 10, putaway_qty = 0, series_number = "SN1", tenant_id = 1 };
+            scope.DbContext.GetDbSet<AsnSortEntity>().Add(sort);
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
@@ -271,7 +271,7 @@ namespace ModernWMS.UnitTests.Services.Asn
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<AsnsortEntity>().FindAsync(sort.id))!.putaway_qty.ShouldBe(4);
+            (await scope.DbContext.GetDbSet<AsnSortEntity>().FindAsync(sort.id))!.putaway_qty.ShouldBe(4);
         }
 
         [Fact]

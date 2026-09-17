@@ -170,8 +170,8 @@ namespace ModernWMS.UnitTests.Services.Sku
             var spu = new SpuEntity { spu_code = "SPU1", tenant_id = 1 };
             scope.DbContext.GetDbSet<SpuEntity>().Add(spu);
             await scope.DbContext.SaveChangesAsync();
-            var asnmaster = new AsnmasterEntity();
-            scope.DbContext.GetDbSet<AsnmasterEntity>().Add(asnmaster);
+            var asnmaster = new AsnMasterEntity();
+            scope.DbContext.GetDbSet<AsnMasterEntity>().Add(asnmaster);
             await scope.DbContext.SaveChangesAsync();
             scope.DbContext.GetDbSet<AsnEntity>().Add(new AsnEntity { asnmaster_id = asnmaster.id, spu_id = spu.id });
             await scope.DbContext.SaveChangesAsync();

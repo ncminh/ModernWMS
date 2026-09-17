@@ -21,7 +21,7 @@ namespace ModernWMS.WMS.Services
     /// <summary>
     ///  Warehousearea Service
     /// </summary>
-    public class WarehouseAreaService : BaseService<WarehouseareaEntity>, IWarehouseAreaService
+    public class WarehouseAreaService : BaseService<WarehouseAreaEntity>, IWarehouseAreaService
     {
         #region Args
         /// <summary>
@@ -58,7 +58,7 @@ namespace ModernWMS.WMS.Services
         /// <param name="pageSearch">args</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        public async Task<(List<WarehouseareaViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser)
+        public async Task<(List<WarehouseAreaViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser)
         {
             QueryCollection queries = new QueryCollection();
             if (pageSearch.searchObjects.Any())
@@ -68,12 +68,12 @@ namespace ModernWMS.WMS.Services
                     queries.Add(s);
                 });
             }
-            var DbSet = _dBContext.GetDbSet<WarehouseareaEntity>();
+            var DbSet = _dBContext.GetDbSet<WarehouseAreaEntity>();
             var warehouse_DBSet = _dBContext.GetDbSet<WarehouseEntity>();
 
             var query = from wa in DbSet.AsNoTracking()
                         join w in warehouse_DBSet.AsNoTracking() on wa.warehouse_id equals w.id
-                        select new WarehouseareaViewModel
+                        select new WarehouseAreaViewModel
                         {
                             id = wa.id,
                             warehouse_id = wa.warehouse_id,
@@ -90,7 +90,7 @@ namespace ModernWMS.WMS.Services
             {
                 query = query.Where(t => t.is_valid == true);
             }
-            query = query.Where(t => t.tenant_id.Equals(currentUser.tenant_id)).Where(queries.AsExpression<WarehouseareaViewModel>());
+            query = query.Where(t => t.tenant_id.Equals(currentUser.tenant_id)).Where(queries.AsExpression<WarehouseAreaViewModel>());
             int totals = await query.CountAsync();
             var list = await query.OrderByDescending(t => t.create_time)
                        .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
@@ -107,7 +107,7 @@ namespace ModernWMS.WMS.Services
         public async Task<List<FormSelectItem>> GetWarehouseareaByWarehouse_id(int warehouse_id, CurrentUser currentUser)
         {
             var res = new List<FormSelectItem>();
-            var DbSet = _dBContext.GetDbSet<WarehouseareaEntity>();
+            var DbSet = _dBContext.GetDbSet<WarehouseAreaEntity>();
             res = await (from wa in DbSet.AsNoTracking()
                          where wa.is_valid == true && wa.tenant_id == currentUser.tenant_id && wa.warehouse_id == warehouse_id
                          select new FormSelectItem
@@ -124,30 +124,30 @@ namespace ModernWMS.WMS.Services
         /// Get all records
         /// </summary>
         /// <returns></returns>
-        public async Task<List<WarehouseareaViewModel>> GetAllAsync(int warehouse_id, CurrentUser currentUser)
+        public async Task<List<WarehouseAreaViewModel>> GetAllAsync(int warehouse_id, CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<WarehouseareaEntity>().AsNoTracking();
+            var DbSet = _dBContext.GetDbSet<WarehouseAreaEntity>().AsNoTracking();
             if (warehouse_id > 0)
             {
                 DbSet = DbSet.Where(t=>t.warehouse_id == warehouse_id);
             }
             var data = await DbSet.Where(t =>t.is_valid == true && t.tenant_id.Equals(currentUser.tenant_id)).ToListAsync();
-            return data.Adapt<List<WarehouseareaViewModel>>();
+            return data.Adapt<List<WarehouseAreaViewModel>>();
         }
 
         /// <summary>
         /// Get a record by id
         /// </summary>
         /// <returns></returns>
-        public async Task<WarehouseareaViewModel> GetAsync(int id, CurrentUser currentUser)
+        public async Task<WarehouseAreaViewModel> GetAsync(int id, CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<WarehouseareaEntity>();
+            var DbSet = _dBContext.GetDbSet<WarehouseAreaEntity>();
             var entity = await DbSet.AsNoTracking().FirstOrDefaultAsync(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id);
             if (entity == null)
             {
                 return null;
             }
-            return entity.Adapt<WarehouseareaViewModel>();
+            return entity.Adapt<WarehouseAreaViewModel>();
         }
         /// <summary>
         /// add a new record
@@ -155,14 +155,14 @@ namespace ModernWMS.WMS.Services
         /// <param name="viewModel">viewmodel</param>
         /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        public async Task<(int id, string msg)> AddAsync(WarehouseareaViewModel viewModel, CurrentUser currentUser)
+        public async Task<(int id, string msg)> AddAsync(WarehouseAreaViewModel viewModel, CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<WarehouseareaEntity>();
+            var DbSet = _dBContext.GetDbSet<WarehouseAreaEntity>();
             if (await DbSet.AnyAsync(t => t.warehouse_id == viewModel.warehouse_id && t.area_name == viewModel.area_name && t.tenant_id == currentUser.tenant_id))
             {
                 return (0, string.Format(_stringLocalizer["exists_entity"], _stringLocalizer["area_name"], viewModel.area_name));
             }
-            var entity = viewModel.Adapt<WarehouseareaEntity>();
+            var entity = viewModel.Adapt<WarehouseAreaEntity>();
             entity.id = 0;
             entity.create_time = DateTime.Now;
             entity.last_update_time = DateTime.Now;
@@ -184,9 +184,9 @@ namespace ModernWMS.WMS.Services
         /// <param name="viewModel">args</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> UpdateAsync(WarehouseareaViewModel viewModel, CurrentUser currentUser)
+        public async Task<(bool flag, string msg)> UpdateAsync(WarehouseAreaViewModel viewModel, CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<WarehouseareaEntity>();
+            var DbSet = _dBContext.GetDbSet<WarehouseAreaEntity>();
             var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id) && t.tenant_id == currentUser.tenant_id);
             if (await DbSet.AnyAsync(t => t.id != viewModel.id && t.warehouse_id == viewModel.warehouse_id && t.area_name == viewModel.area_name && t.tenant_id == currentUser.tenant_id))
             {
@@ -203,7 +203,7 @@ namespace ModernWMS.WMS.Services
             entity.is_valid = viewModel.is_valid;
             entity.area_property = viewModel.area_property;
             entity.last_update_time = DateTime.Now;
-            var goodslocation_DBSet = _dBContext.GetDbSet<GoodslocationEntity>();
+            var goodslocation_DBSet = _dBContext.GetDbSet<GoodsLocationEntity>();
             var gldatas = await goodslocation_DBSet.Where(t => t.warehouse_area_id == entity.id).ToListAsync();
             gldatas.ForEach(t =>
             {
@@ -228,11 +228,11 @@ namespace ModernWMS.WMS.Services
         /// <returns></returns>
         public async Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser)
         {
-            if (await _dBContext.GetDbSet < GoodslocationEntity>().AnyAsync(t=>t.warehouse_area_id  == id))
+            if (await _dBContext.GetDbSet < GoodsLocationEntity>().AnyAsync(t=>t.warehouse_area_id  == id))
             {
                 return (false, _stringLocalizer["exist_location_not_delete"]);
             }
-            var qty = await _dBContext.GetDbSet<WarehouseareaEntity>().Where(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
+            var qty = await _dBContext.GetDbSet<WarehouseAreaEntity>().Where(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
             if (qty > 0)
             {
                 return (true, _stringLocalizer["delete_success"]);

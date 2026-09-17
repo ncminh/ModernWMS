@@ -21,33 +21,33 @@ using ModernWMS.Core.Models;
         /// <param name="viewModels">viewmodel</param>
         /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        Task<(bool flag, string msg)> BulkSaveAsync(List<UserroleViewModel> viewModels, CurrentUser currentUser);
+        Task<(bool flag, string msg)> BulkSaveAsync(List<UserRoleViewModel> viewModels, CurrentUser currentUser);
          /// <summary>
          /// Get all records
          /// </summary>
          /// <returns></returns>
-         Task<List<UserroleViewModel>> GetAllAsync(CurrentUser currentUser);
+         Task<List<UserRoleViewModel>> GetAllAsync(CurrentUser currentUser);
          /// <summary>
          /// Get a record by id
          /// </summary>
          /// <param name="id">primary key</param>
          /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         Task<UserroleViewModel> GetAsync(int id, CurrentUser currentUser);
+         Task<UserRoleViewModel> GetAsync(int id, CurrentUser currentUser);
         /// <summary>
         /// add a new record
         /// </summary>
         /// <param name="viewModel">viewmodel</param>>
         /// <param name="currentUser">current user</param>>
         /// <returns></returns>
-        Task<(int id, string msg)> AddAsync(UserroleViewModel viewModel,CurrentUser currentUser);
+        Task<(int id, string msg)> AddAsync(UserRoleViewModel viewModel,CurrentUser currentUser);
         /// <summary>
         /// update a record
         /// </summary>
         /// <param name="viewModel">viewmodel</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<(bool flag, string msg)> UpdateAsync(UserroleViewModel viewModel, CurrentUser currentUser);
+        Task<(bool flag, string msg)> UpdateAsync(UserRoleViewModel viewModel, CurrentUser currentUser);
  
          /// <summary>
          /// delete a record

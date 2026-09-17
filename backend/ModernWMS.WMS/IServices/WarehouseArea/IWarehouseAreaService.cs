@@ -13,7 +13,7 @@
      /// <summary>
      /// Interface of WarehouseAreaService
      /// </summary>
-     public interface IWarehouseAreaService : IBaseService<WarehouseareaEntity>
+     public interface IWarehouseAreaService : IBaseService<WarehouseAreaEntity>
      {
          #region Api
          /// <summary>
@@ -22,33 +22,33 @@
          /// <param name="pageSearch">args</param>
          /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         Task<(List<WarehouseareaViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser);
+         Task<(List<WarehouseAreaViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser);
          /// <summary>
          /// Get all records
          /// </summary>
          /// <returns></returns>
-         Task<List<WarehouseareaViewModel>> GetAllAsync(int warehouse_id, CurrentUser currentUser);
+         Task<List<WarehouseAreaViewModel>> GetAllAsync(int warehouse_id, CurrentUser currentUser);
          /// <summary>
          /// Get a record by id
          /// </summary>
          /// <param name="id">primary key</param>
          /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         Task<WarehouseareaViewModel> GetAsync(int id, CurrentUser currentUser);
+         Task<WarehouseAreaViewModel> GetAsync(int id, CurrentUser currentUser);
          /// <summary>
          /// add a new record
          /// </summary>
          /// <param name="viewModel">viewmodel</param>
          /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         Task<(int id, string msg)> AddAsync(WarehouseareaViewModel viewModel, CurrentUser currentUser);
+         Task<(int id, string msg)> AddAsync(WarehouseAreaViewModel viewModel, CurrentUser currentUser);
         /// <summary>
         /// update a record
         /// </summary>
         /// <param name="viewModel">viewmodel</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<(bool flag, string msg)> UpdateAsync(WarehouseareaViewModel viewModel, CurrentUser currentUser);
+        Task<(bool flag, string msg)> UpdateAsync(WarehouseAreaViewModel viewModel, CurrentUser currentUser);
  
          /// <summary>
          /// delete a record

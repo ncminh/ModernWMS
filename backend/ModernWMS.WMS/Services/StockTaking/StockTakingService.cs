@@ -81,8 +81,8 @@ namespace ModernWMS.WMS.Services
             var Stocktakings = _dBContext.GetDbSet<StockTakingEntity>();
             var Spus = _dBContext.GetDbSet<SpuEntity>();
             var Skus = _dBContext.GetDbSet<SkuEntity>();
-            var Goodsowners = _dBContext.GetDbSet<GoodsownerEntity>();
-            var Goodslocations = _dBContext.GetDbSet<GoodslocationEntity>();
+            var Goodsowners = _dBContext.GetDbSet<GoodsOwnerEntity>();
+            var Goodslocations = _dBContext.GetDbSet<GoodsLocationEntity>();
             var Stockadjusts = _dBContext.GetDbSet<StockAdjustEntity>();
             var queryAdjust = Stockadjusts.AsNoTracking().Where(t => t.job_type == 1).Select(t => new { t.id, t.source_table_id });
 
@@ -144,8 +144,8 @@ namespace ModernWMS.WMS.Services
             var Stocktakings = _dBContext.GetDbSet<StockTakingEntity>();
             var Spus = _dBContext.GetDbSet<SpuEntity>();
             var Skus = _dBContext.GetDbSet<SkuEntity>();
-            var Goodsowners = _dBContext.GetDbSet<GoodsownerEntity>();
-            var Goodslocations = _dBContext.GetDbSet<GoodslocationEntity>();
+            var Goodsowners = _dBContext.GetDbSet<GoodsOwnerEntity>();
+            var Goodslocations = _dBContext.GetDbSet<GoodsLocationEntity>();
             var Stockadjusts = _dBContext.GetDbSet<StockAdjustEntity>();
             var queryAdjust = Stockadjusts.AsNoTracking().Where(t => t.job_type == 1).Select(t => new { t.id, t.source_table_id });
 

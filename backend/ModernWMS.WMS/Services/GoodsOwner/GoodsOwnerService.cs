@@ -15,7 +15,7 @@ namespace ModernWMS.WMS.Services
     /// <summary>
     /// Goods owner Service
     /// </summary>
-    public class GoodsOwnerService : BaseService<GoodsownerEntity>, IGoodsOwnerService
+    public class GoodsOwnerService : BaseService<GoodsOwnerEntity>, IGoodsOwnerService
     {
         #region Args
         /// <summary>
@@ -52,7 +52,7 @@ namespace ModernWMS.WMS.Services
         /// <param name="pageSearch">args</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        public async Task<(List<GoodsownerViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser)
+        public async Task<(List<GoodsOwnerViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser)
         {
             QueryCollection queries = new QueryCollection();
             if (pageSearch.searchObjects.Any())
@@ -62,28 +62,28 @@ namespace ModernWMS.WMS.Services
                     queries.Add(s);
                 });
             }
-            var DbSet = _dBContext.GetDbSet<GoodsownerEntity>();
+            var DbSet = _dBContext.GetDbSet<GoodsOwnerEntity>();
             var query = DbSet.AsNoTracking()
                 .Where(t => t.tenant_id.Equals(currentUser.tenant_id))
-                .Where(queries.AsExpression<GoodsownerEntity>());
+                .Where(queries.AsExpression<GoodsOwnerEntity>());
             int totals = await query.CountAsync();
             var list = await query.OrderByDescending(t => t.create_time)
                        .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
                        .Take(pageSearch.pageSize)
                        .ToListAsync();
-            return (list.Adapt<List<GoodsownerViewModel>>(), totals);
+            return (list.Adapt<List<GoodsOwnerViewModel>>(), totals);
         }
         /// <summary>
         /// Get all records
         /// </summary>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        public async Task<List<GoodsownerViewModel>> GetAllAsync(CurrentUser currentUser)
+        public async Task<List<GoodsOwnerViewModel>> GetAllAsync(CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<GoodsownerEntity>();
+            var DbSet = _dBContext.GetDbSet<GoodsOwnerEntity>();
             var data = await DbSet.AsNoTracking().Where(t => t.tenant_id == currentUser.tenant_id)
                 .OrderByDescending(t => t.create_time).ToListAsync();
-            return data.Adapt<List<GoodsownerViewModel>>();
+            return data.Adapt<List<GoodsOwnerViewModel>>();
         }
 
         /// <summary>
@@ -91,16 +91,16 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="id">id</param>
         /// <returns></returns>
-        public async Task<GoodsownerViewModel> GetAsync(int id, CurrentUser currentUser)
+        public async Task<GoodsOwnerViewModel> GetAsync(int id, CurrentUser currentUser)
         {
-            var entity = await _dBContext.GetDbSet<GoodsownerEntity>().AsNoTracking().FirstOrDefaultAsync(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id);
+            var entity = await _dBContext.GetDbSet<GoodsOwnerEntity>().AsNoTracking().FirstOrDefaultAsync(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id);
             if (entity != null)
             {
-                return entity.Adapt<GoodsownerViewModel>();
+                return entity.Adapt<GoodsOwnerViewModel>();
             }
             else
             {
-                return new GoodsownerViewModel();
+                return new GoodsOwnerViewModel();
             }
         }
         /// <summary>
@@ -109,14 +109,14 @@ namespace ModernWMS.WMS.Services
         /// <param name="viewModel">args</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        public async Task<(int id, string msg)> AddAsync(GoodsownerViewModel viewModel, CurrentUser currentUser)
+        public async Task<(int id, string msg)> AddAsync(GoodsOwnerViewModel viewModel, CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<GoodsownerEntity>();
+            var DbSet = _dBContext.GetDbSet<GoodsOwnerEntity>();
             if (await DbSet.AnyAsync(t => t.tenant_id.Equals(currentUser.tenant_id) && t.goods_owner_name.Equals(viewModel.goods_owner_name)))
             {
                 return (0, string.Format(_stringLocalizer["exists_entity"], _stringLocalizer["goods_owner_name"], viewModel.goods_owner_name));
             }
-            var entity = viewModel.Adapt<GoodsownerEntity>();
+            var entity = viewModel.Adapt<GoodsOwnerEntity>();
             entity.id = 0;
             entity.creator = currentUser.user_name;
             entity.create_time = DateTime.Now;
@@ -138,9 +138,9 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         /// <param name="viewModel">args</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> UpdateAsync(GoodsownerViewModel viewModel, CurrentUser currentUser)
+        public async Task<(bool flag, string msg)> UpdateAsync(GoodsOwnerViewModel viewModel, CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<GoodsownerEntity>();
+            var DbSet = _dBContext.GetDbSet<GoodsOwnerEntity>();
             var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id) && t.tenant_id == currentUser.tenant_id);
             if (entity == null)
             {
@@ -174,7 +174,7 @@ namespace ModernWMS.WMS.Services
         /// <returns></returns>
         public async Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser)
         {
-            var qty = await _dBContext.GetDbSet<GoodsownerEntity>().Where(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
+            var qty = await _dBContext.GetDbSet<GoodsOwnerEntity>().Where(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
             if (qty > 0)
             {
                 return (true, _stringLocalizer["delete_success"]);
@@ -194,9 +194,9 @@ namespace ModernWMS.WMS.Services
         /// <param name="input">excel data</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        public async Task<(bool flag, List<GoodsownerImportViewModel> errorData)> ExcelAsync(List<GoodsownerImportViewModel> input, CurrentUser currentUser)
+        public async Task<(bool flag, List<GoodsOwnerImportViewModel> errorData)> ExcelAsync(List<GoodsOwnerImportViewModel> input, CurrentUser currentUser)
         {
-            var DbSet = _dBContext.GetDbSet<GoodsownerEntity>();
+            var DbSet = _dBContext.GetDbSet<GoodsOwnerEntity>();
             var existsDatas = await DbSet.AsNoTracking().Where(t => t.tenant_id.Equals(currentUser.tenant_id)).Select(t => new { t.goods_owner_name }).ToListAsync();
             input.ForEach(async t =>
             {
@@ -207,7 +207,7 @@ namespace ModernWMS.WMS.Services
                 }
                 else
                 {
-                    await DbSet.AddAsync(new GoodsownerEntity
+                    await DbSet.AddAsync(new GoodsOwnerEntity
                     {
                         goods_owner_name = t.goods_owner_name,
                         city = t.city,
@@ -229,11 +229,11 @@ namespace ModernWMS.WMS.Services
             var qty = await _dBContext.SaveChangesAsync();
             if (qty > 0)
             {
-                return (true, new List<GoodsownerImportViewModel>());
+                return (true, new List<GoodsOwnerImportViewModel>());
             }
             else
             {
-                return (false, new List<GoodsownerImportViewModel>());
+                return (false, new List<GoodsOwnerImportViewModel>());
             }
         }
 

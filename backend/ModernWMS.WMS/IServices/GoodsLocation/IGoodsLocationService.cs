@@ -13,7 +13,7 @@
      /// <summary>
      /// Interface of GoodsLocationService
      /// </summary>
-     public interface IGoodsLocationService : IBaseService<GoodslocationEntity>
+     public interface IGoodsLocationService : IBaseService<GoodsLocationEntity>
      {
         #region Api
         /// <summary>
@@ -30,33 +30,33 @@
         /// <param name="pageSearch">args</param>
         /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        Task<(List<GoodslocationViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser);
+        Task<(List<GoodsLocationViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser);
          /// <summary>
          /// Get all records
          /// </summary>
          /// <returns></returns>
-         Task<List<GoodslocationViewModel>> GetAllAsync(CurrentUser currentUser);
+         Task<List<GoodsLocationViewModel>> GetAllAsync(CurrentUser currentUser);
          /// <summary>
          /// Get a record by id
          /// </summary>
          /// <param name="id">primary key</param>
          /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         Task<GoodslocationViewModel> GetAsync(int id, CurrentUser currentUser);
+         Task<GoodsLocationViewModel> GetAsync(int id, CurrentUser currentUser);
          /// <summary>
          /// add a new record
          /// </summary>
          /// <param name="viewModel">viewmodel</param>
          /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         Task<(int id, string msg)> AddAsync(GoodslocationViewModel viewModel, CurrentUser currentUser);
+         Task<(int id, string msg)> AddAsync(GoodsLocationViewModel viewModel, CurrentUser currentUser);
         /// <summary>
         /// update a record
         /// </summary>
         /// <param name="viewModel">viewmodel</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<(bool flag, string msg)> UpdateAsync(GoodslocationViewModel viewModel, CurrentUser currentUser);
+        Task<(bool flag, string msg)> UpdateAsync(GoodsLocationViewModel viewModel, CurrentUser currentUser);
  
          /// <summary>
          /// delete a record

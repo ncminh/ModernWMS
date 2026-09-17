@@ -19,7 +19,7 @@
      /// <summary>
      ///  Goodslocation Service
      /// </summary>
-     public class GoodsLocationService : BaseService<GoodslocationEntity>, IGoodsLocationService
+     public class GoodsLocationService : BaseService<GoodsLocationEntity>, IGoodsLocationService
      {
          #region Args
          /// <summary>
@@ -59,7 +59,7 @@
         public async Task<List<FormSelectItem>> GetGoodslocationByWarehouse_area_id( int warehouse_area_id, CurrentUser currentUser)
         {
             var res = new List<FormSelectItem>();
-            var DbSet = _dBContext.GetDbSet<GoodslocationEntity>();
+            var DbSet = _dBContext.GetDbSet<GoodsLocationEntity>();
             res = await (from g in DbSet.AsNoTracking()
                          where g.is_valid == true && g.tenant_id == currentUser.tenant_id  && g.warehouse_area_id== warehouse_area_id
                          select new FormSelectItem
@@ -78,7 +78,7 @@
         /// <param name="pageSearch">args</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        public async Task<(List<GoodslocationViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser)
+        public async Task<(List<GoodsLocationViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser)
          {
              QueryCollection queries = new QueryCollection();
              if (pageSearch.searchObjects.Any())
@@ -88,11 +88,11 @@
                      queries.Add(s);
                  });
              }
-             var DbSet = _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking();
+             var DbSet = _dBContext.GetDbSet<GoodsLocationEntity>().AsNoTracking();
 
              var query = DbSet
                  .Where(t => t.tenant_id.Equals(currentUser.tenant_id))
-                 .Where(queries.AsExpression<GoodslocationEntity>());
+                 .Where(queries.AsExpression<GoodsLocationEntity>());
             if (pageSearch.sqlTitle == "select")
             {
                 query = query.Where(t => t.is_valid == true);
@@ -102,33 +102,33 @@
                         .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
                         .Take(pageSearch.pageSize)
                         .ToListAsync();
-             return (list.Adapt<List<GoodslocationViewModel>>(), totals);
+             return (list.Adapt<List<GoodsLocationViewModel>>(), totals);
          }
          
          /// <summary>
          /// Get all records
          /// </summary>
          /// <returns></returns>
-         public async Task<List<GoodslocationViewModel>> GetAllAsync(CurrentUser currentUser)
+         public async Task<List<GoodsLocationViewModel>> GetAllAsync(CurrentUser currentUser)
          {
-             var DbSet = _dBContext.GetDbSet<GoodslocationEntity>();
+             var DbSet = _dBContext.GetDbSet<GoodsLocationEntity>();
              var data = await DbSet.AsNoTracking().Where(t=>t.tenant_id.Equals(currentUser.tenant_id)).ToListAsync();
-             return data.Adapt<List<GoodslocationViewModel>>();
+             return data.Adapt<List<GoodsLocationViewModel>>();
          }
  
          /// <summary>
          /// Get a record by id
          /// </summary>
          /// <returns></returns>
-         public async Task<GoodslocationViewModel> GetAsync(int id, CurrentUser currentUser)
+         public async Task<GoodsLocationViewModel> GetAsync(int id, CurrentUser currentUser)
          {
-             var DbSet = _dBContext.GetDbSet<GoodslocationEntity>();
+             var DbSet = _dBContext.GetDbSet<GoodsLocationEntity>();
              var entity = await DbSet.AsNoTracking().FirstOrDefaultAsync(t=>t.id.Equals(id) && t.tenant_id == currentUser.tenant_id);
              if (entity == null)
              {
                  return null;
              }
-             return entity.Adapt<GoodslocationViewModel>();
+             return entity.Adapt<GoodsLocationViewModel>();
          }
          /// <summary>
          /// add a new record
@@ -136,14 +136,14 @@
          /// <param name="viewModel">viewmodel</param>
          /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         public async Task<(int id, string msg)> AddAsync(GoodslocationViewModel viewModel, CurrentUser currentUser)
+         public async Task<(int id, string msg)> AddAsync(GoodsLocationViewModel viewModel, CurrentUser currentUser)
          {
-             var DbSet = _dBContext.GetDbSet<GoodslocationEntity>();
+             var DbSet = _dBContext.GetDbSet<GoodsLocationEntity>();
             if (await DbSet.AnyAsync(t => t.location_name == viewModel.location_name && t.tenant_id == currentUser.tenant_id))
             {
                 return (0, string.Format(_stringLocalizer["exists_entity"], _stringLocalizer["location_name"], viewModel.location_name));
             }
-            var entity = viewModel.Adapt<GoodslocationEntity>();
+            var entity = viewModel.Adapt<GoodsLocationEntity>();
              entity.id = 0;
              entity.create_time = DateTime.Now;
              entity.last_update_time = DateTime.Now;
@@ -165,9 +165,9 @@
         /// <param name="viewModel">args</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> UpdateAsync(GoodslocationViewModel viewModel,CurrentUser currentUser)
+        public async Task<(bool flag, string msg)> UpdateAsync(GoodsLocationViewModel viewModel,CurrentUser currentUser)
          {
-             var DbSet = _dBContext.GetDbSet<GoodslocationEntity>();
+             var DbSet = _dBContext.GetDbSet<GoodsLocationEntity>();
             if (await DbSet.AnyAsync(t => t.id != viewModel.id && t.warehouse_id == viewModel.warehouse_id && t.location_name == viewModel.location_name && t.tenant_id == currentUser.tenant_id))
             {
                 return (false, string.Format(_stringLocalizer["exists_entity"], _stringLocalizer["location_name"], viewModel.location_name));
@@ -217,7 +217,7 @@
             {
                 return (false, _stringLocalizer["location_exist_stock_not_delete"]);
             }
-             var qty = await _dBContext.GetDbSet<GoodslocationEntity>().Where(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
+             var qty = await _dBContext.GetDbSet<GoodsLocationEntity>().Where(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
              if (qty > 0)
              {
                  return (true, _stringLocalizer["delete_success"]);

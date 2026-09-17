@@ -13,9 +13,9 @@ namespace ModernWMS.WMS.IServices
     /// Interface of AsnSortingService.
     /// Split out of IAsnService's "Flow Api" region (AsnService pre-split): the
     /// sorting sub-flow, plus the print-series-number read that also depends on
-    /// AsnsortEntity.
+    /// AsnSortEntity.
     /// </summary>
-    public interface IAsnSortingService : IBaseService<AsnsortEntity>
+    public interface IAsnSortingService : IBaseService<AsnSortEntity>
     {
         /// <summary>
         /// sorting， add a new asnsort record and update asn sorted_qty
@@ -23,7 +23,7 @@ namespace ModernWMS.WMS.IServices
         /// <param name="viewModels">args</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<(bool flag, string msg)> SortingAsync(List<AsnsortInputViewModel> viewModels, CurrentUser currentUser);
+        Task<(bool flag, string msg)> SortingAsync(List<AsnSortInputViewModel> viewModels, CurrentUser currentUser);
 
         /// <summary>
         /// get asnsorts list by asn_id
@@ -31,7 +31,7 @@ namespace ModernWMS.WMS.IServices
         /// <param name="asn_id">asn id</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        Task<List<AsnsortViewModel>> GetAsnsortsAsync(int asn_id, CurrentUser currentUser);
+        Task<List<AsnSortViewModel>> GetAsnsortsAsync(int asn_id, CurrentUser currentUser);
 
         /// <summary>
         /// update or delete asnsorts data
@@ -39,7 +39,7 @@ namespace ModernWMS.WMS.IServices
         /// <param name="entities">data</param>
         /// <param name="user">CurrentUser</param>
         /// <returns></returns>
-        Task<(bool flag, string msg)> ModifyAsnsortsAsync(List<AsnsortEntity> entities, CurrentUser user);
+        Task<(bool flag, string msg)> ModifyAsnsortsAsync(List<AsnSortEntity> entities, CurrentUser user);
 
         /// <summary>
         /// Sorted

@@ -54,11 +54,11 @@ namespace ModernWMS.WMS.Controllers
          /// <param name="pageSearch">args</param>
          /// <returns></returns>
          [HttpPost("list")]
-         public async Task<ResultModel<PageData<FreightfeeViewModel>>> PageAsync(PageSearch pageSearch)
+         public async Task<ResultModel<PageData<FreightFeeViewModel>>> PageAsync(PageSearch pageSearch)
          {
              var (data, totals) = await _freightfeeService.PageAsync(pageSearch, CurrentUser);
               
-             return ResultModel<PageData<FreightfeeViewModel>>.Success(new PageData<FreightfeeViewModel>
+             return ResultModel<PageData<FreightFeeViewModel>>.Success(new PageData<FreightFeeViewModel>
              {
                  Rows = data,
                  Totals = totals
@@ -70,16 +70,16 @@ namespace ModernWMS.WMS.Controllers
          /// </summary>
          /// <returns>args</returns>
         [HttpGet("all")]
-         public async Task<ResultModel<List<FreightfeeViewModel>>> GetAllAsync()
+         public async Task<ResultModel<List<FreightFeeViewModel>>> GetAllAsync()
          {
              var data = await _freightfeeService.GetAllAsync(CurrentUser);
              if (data.Any())
              {
-                 return ResultModel<List<FreightfeeViewModel>>.Success(data);
+                 return ResultModel<List<FreightFeeViewModel>>.Success(data);
              }
              else
              {
-                 return ResultModel<List<FreightfeeViewModel>>.Success(new List<FreightfeeViewModel>());
+                 return ResultModel<List<FreightFeeViewModel>>.Success(new List<FreightFeeViewModel>());
              }
          }
  
@@ -88,16 +88,16 @@ namespace ModernWMS.WMS.Controllers
          /// </summary>
          /// <returns>args</returns>
          [HttpGet]
-         public async Task<ResultModel<FreightfeeViewModel>> GetAsync(int id)
+         public async Task<ResultModel<FreightFeeViewModel>> GetAsync(int id)
          {
              var data = await _freightfeeService.GetAsync(id, CurrentUser);
              if (data!=null)
              {
-                 return ResultModel<FreightfeeViewModel>.Success(data);
+                 return ResultModel<FreightFeeViewModel>.Success(data);
              }
              else
              {
-                 return ResultModel<FreightfeeViewModel>.Error(_stringLocalizer["not_exists_entity"]);
+                 return ResultModel<FreightFeeViewModel>.Error(_stringLocalizer["not_exists_entity"]);
              }
          }
          /// <summary>
@@ -106,7 +106,7 @@ namespace ModernWMS.WMS.Controllers
          /// <param name="viewModel">args</param>
          /// <returns></returns>
          [HttpPost]
-         public async Task<ResultModel<int>> AddAsync(FreightfeeViewModel viewModel)
+         public async Task<ResultModel<int>> AddAsync(FreightFeeViewModel viewModel)
          {
              var (id, msg) = await _freightfeeService.AddAsync(viewModel,CurrentUser);
              if (id > 0)
@@ -125,7 +125,7 @@ namespace ModernWMS.WMS.Controllers
          /// <param name="viewModel">args</param>
          /// <returns></returns>
          [HttpPut]
-         public async Task<ResultModel<bool>> UpdateAsync(FreightfeeViewModel viewModel)
+         public async Task<ResultModel<bool>> UpdateAsync(FreightFeeViewModel viewModel)
          {
              var (flag, msg) = await _freightfeeService.UpdateAsync(viewModel, CurrentUser);
              if (flag)
@@ -163,7 +163,7 @@ namespace ModernWMS.WMS.Controllers
         /// <param name="excel_datas">excel datas</param>
         /// <returns></returns>
         [HttpPost("excel")]
-        public async Task<ResultModel<string>> ExcelAsync(List<FreightfeeExcelmportViewModel> excel_datas)
+        public async Task<ResultModel<string>> ExcelAsync(List<FreightFeeExcelmportViewModel> excel_datas)
         {
             var (flag, msg) = await _freightfeeService.ExcelAsync(excel_datas, CurrentUser);
             if (flag)

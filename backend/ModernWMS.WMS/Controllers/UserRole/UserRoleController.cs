@@ -55,7 +55,7 @@
         /// <param name="viewModels">viewmodel</param>
         /// <returns></returns>
         [HttpPost("save")]
-        public async Task<ResultModel<string>> SaveAllAsync(List<UserroleViewModel> viewModels)
+        public async Task<ResultModel<string>> SaveAllAsync(List<UserRoleViewModel> viewModels)
         {
             var (flag,msg) = await _userroleService.BulkSaveAsync(viewModels, CurrentUser);
             if(flag)
@@ -70,16 +70,16 @@
          /// </summary>
          /// <returns>args</returns>
         [HttpGet("all")]
-         public async Task<ResultModel<List<UserroleViewModel>>> GetAllAsync()
+         public async Task<ResultModel<List<UserRoleViewModel>>> GetAllAsync()
          {
              var data = await _userroleService.GetAllAsync(CurrentUser);
              if (data.Any())
              {
-                 return ResultModel<List<UserroleViewModel>>.Success(data);
+                 return ResultModel<List<UserRoleViewModel>>.Success(data);
              }
              else
              {
-                 return ResultModel<List<UserroleViewModel>>.Success(new List<UserroleViewModel>());
+                 return ResultModel<List<UserRoleViewModel>>.Success(new List<UserRoleViewModel>());
              }
          }
  
@@ -88,16 +88,16 @@
          /// </summary>
          /// <returns>args</returns>
          [HttpGet]
-         public async Task<ResultModel<UserroleViewModel>> GetAsync(int id)
+         public async Task<ResultModel<UserRoleViewModel>> GetAsync(int id)
          {
              var data = await _userroleService.GetAsync(id, CurrentUser);
              if (data!=null)
              {
-                 return ResultModel<UserroleViewModel>.Success(data);
+                 return ResultModel<UserRoleViewModel>.Success(data);
              }
              else
              {
-                 return ResultModel<UserroleViewModel>.Error(_stringLocalizer["exists_entity"]);
+                 return ResultModel<UserRoleViewModel>.Error(_stringLocalizer["exists_entity"]);
              }
          }
          /// <summary>
@@ -106,7 +106,7 @@
          /// <param name="viewModel">args</param>
          /// <returns></returns>
          [HttpPost]
-         public async Task<ResultModel<int>> AddAsync(UserroleViewModel viewModel)
+         public async Task<ResultModel<int>> AddAsync(UserRoleViewModel viewModel)
          {
              var (id, msg) = await _userroleService.AddAsync(viewModel,CurrentUser);
              if (id > 0)
@@ -125,7 +125,7 @@
          /// <param name="viewModel">args</param>
          /// <returns></returns>
          [HttpPut]
-         public async Task<ResultModel<bool>> UpdateAsync(UserroleViewModel viewModel)
+         public async Task<ResultModel<bool>> UpdateAsync(UserRoleViewModel viewModel)
          {
              var (flag, msg) = await _userroleService.UpdateAsync(viewModel, CurrentUser);
              if (flag)

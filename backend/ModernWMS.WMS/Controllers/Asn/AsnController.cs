@@ -31,7 +31,7 @@ namespace ModernWMS.WMS.Controllers
         /// <summary>
         /// asnmaster Service
         /// </summary>
-        private readonly IAsnmasterService _asnmasterService;
+        private readonly IAsnMasterService _asnmasterService;
 
         /// <summary>
         /// asn confirm/unload Service
@@ -66,7 +66,7 @@ namespace ModernWMS.WMS.Controllers
         /// <param name="stringLocalizer">Localizer</param>
         public AsnController(
             IAsnService asnService
-          , IAsnmasterService asnmasterService
+          , IAsnMasterService asnmasterService
           , IAsnConfirmService asnConfirmService
           , IAsnSortingService asnSortingService
           , IAsnPutawayService asnPutawayService
@@ -90,11 +90,11 @@ namespace ModernWMS.WMS.Controllers
         /// <param name="pageSearch">args</param>
         /// <returns></returns>
         [HttpPost("asnmaster/list")]
-        public async Task<ResultModel<PageData<AsnmasterBothViewModel>>> PageAsnmasterAsync(PageSearch pageSearch)
+        public async Task<ResultModel<PageData<AsnMasterBothViewModel>>> PageAsnmasterAsync(PageSearch pageSearch)
         {
             var (data, totals) = await _asnmasterService.PageAsnmasterAsync(pageSearch, CurrentUser);
 
-            return ResultModel<PageData<AsnmasterBothViewModel>>.Success(new PageData<AsnmasterBothViewModel>
+            return ResultModel<PageData<AsnMasterBothViewModel>>.Success(new PageData<AsnMasterBothViewModel>
             {
                 Rows = data,
                 Totals = totals
@@ -106,16 +106,16 @@ namespace ModernWMS.WMS.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("asnmaster")]
-        public async Task<ResultModel<AsnmasterBothViewModel>> GetAsnmasterAsync(int id)
+        public async Task<ResultModel<AsnMasterBothViewModel>> GetAsnmasterAsync(int id)
         {
             var data = await _asnmasterService.GetAsnmasterAsync(id, CurrentUser);
             if (data != null && data.id > 0)
             {
-                return ResultModel<AsnmasterBothViewModel>.Success(data);
+                return ResultModel<AsnMasterBothViewModel>.Success(data);
             }
             else
             {
-                return ResultModel<AsnmasterBothViewModel>.Error(_stringLocalizer["not_exists_entity"]);
+                return ResultModel<AsnMasterBothViewModel>.Error(_stringLocalizer["not_exists_entity"]);
             }
         }
 
@@ -125,7 +125,7 @@ namespace ModernWMS.WMS.Controllers
         /// <param name="viewModel">viewmodel</param>
         /// <returns></returns>
         [HttpPost("asnmaster")]
-        public async Task<ResultModel<int>> AddAsnmasterAsync(AsnmasterBothViewModel viewModel)
+        public async Task<ResultModel<int>> AddAsnmasterAsync(AsnMasterBothViewModel viewModel)
         {
             var (id, msg) = await _asnmasterService.AddAsnmasterAsync(viewModel, CurrentUser);
             if (id > 0)
@@ -143,7 +143,7 @@ namespace ModernWMS.WMS.Controllers
         /// <param name="viewModel">viewmodel</param>
         /// <returns></returns>
         [HttpPut("asnmaster")]
-        public async Task<ResultModel<bool>> UpdateAsnmasterAsync(AsnmasterBothViewModel viewModel)
+        public async Task<ResultModel<bool>> UpdateAsnmasterAsync(AsnMasterBothViewModel viewModel)
         {
             var (flag, msg) = await _asnmasterService.UpdateAsnmasterAsync(viewModel, CurrentUser);
             if (flag)
@@ -375,7 +375,7 @@ namespace ModernWMS.WMS.Controllers
         /// <param name="viewModels">args</param>
         /// <returns></returns>
         [HttpPut("sorting")]
-        public async Task<ResultModel<string>> SortingAsync(List<AsnsortInputViewModel> viewModels)
+        public async Task<ResultModel<string>> SortingAsync(List<AsnSortInputViewModel> viewModels)
         {
             var (flag, msg) = await _asnSortingService.SortingAsync(viewModels, CurrentUser);
             if (flag)
@@ -394,10 +394,10 @@ namespace ModernWMS.WMS.Controllers
         /// <param name="asn_id">asn id</param>
         /// <returns></returns>
         [HttpGet("sorting")]
-        public async Task<ResultModel<List<AsnsortViewModel>>> GetAsnsortsAsync(int asn_id)
+        public async Task<ResultModel<List<AsnSortViewModel>>> GetAsnsortsAsync(int asn_id)
         {
             var data = await _asnSortingService.GetAsnsortsAsync(asn_id, CurrentUser);
-            return ResultModel<List<AsnsortViewModel>>.Success(data);
+            return ResultModel<List<AsnSortViewModel>>.Success(data);
         }
 
         /// <summary>
@@ -406,7 +406,7 @@ namespace ModernWMS.WMS.Controllers
         /// <param name="entities">data</param>
         /// <returns></returns>
         [HttpPut("sorting-modify")]
-        public async Task<ResultModel<string>> ModifyAsnsortsAsync(List<AsnsortEntity> entities)
+        public async Task<ResultModel<string>> ModifyAsnsortsAsync(List<AsnSortEntity> entities)
         {
             var (flag, msg) = await _asnSortingService.ModifyAsnsortsAsync(entities, CurrentUser);
             if (flag)

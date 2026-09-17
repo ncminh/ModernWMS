@@ -58,7 +58,7 @@ namespace ModernWMS.WMS.Services
         /// <param name="viewModels">viewmodel</param>
         /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> BulkSaveAsync(List<UserroleViewModel> viewModels, CurrentUser currentUser)
+        public async Task<(bool flag, string msg)> BulkSaveAsync(List<UserRoleViewModel> viewModels, CurrentUser currentUser)
         {
             StringBuilder sb = new StringBuilder();
             var DBSet = _dBContext.GetDbSet<UserroleEntity>();
@@ -117,18 +117,18 @@ namespace ModernWMS.WMS.Services
         /// Get all records
         /// </summary>
         /// <returns></returns>
-        public async Task<List<UserroleViewModel>> GetAllAsync(CurrentUser currentUser)
+        public async Task<List<UserRoleViewModel>> GetAllAsync(CurrentUser currentUser)
         {
             var DbSet = _dBContext.GetDbSet<UserroleEntity>();
             var data = await DbSet.AsNoTracking().Where(t => t.tenant_id == currentUser.tenant_id).ToListAsync();
-            return data.Adapt<List<UserroleViewModel>>();
+            return data.Adapt<List<UserRoleViewModel>>();
         }
 
         /// <summary>
         /// Get a record by id
         /// </summary>
         /// <returns></returns>
-        public async Task<UserroleViewModel> GetAsync(int id, CurrentUser currentUser)
+        public async Task<UserRoleViewModel> GetAsync(int id, CurrentUser currentUser)
         {
             var DbSet = _dBContext.GetDbSet<UserroleEntity>();
             var entity = await DbSet.AsNoTracking().FirstOrDefaultAsync(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id);
@@ -136,7 +136,7 @@ namespace ModernWMS.WMS.Services
             {
                 return null;
             }
-            return entity.Adapt<UserroleViewModel>();
+            return entity.Adapt<UserRoleViewModel>();
         }
         /// <summary>
         /// add a new record
@@ -144,7 +144,7 @@ namespace ModernWMS.WMS.Services
         /// <param name="viewModel">viewmodel</param>
         /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        public async Task<(int id, string msg)> AddAsync(UserroleViewModel viewModel, CurrentUser currentUser)
+        public async Task<(int id, string msg)> AddAsync(UserRoleViewModel viewModel, CurrentUser currentUser)
         {
             var DbSet = _dBContext.GetDbSet<UserroleEntity>();
             if (await DbSet.AnyAsync(t => t.role_name == viewModel.role_name && t.tenant_id ==  currentUser.tenant_id))
@@ -173,7 +173,7 @@ namespace ModernWMS.WMS.Services
         /// <param name="viewModel">args</param>
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> UpdateAsync(UserroleViewModel viewModel, CurrentUser currentUser)
+        public async Task<(bool flag, string msg)> UpdateAsync(UserRoleViewModel viewModel, CurrentUser currentUser)
         {
             var DbSet = _dBContext.GetDbSet<UserroleEntity>();
             if (await DbSet.AnyAsync(t => t.id != viewModel.id && t.role_name == viewModel.role_name && t.tenant_id == currentUser.tenant_id))

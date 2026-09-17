@@ -62,7 +62,7 @@ namespace ModernWMS.WMS.Services
         public async Task<List<AsnPendingPutawayViewModel>> GetPendingPutawayDataAsync(int id, CurrentUser currentUser)
         {
             var Asns = _dBContext.GetDbSet<AsnEntity>();
-            var Asnsorts = _dBContext.GetDbSet<AsnsortEntity>();
+            var Asnsorts = _dBContext.GetDbSet<AsnSortEntity>();
 
             var data = await (from m in Asns.AsNoTracking()
                               join s in Asnsorts.AsNoTracking() on m.id equals s.asn_id
@@ -94,9 +94,9 @@ namespace ModernWMS.WMS.Services
                 return (false, "[202]" + string.Format(_stringLocalizer["Required"], _stringLocalizer["location_name"]));
             }
             var Asns = _dBContext.GetDbSet<AsnEntity>();
-            var Goodslocations = _dBContext.GetDbSet<GoodslocationEntity>();
+            var Goodslocations = _dBContext.GetDbSet<GoodsLocationEntity>();
             var Stocks = _dBContext.GetDbSet<StockEntity>();
-            var Asnsorts = _dBContext.GetDbSet<AsnsortEntity>();
+            var Asnsorts = _dBContext.GetDbSet<AsnSortEntity>();
 
             var LocationIdList = viewModels.Where(v => v.goods_location_id > 0)
                                            .Select(v => v.goods_location_id)

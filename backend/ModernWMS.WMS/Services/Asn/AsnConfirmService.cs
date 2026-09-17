@@ -74,7 +74,7 @@ namespace ModernWMS.WMS.Services
             }
             // get asnmaster data
             var asnmaster_id = entities.Select(t => t.asnmaster_id).FirstOrDefault();
-            var Asnmaster = _dBContext.GetDbSet<AsnmasterEntity>();
+            var Asnmaster = _dBContext.GetDbSet<AsnMasterEntity>();
             var asnmasterentity = await Asnmaster.FirstOrDefaultAsync(t => t.id.Equals(asnmaster_id));
             if (asnmasterentity == null)
             {
@@ -124,7 +124,7 @@ namespace ModernWMS.WMS.Services
             }
             // get asnmaster data
             var asnmaster_id = entities.Select(t => t.asnmaster_id).FirstOrDefault();
-            var Asnmaster = _dBContext.GetDbSet<AsnmasterEntity>();
+            var Asnmaster = _dBContext.GetDbSet<AsnMasterEntity>();
             var asnmasterentity = await Asnmaster.FirstOrDefaultAsync(t => t.id.Equals(asnmaster_id));
             if (asnmasterentity == null)
             {

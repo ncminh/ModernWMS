@@ -18,9 +18,9 @@ namespace ModernWMS.UnitTests.Services.FreightFee
         public async Task PageAsync_OnlyReturnsRowsForCurrentTenant()
         {
             using var scope = new SqliteTestDbContextScope();
-            scope.DbContext.GetDbSet<FreightfeeEntity>().AddRange(
-                new FreightfeeEntity { carrier = "Tenant1-Carrier", tenant_id = 1 },
-                new FreightfeeEntity { carrier = "Tenant2-Carrier", tenant_id = 2 });
+            scope.DbContext.GetDbSet<FreightFeeEntity>().AddRange(
+                new FreightFeeEntity { carrier = "Tenant1-Carrier", tenant_id = 1 },
+                new FreightFeeEntity { carrier = "Tenant2-Carrier", tenant_id = 2 });
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
@@ -37,10 +37,10 @@ namespace ModernWMS.UnitTests.Services.FreightFee
             var service = CreateService(scope.DbContext);
             var currentUser = new CurrentUser { tenant_id = 1, user_name = "alice" };
 
-            var (id, _) = await service.AddAsync(new FreightfeeViewModel { carrier = "Carrier1" }, currentUser);
+            var (id, _) = await service.AddAsync(new FreightFeeViewModel { carrier = "Carrier1" }, currentUser);
 
             id.ShouldBeGreaterThan(0);
-            var saved = await scope.DbContext.GetDbSet<FreightfeeEntity>().FindAsync(id);
+            var saved = await scope.DbContext.GetDbSet<FreightFeeEntity>().FindAsync(id);
             saved!.creator.ShouldBe("alice");
             saved.tenant_id.ShouldBe(1);
         }
@@ -51,7 +51,7 @@ namespace ModernWMS.UnitTests.Services.FreightFee
             using var scope = new SqliteTestDbContextScope();
             var service = CreateService(scope.DbContext);
 
-            var (flag, _) = await service.UpdateAsync(new FreightfeeViewModel { id = 999 }, new CurrentUser { tenant_id = 1 });
+            var (flag, _) = await service.UpdateAsync(new FreightFeeViewModel { id = 999 }, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
         }
@@ -60,30 +60,30 @@ namespace ModernWMS.UnitTests.Services.FreightFee
         public async Task UpdateAsync_ExistingRecord_UpdatesFields()
         {
             using var scope = new SqliteTestDbContextScope();
-            var freightfee = new FreightfeeEntity { carrier = "Carrier1", tenant_id = 1, price_per_weight = 1 };
-            scope.DbContext.GetDbSet<FreightfeeEntity>().Add(freightfee);
+            var freightfee = new FreightFeeEntity { carrier = "Carrier1", tenant_id = 1, price_per_weight = 1 };
+            scope.DbContext.GetDbSet<FreightFeeEntity>().Add(freightfee);
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
-            var (flag, _) = await service.UpdateAsync(new FreightfeeViewModel { id = freightfee.id, carrier = "Carrier1", price_per_weight = 5 }, new CurrentUser { tenant_id = 1 });
+            var (flag, _) = await service.UpdateAsync(new FreightFeeViewModel { id = freightfee.id, carrier = "Carrier1", price_per_weight = 5 }, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<FreightfeeEntity>().FindAsync(freightfee.id))!.price_per_weight.ShouldBe(5);
+            (await scope.DbContext.GetDbSet<FreightFeeEntity>().FindAsync(freightfee.id))!.price_per_weight.ShouldBe(5);
         }
 
         [Fact]
         public async Task DeleteAsync_ExistingRecord_Succeeds()
         {
             using var scope = new SqliteTestDbContextScope();
-            var freightfee = new FreightfeeEntity { carrier = "Carrier1", tenant_id = 1 };
-            scope.DbContext.GetDbSet<FreightfeeEntity>().Add(freightfee);
+            var freightfee = new FreightFeeEntity { carrier = "Carrier1", tenant_id = 1 };
+            scope.DbContext.GetDbSet<FreightFeeEntity>().Add(freightfee);
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.DeleteAsync(freightfee.id, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<FreightfeeEntity>().AsNoTracking().FirstOrDefaultAsync(t => t.id == freightfee.id)).ShouldBeNull();
+            (await scope.DbContext.GetDbSet<FreightFeeEntity>().AsNoTracking().FirstOrDefaultAsync(t => t.id == freightfee.id)).ShouldBeNull();
         }
 
         [Fact]
@@ -91,7 +91,7 @@ namespace ModernWMS.UnitTests.Services.FreightFee
         {
             using var scope = new SqliteTestDbContextScope();
             var service = CreateService(scope.DbContext);
-            var datas = new List<FreightfeeExcelmportViewModel>
+            var datas = new List<FreightFeeExcelmportViewModel>
             {
                 new() { carrier = "Carrier1" },
                 new() { carrier = "Carrier2" },
@@ -100,15 +100,15 @@ namespace ModernWMS.UnitTests.Services.FreightFee
             var (flag, _) = await service.ExcelAsync(datas, new CurrentUser { tenant_id = 1, user_name = "alice" });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<FreightfeeEntity>().CountAsync()).ShouldBe(2);
+            (await scope.DbContext.GetDbSet<FreightFeeEntity>().CountAsync()).ShouldBe(2);
         }
 
         [Fact]
         public async Task GetAsync_BelongsToDifferentTenant_ReturnsNull()
         {
             using var scope = new SqliteTestDbContextScope();
-            var freightfee = new FreightfeeEntity { carrier = "Carrier1", tenant_id = 1 };
-            scope.DbContext.GetDbSet<FreightfeeEntity>().Add(freightfee);
+            var freightfee = new FreightFeeEntity { carrier = "Carrier1", tenant_id = 1 };
+            scope.DbContext.GetDbSet<FreightFeeEntity>().Add(freightfee);
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
@@ -121,12 +121,12 @@ namespace ModernWMS.UnitTests.Services.FreightFee
         public async Task UpdateAsync_BelongsToDifferentTenant_ReturnsNotExists()
         {
             using var scope = new SqliteTestDbContextScope();
-            var freightfee = new FreightfeeEntity { carrier = "Carrier1", tenant_id = 1 };
-            scope.DbContext.GetDbSet<FreightfeeEntity>().Add(freightfee);
+            var freightfee = new FreightFeeEntity { carrier = "Carrier1", tenant_id = 1 };
+            scope.DbContext.GetDbSet<FreightFeeEntity>().Add(freightfee);
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
-            var (flag, _) = await service.UpdateAsync(new FreightfeeViewModel { id = freightfee.id, carrier = "Hijacked" }, new CurrentUser { tenant_id = 2 });
+            var (flag, _) = await service.UpdateAsync(new FreightFeeViewModel { id = freightfee.id, carrier = "Hijacked" }, new CurrentUser { tenant_id = 2 });
 
             flag.ShouldBeFalse();
         }
@@ -135,15 +135,15 @@ namespace ModernWMS.UnitTests.Services.FreightFee
         public async Task DeleteAsync_BelongsToDifferentTenant_DoesNotDelete()
         {
             using var scope = new SqliteTestDbContextScope();
-            var freightfee = new FreightfeeEntity { carrier = "Carrier1", tenant_id = 1 };
-            scope.DbContext.GetDbSet<FreightfeeEntity>().Add(freightfee);
+            var freightfee = new FreightFeeEntity { carrier = "Carrier1", tenant_id = 1 };
+            scope.DbContext.GetDbSet<FreightFeeEntity>().Add(freightfee);
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.DeleteAsync(freightfee.id, new CurrentUser { tenant_id = 2 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<FreightfeeEntity>().AsNoTracking().FirstOrDefaultAsync(t => t.id == freightfee.id)).ShouldNotBeNull();
+            (await scope.DbContext.GetDbSet<FreightFeeEntity>().AsNoTracking().FirstOrDefaultAsync(t => t.id == freightfee.id)).ShouldNotBeNull();
         }
     }
 }

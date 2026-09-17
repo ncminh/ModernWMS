@@ -11,7 +11,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 {
     public class DispatchlistServiceTests
     {
-        private static DispatchlistService CreateService(ModernWMS.Core.DBContext.SqlDBContext dbContext) =>
+        private static DispatchListService CreateService(ModernWMS.Core.DBContext.SqlDBContext dbContext) =>
             new(dbContext, new FakeStringLocalizer<MultiLanguage>(), TestFunctionHelperFactory.Create(dbContext));
 
         private static async Task<(SpuEntity spu, SkuEntity sku)> SeedSpuSkuAsync(
@@ -26,12 +26,12 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             return (spu, sku);
         }
 
-        private static async Task<DispatchlistEntity> SeedDispatchlistAsync(
+        private static async Task<DispatchListEntity> SeedDispatchlistAsync(
             ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId, int skuId,
             string dispatchNo = "DISP1", byte dispatchStatus = 0, int qty = 10, int pickedQty = 0,
             decimal volume = 0, decimal weight = 0)
         {
-            var entity = new DispatchlistEntity
+            var entity = new DispatchListEntity
             {
                 dispatch_no = dispatchNo,
                 dispatch_status = dispatchStatus,
@@ -42,7 +42,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
                 weight = weight,
                 tenant_id = tenantId,
             };
-            dbContext.GetDbSet<DispatchlistEntity>().Add(entity);
+            dbContext.GetDbSet<DispatchListEntity>().Add(entity);
             await dbContext.SaveChangesAsync();
             return entity;
         }
@@ -133,10 +133,10 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var currentUser = new CurrentUser { tenant_id = 1, user_name = "alice" };
 
             var (flag, _) = await service.AddAsync(
-                new List<DispatchlistAddViewModel> { new() { sku_id = sku.id, qty = 4 } }, currentUser);
+                new List<DispatchListAddViewModel> { new() { sku_id = sku.id, qty = 4 } }, currentUser);
 
             flag.ShouldBeTrue();
-            var saved = await scope.DbContext.GetDbSet<DispatchlistEntity>().AsNoTracking().FirstAsync();
+            var saved = await scope.DbContext.GetDbSet<DispatchListEntity>().AsNoTracking().FirstAsync();
             saved.creator.ShouldBe("alice");
             saved.tenant_id.ShouldBe(1);
             saved.dispatch_no.ShouldNotBeNullOrEmpty();
@@ -179,7 +179,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.UpdateAsycn(
-                new List<DispatchlistViewModel> { new() { id = entity.id, dispatch_no = "D1", sku_id = sku.id, qty = 5 } },
+                new List<DispatchListViewModel> { new() { id = entity.id, dispatch_no = "D1", sku_id = sku.id, qty = 5 } },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
@@ -194,11 +194,11 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.UpdateAsycn(
-                new List<DispatchlistViewModel> { new() { id = entity.id, dispatch_no = "D1", dispatch_status = 0, sku_id = sku.id, qty = 9 } },
+                new List<DispatchListViewModel> { new() { id = entity.id, dispatch_no = "D1", dispatch_status = 0, sku_id = sku.id, qty = 9 } },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().FindAsync(entity.id))!.qty.ShouldBe(9);
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().FindAsync(entity.id))!.qty.ShouldBe(9);
         }
 
         [Fact]
@@ -210,7 +210,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.UpdateAsycn(
-                new List<DispatchlistViewModel>
+                new List<DispatchListViewModel>
                 {
                     new() { id = entity.id, dispatch_no = "D1", dispatch_status = 0, sku_id = sku.id, qty = entity.qty },
                     new() { id = 0, dispatch_no = "D1", dispatch_status = 0, sku_id = 999, qty = 3 },
@@ -218,7 +218,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            var rows = await scope.DbContext.GetDbSet<DispatchlistEntity>().AsNoTracking().Where(t => t.dispatch_no == "D1").ToListAsync();
+            var rows = await scope.DbContext.GetDbSet<DispatchListEntity>().AsNoTracking().Where(t => t.dispatch_no == "D1").ToListAsync();
             rows.Count.ShouldBe(2);
         }
 
@@ -231,11 +231,11 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.UpdateAsycn(
-                new List<DispatchlistViewModel> { new() { id = -entity.id, dispatch_no = "D1", sku_id = sku.id, qty = entity.qty } },
+                new List<DispatchListViewModel> { new() { id = -entity.id, dispatch_no = "D1", sku_id = sku.id, qty = entity.qty } },
                 new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().AsNoTracking().FirstOrDefaultAsync(t => t.id == entity.id)).ShouldBeNull();
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().AsNoTracking().FirstOrDefaultAsync(t => t.id == entity.id)).ShouldBeNull();
         }
 
         [Fact]
@@ -247,7 +247,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.UpdateAsycn(
-                new List<DispatchlistViewModel>
+                new List<DispatchListViewModel>
                 {
                     new() { id = entity.id, dispatch_no = "D1", dispatch_status = 0, sku_id = sku.id, qty = entity.qty },
                     new() { id = 0, dispatch_no = "D1", dispatch_status = 0, sku_id = sku.id, qty = 1 },
@@ -268,7 +268,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var (flag, _) = await service.DeleteAsync("D1", new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().AsNoTracking().AnyAsync(t => t.dispatch_no == "D1")).ShouldBeFalse();
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().AsNoTracking().AnyAsync(t => t.dispatch_no == "D1")).ShouldBeFalse();
         }
 
         [Fact]
@@ -282,7 +282,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var (flag, _) = await service.DeleteAsync("D1", new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().AsNoTracking().AnyAsync(t => t.dispatch_no == "D1")).ShouldBeTrue();
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().AsNoTracking().AnyAsync(t => t.dispatch_no == "D1")).ShouldBeTrue();
         }
 
         [Fact]
@@ -296,7 +296,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var (flag, _) = await service.DeleteAsync("D1", new CurrentUser { tenant_id = 2 });
 
             flag.ShouldBeFalse();
-            (await scope.DbContext.GetDbSet<DispatchlistEntity>().AsNoTracking().AnyAsync(t => t.dispatch_no == "D1")).ShouldBeTrue();
+            (await scope.DbContext.GetDbSet<DispatchListEntity>().AsNoTracking().AnyAsync(t => t.dispatch_no == "D1")).ShouldBeTrue();
         }
 
         [Fact]
@@ -311,14 +311,14 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
             var service = CreateService(scope.DbContext);
             var currentUser = new CurrentUser { tenant_id = 1, user_name = "alice" };
             var (flag, _) = await service.Import(
-                new List<DispatchlistImportViewModel>
+                new List<DispatchListImportViewModel>
                 {
                     new() { import_group = 1, customer_name = "Cust1", sku_code = "SKU1", qty = 2 },
                 },
                 currentUser);
 
             flag.ShouldBeTrue();
-            var saved = await scope.DbContext.GetDbSet<DispatchlistEntity>().AsNoTracking().FirstAsync();
+            var saved = await scope.DbContext.GetDbSet<DispatchListEntity>().AsNoTracking().FirstAsync();
             saved.customer_id.ShouldBe(customer.id);
             saved.sku_id.ShouldBe(sku.id);
             saved.tenant_id.ShouldBe(1);
@@ -333,7 +333,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.Import(
-                new List<DispatchlistImportViewModel>
+                new List<DispatchListImportViewModel>
                 {
                     new() { import_group = 1, customer_name = "Unknown", sku_code = "SKU1", qty = 2 },
                 },
@@ -352,7 +352,7 @@ namespace ModernWMS.UnitTests.Services.Dispatchlist
 
             var service = CreateService(scope.DbContext);
             var (flag, _) = await service.Import(
-                new List<DispatchlistImportViewModel>
+                new List<DispatchListImportViewModel>
                 {
                     new() { import_group = 1, customer_name = "Cust1", sku_code = "UNKNOWN", qty = 2 },
                 },

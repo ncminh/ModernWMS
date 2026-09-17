@@ -26,11 +26,11 @@ namespace ModernWMS.UnitTests.Services.Stock
             return (spu, sku);
         }
 
-        private static async Task<GoodslocationEntity> SeedLocationAsync(
+        private static async Task<GoodsLocationEntity> SeedLocationAsync(
             ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId, int warehouseId = 0,
             string warehouseName = "W1", string locationName = "L1", byte areaProperty = 1)
         {
-            var location = new GoodslocationEntity
+            var location = new GoodsLocationEntity
             {
                 location_name = locationName,
                 warehouse_id = warehouseId,
@@ -38,7 +38,7 @@ namespace ModernWMS.UnitTests.Services.Stock
                 warehouse_area_property = areaProperty,
                 tenant_id = tenantId,
             };
-            dbContext.GetDbSet<GoodslocationEntity>().Add(location);
+            dbContext.GetDbSet<GoodsLocationEntity>().Add(location);
             await dbContext.SaveChangesAsync();
             return location;
         }
@@ -55,10 +55,10 @@ namespace ModernWMS.UnitTests.Services.Stock
         private static async Task SeedDispatchLockAsync(
             ModernWMS.Core.DBContext.SqlDBContext dbContext, long tenantId, int skuId, int locationId, int pickQty)
         {
-            var dispatch = new DispatchlistEntity { dispatch_no = "D1", dispatch_status = 2, sku_id = skuId, lock_qty = pickQty, tenant_id = tenantId };
-            dbContext.GetDbSet<DispatchlistEntity>().Add(dispatch);
+            var dispatch = new DispatchListEntity { dispatch_no = "D1", dispatch_status = 2, sku_id = skuId, lock_qty = pickQty, tenant_id = tenantId };
+            dbContext.GetDbSet<DispatchListEntity>().Add(dispatch);
             await dbContext.SaveChangesAsync();
-            dbContext.GetDbSet<DispatchpicklistEntity>().Add(new DispatchpicklistEntity
+            dbContext.GetDbSet<DispatchPickListEntity>().Add(new DispatchPickListEntity
             {
                 dispatchlist_id = dispatch.id,
                 sku_id = skuId,
@@ -337,13 +337,13 @@ namespace ModernWMS.UnitTests.Services.Stock
             scope.DbContext.GetDbSet<WarehouseEntity>().Add(warehouse);
             await scope.DbContext.SaveChangesAsync();
             var location = await SeedLocationAsync(scope.DbContext, 1, warehouseId: warehouse.id, warehouseName: warehouse.warehouse_name);
-            var owner = new GoodsownerEntity { goods_owner_name = "Owner1", tenant_id = 1 };
-            scope.DbContext.GetDbSet<GoodsownerEntity>().Add(owner);
+            var owner = new GoodsOwnerEntity { goods_owner_name = "Owner1", tenant_id = 1 };
+            scope.DbContext.GetDbSet<GoodsOwnerEntity>().Add(owner);
             await scope.DbContext.SaveChangesAsync();
-            var dispatch = new DispatchlistEntity { dispatch_no = "D1", dispatch_status = 6, sku_id = sku.id, customer_name = "Cust1", tenant_id = 1 };
-            scope.DbContext.GetDbSet<DispatchlistEntity>().Add(dispatch);
+            var dispatch = new DispatchListEntity { dispatch_no = "D1", dispatch_status = 6, sku_id = sku.id, customer_name = "Cust1", tenant_id = 1 };
+            scope.DbContext.GetDbSet<DispatchListEntity>().Add(dispatch);
             await scope.DbContext.SaveChangesAsync();
-            scope.DbContext.GetDbSet<DispatchpicklistEntity>().Add(new DispatchpicklistEntity
+            scope.DbContext.GetDbSet<DispatchPickListEntity>().Add(new DispatchPickListEntity
             {
                 dispatchlist_id = dispatch.id,
                 sku_id = sku.id,
@@ -371,13 +371,13 @@ namespace ModernWMS.UnitTests.Services.Stock
             scope.DbContext.GetDbSet<WarehouseEntity>().Add(warehouse);
             await scope.DbContext.SaveChangesAsync();
             var location = await SeedLocationAsync(scope.DbContext, 2, warehouseId: warehouse.id, warehouseName: warehouse.warehouse_name);
-            var owner = new GoodsownerEntity { goods_owner_name = "Owner1", tenant_id = 2 };
-            scope.DbContext.GetDbSet<GoodsownerEntity>().Add(owner);
+            var owner = new GoodsOwnerEntity { goods_owner_name = "Owner1", tenant_id = 2 };
+            scope.DbContext.GetDbSet<GoodsOwnerEntity>().Add(owner);
             await scope.DbContext.SaveChangesAsync();
-            var dispatch = new DispatchlistEntity { dispatch_no = "D1", dispatch_status = 6, sku_id = sku.id, tenant_id = 2 };
-            scope.DbContext.GetDbSet<DispatchlistEntity>().Add(dispatch);
+            var dispatch = new DispatchListEntity { dispatch_no = "D1", dispatch_status = 6, sku_id = sku.id, tenant_id = 2 };
+            scope.DbContext.GetDbSet<DispatchListEntity>().Add(dispatch);
             await scope.DbContext.SaveChangesAsync();
-            scope.DbContext.GetDbSet<DispatchpicklistEntity>().Add(new DispatchpicklistEntity
+            scope.DbContext.GetDbSet<DispatchPickListEntity>().Add(new DispatchPickListEntity
             {
                 dispatchlist_id = dispatch.id,
                 sku_id = sku.id,

@@ -34,7 +34,7 @@ namespace ModernWMS.UnitTests.Services.UserRole
             using var scope = new SqliteTestDbContextScope();
             var service = CreateService(scope.DbContext);
 
-            var (id, _) = await service.AddAsync(new UserroleViewModel { role_name = "Role1" }, new CurrentUser { tenant_id = 1 });
+            var (id, _) = await service.AddAsync(new UserRoleViewModel { role_name = "Role1" }, new CurrentUser { tenant_id = 1 });
 
             id.ShouldBeGreaterThan(0);
             (await scope.DbContext.GetDbSet<UserroleEntity>().FindAsync(id))!.tenant_id.ShouldBe(1);
@@ -48,7 +48,7 @@ namespace ModernWMS.UnitTests.Services.UserRole
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
-            var (id, _) = await service.AddAsync(new UserroleViewModel { role_name = "Role1" }, new CurrentUser { tenant_id = 1 });
+            var (id, _) = await service.AddAsync(new UserRoleViewModel { role_name = "Role1" }, new CurrentUser { tenant_id = 1 });
 
             id.ShouldBe(0);
         }
@@ -59,7 +59,7 @@ namespace ModernWMS.UnitTests.Services.UserRole
             using var scope = new SqliteTestDbContextScope();
             var service = CreateService(scope.DbContext);
 
-            var (flag, _) = await service.UpdateAsync(new UserroleViewModel { id = 999 }, new CurrentUser { tenant_id = 1 });
+            var (flag, _) = await service.UpdateAsync(new UserRoleViewModel { id = 999 }, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeFalse();
         }
@@ -76,7 +76,7 @@ namespace ModernWMS.UnitTests.Services.UserRole
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
-            var (flag, _) = await service.UpdateAsync(new UserroleViewModel { id = role.id, role_name = "NewName" }, new CurrentUser { tenant_id = 1 });
+            var (flag, _) = await service.UpdateAsync(new UserRoleViewModel { id = role.id, role_name = "NewName" }, new CurrentUser { tenant_id = 1 });
 
             flag.ShouldBeTrue();
             (await scope.DbContext.GetDbSet<ModernWMS.Core.Models.UserEntity>().FindAsync(user.id))!.UserRole.ShouldBe("NewName");
@@ -102,7 +102,7 @@ namespace ModernWMS.UnitTests.Services.UserRole
         {
             using var scope = new SqliteTestDbContextScope();
             var service = CreateService(scope.DbContext);
-            var viewModels = new List<UserroleViewModel>
+            var viewModels = new List<UserRoleViewModel>
             {
                 new() { id = 0, role_name = "Role1" },
                 new() { id = 0, role_name = "Role1" },
@@ -124,7 +124,7 @@ namespace ModernWMS.UnitTests.Services.UserRole
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
-            var viewModels = new List<UserroleViewModel>
+            var viewModels = new List<UserRoleViewModel>
             {
                 new() { id = 0, role_name = "NewRole" },
                 new() { id = toUpdate.id, role_name = "Updated" },
@@ -164,7 +164,7 @@ namespace ModernWMS.UnitTests.Services.UserRole
             await scope.DbContext.SaveChangesAsync();
 
             var service = CreateService(scope.DbContext);
-            var (flag, _) = await service.UpdateAsync(new UserroleViewModel { id = role.id, role_name = "Hijacked" }, new CurrentUser { tenant_id = 2 });
+            var (flag, _) = await service.UpdateAsync(new UserRoleViewModel { id = role.id, role_name = "Hijacked" }, new CurrentUser { tenant_id = 2 });
 
             flag.ShouldBeFalse();
         }

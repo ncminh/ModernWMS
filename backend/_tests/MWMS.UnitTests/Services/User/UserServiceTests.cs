@@ -254,7 +254,7 @@ namespace ModernWMS.UnitTests.Services.User
             adminRole.role_name.ShouldBe("admin");
             var menus = await scope.DbContext.GetDbSet<MenuEntity>().AsNoTracking().Where(t => t.tenant_id == tenantId).ToListAsync();
             menus.ShouldNotBeEmpty();
-            var roleMenus = await scope.DbContext.GetDbSet<RolemenuEntity>().AsNoTracking().Where(t => t.tenant_id == tenantId).ToListAsync();
+            var roleMenus = await scope.DbContext.GetDbSet<RoleMenuEntity>().AsNoTracking().Where(t => t.tenant_id == tenantId).ToListAsync();
             roleMenus.Count.ShouldBe(menus.Count);
             roleMenus.ShouldAllBe(t => t.userrole_id == adminRole.id);
         }
