@@ -32,8 +32,9 @@
          /// Get a record by id
          /// </summary>
          /// <param name="id">primary key</param>
+         /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         Task<StockadjustViewModel> GetAsync(int id);
+         Task<StockadjustViewModel> GetAsync(int id, CurrentUser currentUser);
          /// <summary>
          /// add a new record
          /// </summary>
@@ -45,23 +46,26 @@
          /// update a record
          /// </summary>
          /// <param name="viewModel">viewmodel</param>
+         /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         Task<(bool flag, string msg)> UpdateAsync(StockadjustViewModel viewModel);
- 
+         Task<(bool flag, string msg)> UpdateAsync(StockadjustViewModel viewModel, CurrentUser currentUser);
+
          /// <summary>
          /// delete a record
          /// </summary>
          /// <param name="id">id</param>
+         /// <param name="currentUser">current user</param>
          /// <returns></returns>
-         Task<(bool flag, string msg)> DeleteAsync(int id);
+         Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser);
 
 
         /// <summary>
         /// confirm adjustment
         /// </summary>
         /// <param name="id">id</param>
+        /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        Task<(bool flag, string msg)> ConfirmAdjustment(int id);
+        Task<(bool flag, string msg)> ConfirmAdjustment(int id, CurrentUser currentUser);
          #endregion
      }
  }

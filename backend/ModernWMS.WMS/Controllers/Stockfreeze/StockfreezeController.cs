@@ -91,7 +91,7 @@
          [HttpGet]
          public async Task<ResultModel<StockfreezeViewModel>> GetAsync(int id)
          {
-             var data = await _stockfreezeService.GetAsync(id);
+             var data = await _stockfreezeService.GetAsync(id, CurrentUser);
              if (data!=null)
              {
                  return ResultModel<StockfreezeViewModel>.Success(data);
@@ -128,7 +128,7 @@
          [HttpPut]
          public async Task<ResultModel<bool>> UpdateAsync(StockfreezeViewModel viewModel)
          {
-             var (flag, msg) = await _stockfreezeService.UpdateAsync(viewModel);
+             var (flag, msg) = await _stockfreezeService.UpdateAsync(viewModel, CurrentUser);
              if (flag)
              {
                  return ResultModel<bool>.Success(flag);
@@ -147,7 +147,7 @@
          [HttpDelete]
          public async Task<ResultModel<string>> DeleteAsync(int id)
          {
-             var (flag, msg) = await _stockfreezeService.DeleteAsync(id);
+             var (flag, msg) = await _stockfreezeService.DeleteAsync(id, CurrentUser);
              if (flag)
              {
                  return ResultModel<string>.Success(msg);

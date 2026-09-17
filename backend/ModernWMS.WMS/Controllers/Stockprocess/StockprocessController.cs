@@ -92,7 +92,7 @@
          [HttpGet]
          public async Task<ResultModel<StockprocessWithDetailViewModel>> GetAsync(int id)
          {
-             var data = await _stockprocessService.GetAsync(id);
+             var data = await _stockprocessService.GetAsync(id, CurrentUser);
              if (data!=null)
              {
                  return ResultModel<StockprocessWithDetailViewModel>.Success(data);
@@ -129,7 +129,7 @@
          [HttpPut]
          public async Task<ResultModel<bool>> UpdateAsync(StockprocessViewModel viewModel)
          {
-             var (flag, msg) = await _stockprocessService.UpdateAsync(viewModel);
+             var (flag, msg) = await _stockprocessService.UpdateAsync(viewModel, CurrentUser);
              if (flag)
              {
                  return ResultModel<bool>.Success(flag);
@@ -148,7 +148,7 @@
          [HttpDelete]
          public async Task<ResultModel<string>> DeleteAsync(int id)
          {
-             var (flag, msg) = await _stockprocessService.DeleteAsync(id);
+             var (flag, msg) = await _stockprocessService.DeleteAsync(id, CurrentUser);
              if (flag)
              {
                  return ResultModel<string>.Success(msg);

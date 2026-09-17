@@ -22,7 +22,6 @@ using ModernWMS.Core.Utility;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Pomelo.EntityFrameworkCore.MySql.Storage.Internal;
 using Pomelo.EntityFrameworkCore.MySql.Query.Internal;
-using Microsoft.Extensions.Configuration;
 
 namespace ModernWMS.WMS.Services
 {
@@ -43,8 +42,6 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         private readonly IStringLocalizer<ModernWMS.Core.MultiLanguage> _stringLocalizer;
 
-        public IConfiguration Configuration { get; }
-
         #endregion Args
 
         #region constructor
@@ -57,12 +54,10 @@ namespace ModernWMS.WMS.Services
         public StockService(
             SqlDBContext dBContext
           , IStringLocalizer<ModernWMS.Core.MultiLanguage> stringLocalizer
-            , IConfiguration configuration
             )
         {
             this._dBContext = dBContext;
             this._stringLocalizer = stringLocalizer;
-            this.Configuration = configuration;
         }
 
         #endregion constructor
@@ -334,6 +329,7 @@ namespace ModernWMS.WMS.Services
             var processdetail_DBSet = _dBContext.GetDbSet<StockprocessdetailEntity>().AsNoTracking();
             var move_DBSet = _dBContext.GetDbSet<StockmoveEntity>();
             var sku_safety_DBSet = _dBContext.GetDbSet<SkuSafetyStockEntity>();
+            var warehouse_DBSet = _dBContext.GetDbSet<WarehouseEntity>().AsNoTracking();
             var stock_group_datas = from stock in DbSet.AsNoTracking()
                                     join gl in location_DBSet.AsNoTracking() on stock.goods_location_id equals gl.id
                                     where stock.tenant_id == currentUser.tenant_id
@@ -343,7 +339,9 @@ namespace ModernWMS.WMS.Services
                                         sku_id = sg.Key.sku_id,
                                         warehouse_id = sg.Key.warehouse_id,
                                         qty_frozen = sg.Where(t => t.stock.is_freeze == true).Sum(e => e.stock.qty),
-                                        qty = sg.Sum(t => t.stock.qty)
+                                        qty = sg.Sum(t => t.stock.qty),
+                                        qty_normal = sg.Where(t => t.gl.warehouse_area_property != 5).Sum(t => t.stock.qty),
+                                        qty_normal_frozen = sg.Where(t => t.gl.warehouse_area_property != 5 && t.stock.is_freeze == true).Sum(t => t.stock.qty),
                                     };
 
             var dispatch_group_datas = from dp in dispatch_DBSet.AsNoTracking()
@@ -387,7 +385,7 @@ namespace ModernWMS.WMS.Services
                         from m in m_left.DefaultIfEmpty()
                         join sku in sku_DBSet on sg.sku_id equals sku.id
                         join spu in spu_DBSet on sku.spu_id equals spu.id
-                        join gl in location_DBSet on sg.warehouse_id equals gl.id
+                        join wh in warehouse_DBSet on sg.warehouse_id equals wh.id
                         join sss in sku_safety_DBSet on new { sg.sku_id, sg.warehouse_id } equals new { sss.sku_id, sss.warehouse_id } into sss_left
                         from sss in sss_left.DefaultIfEmpty()
                         select new SafetyStockManagementViewModel
@@ -397,11 +395,11 @@ namespace ModernWMS.WMS.Services
                             spu_code = spu.spu_code,
                             sku_code = sku.sku_code,
                             sku_name = sku.sku_name,
-                            qty_available = gl.warehouse_area_property == 5 ? 0 : (sg.qty - sg.qty_frozen - (dp.qty_locked == null ? 0 : dp.qty_locked) - (pl.qty_locked == null ? 0 : pl.qty_locked) - (m.qty_locked == null ? 0 : m.qty_locked)),
+                            qty_available = (sg.qty_normal == null ? 0 : sg.qty_normal) - (sg.qty_normal_frozen == null ? 0 : sg.qty_normal_frozen) - (dp.qty_locked == null ? 0 : dp.qty_locked) - (pl.qty_locked == null ? 0 : pl.qty_locked) - (m.qty_locked == null ? 0 : m.qty_locked),
                             qty_frozen = sg.qty_frozen,
                             qty_locked = (dp.qty_locked == null ? 0 : dp.qty_locked) + (pl.qty_locked == null ? 0 : pl.qty_locked) + (m.qty_locked == null ? 0 : m.qty_locked),
                             qty = sg.qty,
-                            warehouse_name = gl.warehouse_name,
+                            warehouse_name = wh.warehouse_name,
                             safety_stock_qty = sss.safety_stock_qty == null ? 0 : sss.safety_stock_qty,
                         };
             query = query.Where(queries.AsExpression<SafetyStockManagementViewModel>());
@@ -771,6 +769,7 @@ namespace ModernWMS.WMS.Services
                             spu.spu_code,
                             sku.sku_name,
                             sku.sku_code,
+                            sku_price = sku.price,
                             dpp.series_number,
                             dpp.price,
                             dpp.expiry_date,
@@ -781,29 +780,56 @@ namespace ModernWMS.WMS.Services
                             go.goods_owner_name,
                         }
                         into dg
-                        select new DeliveryStatisticViewModel
+                        select new
                         {
-                            dispatch_no = dg.Key.dispatch_no,
-                            warehouse_name = dg.Key.warehouse_name,
-                            location_name = dg.Key.location_name,
-                            spu_name = dg.Key.spu_name,
-                            spu_code = dg.Key.spu_code,
-                            sku_name = dg.Key.sku_name,
-                            sku_code = dg.Key.sku_code,
-                            series_number = dg.Key.series_number,
-                            expiry_date = dg.Key.expiry_date,
-                            price = dg.Key.price,
-                            putaway_date = dg.Key.putaway_date,
-                            customer_name = dg.Key.customer_name,
+                            dg.Key.dispatch_no,
+                            dg.Key.warehouse_name,
+                            dg.Key.location_name,
+                            dg.Key.spu_name,
+                            dg.Key.spu_code,
+                            dg.Key.sku_name,
+                            dg.Key.sku_code,
+                            dg.Key.sku_price,
+                            dg.Key.series_number,
+                            dg.Key.expiry_date,
+                            dg.Key.price,
+                            dg.Key.putaway_date,
+                            dg.Key.customer_name,
                             delivery_date = dg.Key.create_time,
-                            goods_owner_name = dg.Key.goods_owner_name,
+                            dg.Key.goods_owner_name,
                             delivery_qty = dg.Sum(t => t.dpp.picked_qty),
-                            delivery_amount = dg.Sum(t => t.dpp.picked_qty * t.sku.price)
                         };
             int totals = await query.CountAsync();
-            var list = await query.OrderByDescending(t => t.delivery_date)
+
+            #region sqlite cannot sum data of decimal type
+
+            // delivery_amount = delivery_qty * sku_price is computed client-side because
+            // SQLite cannot translate Sum() over a decimal expression server-side.
+            var page = await query.OrderByDescending(t => t.delivery_date)
                                               .Skip((input.pageIndex - 1) * input.pageSize)
                                               .Take(input.pageSize).ToListAsync();
+            var list = page.Select(t => new DeliveryStatisticViewModel
+            {
+                dispatch_no = t.dispatch_no,
+                warehouse_name = t.warehouse_name,
+                location_name = t.location_name,
+                spu_name = t.spu_name,
+                spu_code = t.spu_code,
+                sku_name = t.sku_name,
+                sku_code = t.sku_code,
+                series_number = t.series_number,
+                expiry_date = t.expiry_date,
+                price = t.price,
+                putaway_date = t.putaway_date,
+                customer_name = t.customer_name,
+                delivery_date = t.delivery_date,
+                goods_owner_name = t.goods_owner_name,
+                delivery_qty = t.delivery_qty,
+                delivery_amount = t.delivery_qty * t.sku_price,
+            }).ToList();
+
+            #endregion sqlite cannot sum data of decimal type
+
             return (list, totals);
         }
 
@@ -815,7 +841,6 @@ namespace ModernWMS.WMS.Services
         /// <returns></returns>
         public async Task<(List<StockAgeViewModel> data, int totals)> StockAgePageAsync(StockAgeSearchViewModel input, CurrentUser currentUser)
         {
-            var database_config = Configuration.GetSection("Database")["db"].ToUpper();
             var DbSet = _dBContext.GetDbSet<StockEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
             var sku_DBSet = _dBContext.GetDbSet<SkuEntity>().AsNoTracking();
             var spu_DBSet = _dBContext.GetDbSet<SpuEntity>().AsNoTracking();
@@ -869,23 +894,32 @@ namespace ModernWMS.WMS.Services
                             expiry_date = sg.expiry_date,
                             price = sg.price,
                             putaway_date = sg.putaway_date,
-                            stock_age = sg.putaway_date == UtilConvert.MinDate ? 0 : database_config == "MYSQL" ? Microsoft.EntityFrameworkCore.MySqlDbFunctionsExtensions.DateDiffDay(EF.Functions, sg.putaway_date.Date, today) : Microsoft.EntityFrameworkCore.SqlServerDbFunctionsExtensions.DateDiffDay(EF.Functions, sg.putaway_date.Date, today),
                         };
 
+            query = query.Where(t => t.qty > 0);
+
+            #region provider-specific date-diff functions (MySqlDbFunctionsExtensions/SqlServerDbFunctionsExtensions)
+            // cannot be translated by every provider (e.g. SQLite) - compute stock_age client-side instead.
+
+            var matches = await query.ToListAsync();
+            matches.ForEach(t => t.stock_age = t.putaway_date == UtilConvert.MinDate ? 0 : (today.Date - t.putaway_date.Date).Days);
+            IEnumerable<StockAgeViewModel> filtered = matches;
             if (input.stock_age_from > 0)
             {
-                query = query.Where(t => t.stock_age >= input.stock_age_from);
+                filtered = filtered.Where(t => t.stock_age >= input.stock_age_from);
             }
             if (input.stock_age_to > 0)
             {
-                query = query.Where(t => t.stock_age <= input.stock_age_to);
+                filtered = filtered.Where(t => t.stock_age <= input.stock_age_to);
             }
-            query = query.Where(t => t.qty > 0);
-            int totals = await query.CountAsync();
-            var list = await query.OrderBy(t => t.sku_code)
-                       .Skip((input.pageIndex - 1) * input.pageSize)
+            var filteredList = filtered.OrderBy(t => t.sku_code).ToList();
+
+            #endregion provider-specific date-diff functions (MySqlDbFunctionsExtensions/SqlServerDbFunctionsExtensions)
+
+            int totals = filteredList.Count;
+            var list = filteredList.Skip((input.pageIndex - 1) * input.pageSize)
                        .Take(input.pageSize)
-                       .ToListAsync();
+                       .ToList();
             return (list, totals);
         }
 

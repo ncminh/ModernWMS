@@ -14,8 +14,6 @@ using ModernWMS.Core.Models;
 using ModernWMS.Core.JWT;
 using Microsoft.Extensions.Localization;
 using ModernWMS.Core.DynamicSearch;
-using System.Linq.Expressions;
-using System.Reflection;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -138,11 +136,13 @@ namespace ModernWMS.WMS.Services
         /// <summary>
         /// Get a record by id
         /// </summary>
+        /// <param name="id">primary key</param>
+        /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        public async Task<StockprocessWithDetailViewModel> GetAsync(int id)
+        public async Task<StockprocessWithDetailViewModel> GetAsync(int id, CurrentUser currentUser)
         {
             var DbSet = _dBContext.GetDbSet<StockprocessEntity>();
-            var entity = await DbSet.AsNoTracking().FirstOrDefaultAsync(t => t.id.Equals(id));
+            var entity = await DbSet.AsNoTracking().FirstOrDefaultAsync(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id);
             var details = await (from spd in _dBContext.GetDbSet<StockprocessdetailEntity>().AsNoTracking().Where(t => t.stock_process_id == id)
                                  join sku in _dBContext.GetDbSet<SkuEntity>().AsNoTracking() on spd.sku_id equals sku.id
                                  join spu in _dBContext.GetDbSet<SpuEntity>().AsNoTracking() on sku.spu_id equals spu.id
@@ -198,51 +198,17 @@ namespace ModernWMS.WMS.Services
             var entity = viewModel.Adapt<StockprocessEntity>();
             var stock_DBSet = _dBContext.GetDbSet<StockEntity>().AsNoTracking();
 
-            ParameterExpression parameterExpression = Expression.Parameter(typeof(StockEntity), "m");
-            Expression exp = null;
-            for (int i = 0; i < entity.detailList.Count; i++)
-            {
-                ConstantExpression t_constan_location = Expression.Constant(entity.detailList[i].goods_location_id);
-                PropertyInfo t_prop_location = typeof(StockEntity).GetProperty("goods_location_id");
-                MemberExpression t_location_exp = Expression.Property(parameterExpression, t_prop_location);
-                BinaryExpression t_location_full_exp = Expression.Equal(t_location_exp, t_constan_location);
-                ConstantExpression t_constan_sku = Expression.Constant(entity.detailList[i].sku_id);
-                PropertyInfo t_prop_sku = typeof(StockEntity).GetProperty("sku_id");
-                MemberExpression t_sku_exp = Expression.Property(parameterExpression, t_prop_sku);
-                BinaryExpression t_sku_full_exp = Expression.Equal(t_sku_exp, t_constan_sku);
-                ConstantExpression t_constan_owner = Expression.Constant(entity.detailList[i].goods_owner_id);
-                PropertyInfo t_prop_owner = typeof(StockEntity).GetProperty("goods_owner_id");
-                MemberExpression t_owner_exp = Expression.Property(parameterExpression, t_prop_owner);
-                BinaryExpression t_owner_full_exp = Expression.Equal(t_owner_exp, t_constan_owner);
-                ConstantExpression t_constan_sn = Expression.Constant(entity.detailList[i].series_number);
-                PropertyInfo t_prop_sn = typeof(StockEntity).GetProperty("series_number");
-                MemberExpression t_sn_exp = Expression.Property(parameterExpression, t_prop_sn);
-                BinaryExpression t_sn_full_exp = Expression.Equal(t_sn_exp, t_constan_sn);
-                ConstantExpression t_constan_expiry = Expression.Constant(entity.detailList[i].expiry_date);
-                PropertyInfo t_prop_expiry = typeof(StockEntity).GetProperty("expiry_date");
-                MemberExpression t_expiry_exp = Expression.Property(parameterExpression, t_prop_sn);
-                BinaryExpression t_expiry_full_exp = Expression.Equal(t_sn_exp, t_constan_sn);
-                ConstantExpression t_constan_price = Expression.Constant(entity.detailList[i].price);
-                PropertyInfo t_prop_price = typeof(StockEntity).GetProperty("price");
-                MemberExpression t_price_exp = Expression.Property(parameterExpression, t_prop_sn);
-                BinaryExpression t_price_full_exp = Expression.Equal(t_sn_exp, t_constan_sn);
-                ConstantExpression t_constan_putaway = Expression.Constant(entity.detailList[i].putaway_date);
-                PropertyInfo t_prop_putaway = typeof(StockEntity).GetProperty("putaway_date");
-                MemberExpression t_putaway_exp = Expression.Property(parameterExpression, t_prop_sn);
-                BinaryExpression t_putaway_full_exp = Expression.Equal(t_sn_exp, t_constan_sn);
-                var t_exp = Expression.And(t_location_full_exp, t_sku_full_exp);
-                t_exp = Expression.And(t_exp, t_owner_full_exp);
-                if (exp != null)
-                    exp = Expression.Or(exp, t_exp);
-                else
-                    exp = t_exp;
-            }
-            var predicate_res = Expression.Lambda<Func<StockEntity, bool>>(exp, new ParameterExpression[1] { parameterExpression });
-            var stocks = await stock_DBSet.Where(predicate_res).ToListAsync();
+            var detail_location_id_list = entity.detailList.Select(t => t.goods_location_id).Distinct().ToList();
+            var detail_sku_id_list = entity.detailList.Select(t => t.sku_id).Distinct().ToList();
+            var detail_owner_id_list = entity.detailList.Select(t => t.goods_owner_id).Distinct().ToList();
+            var stocks = await stock_DBSet.Where(t => t.tenant_id == currentUser.tenant_id
+                && detail_location_id_list.Contains(t.goods_location_id)
+                && detail_sku_id_list.Contains(t.sku_id)
+                && detail_owner_id_list.Contains(t.goods_owner_id)).ToListAsync();
             var goods_location_id_list = viewModel.detailList.Where(t => t.is_source == true).Select(t => t.goods_location_id).ToList();
             var sku_id_list = viewModel.detailList.Where(t => t.is_source == true).Select(t => t.sku_id).ToList();
             var lockeds = await (from d in _dBContext.GetDbSet<StockprocessdetailEntity>().AsNoTracking()
-                                 where d.is_update_stock == false && goods_location_id_list.Contains(d.goods_location_id)
+                                 where d.is_update_stock == false && d.tenant_id == currentUser.tenant_id && goods_location_id_list.Contains(d.goods_location_id)
                                  && sku_id_list.Contains(d.sku_id)
                                  group d by new { d.goods_location_id, d.sku_id, d.goods_owner_id, d.series_number, d.expiry_date, d.price,d.putaway_date } into lg
                                  select new
@@ -301,11 +267,12 @@ namespace ModernWMS.WMS.Services
         /// update a record
         /// </summary>
         /// <param name="viewModel">args</param>
+        /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> UpdateAsync(StockprocessViewModel viewModel)
+        public async Task<(bool flag, string msg)> UpdateAsync(StockprocessViewModel viewModel, CurrentUser currentUser)
         {
             var DbSet = _dBContext.GetDbSet<StockprocessEntity>();
-            var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id));
+            var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id) && t.tenant_id == currentUser.tenant_id);
             if (entity == null)
             {
                 return (false, _stringLocalizer["not_exists_entity"]);
@@ -332,10 +299,15 @@ namespace ModernWMS.WMS.Services
         /// delete a record
         /// </summary>
         /// <param name="id">id</param>
+        /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> DeleteAsync(int id)
+        public async Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser)
         {
-            var entity = await _dBContext.GetDbSet<StockprocessEntity>().Where(t => t.id.Equals(id) && t.process_status == false).Include(e => e.detailList).FirstOrDefaultAsync();
+            var entity = await _dBContext.GetDbSet<StockprocessEntity>().Where(t => t.id.Equals(id) && t.process_status == false && t.tenant_id == currentUser.tenant_id).Include(e => e.detailList).FirstOrDefaultAsync();
+            if (entity == null)
+            {
+                return (false, _stringLocalizer["not_exists_entity"]);
+            }
             _dBContext.GetDbSet<StockprocessEntity>().Remove(entity);
             var qty = await _dBContext.SaveChangesAsync();
             if (qty > 0)
@@ -359,7 +331,7 @@ namespace ModernWMS.WMS.Services
             var DBSet = _dBContext.GetDbSet<StockprocessEntity>();
             var detail_DBSet = _dBContext.GetDbSet<StockprocessdetailEntity>();
             var adjust_DBset = _dBContext.GetDbSet<StockadjustEntity>();
-            var entity = await DBSet.FirstOrDefaultAsync(t => t.id == id);
+            var entity = await DBSet.FirstOrDefaultAsync(t => t.id == id && t.tenant_id == currentUser.tenant_id);
             var now_time = DateTime.Now;
             if (entity == null)
             {
@@ -401,7 +373,7 @@ namespace ModernWMS.WMS.Services
                 return (false, _stringLocalizer["not_exists_entity"]);
             }
 
-            var stocks = await stock_DBSet.Where(s => detail_DBSet.Where(t => t.stock_process_id == id).Any(t => t.goods_location_id == s.goods_location_id && t.sku_id == s.sku_id && t.goods_owner_id == s.goods_owner_id && t.series_number == s.series_number && t.expiry_date == s.expiry_date && t.price == s.price && t.putaway_date == s.putaway_date)).ToListAsync();
+            var stocks = await stock_DBSet.Where(s => s.tenant_id == currentUser.tenant_id && detail_DBSet.Where(t => t.stock_process_id == id).Any(t => t.goods_location_id == s.goods_location_id && t.sku_id == s.sku_id && t.goods_owner_id == s.goods_owner_id && t.series_number == s.series_number && t.expiry_date == s.expiry_date && t.price == s.price && t.putaway_date == s.putaway_date)).ToListAsync();
             foreach (var d in details)
             {
                 var stock = stocks.FirstOrDefault(t => t.goods_location_id == d.goods_location_id && t.sku_id == d.sku_id && t.goods_owner_id == d.goods_owner_id && t.series_number == d.series_number && t.expiry_date == d.expiry_date && t.price == d.price && t.putaway_date == d.putaway_date);
@@ -462,7 +434,7 @@ namespace ModernWMS.WMS.Services
         public async Task<(bool flag, string msg)> ConfirmProcess(int id, CurrentUser currentUser)
         {
             var DBSet = _dBContext.GetDbSet<StockprocessEntity>();
-            var entity = await DBSet.FirstOrDefaultAsync(t => t.id == id);
+            var entity = await DBSet.FirstOrDefaultAsync(t => t.id == id && t.tenant_id == currentUser.tenant_id);
             if (entity == null)
             {
                 return (false, _stringLocalizer["not_exists_entity"]);

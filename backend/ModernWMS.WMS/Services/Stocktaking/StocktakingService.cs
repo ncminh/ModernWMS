@@ -136,8 +136,10 @@ namespace ModernWMS.WMS.Services
         /// <summary>
         /// Get a record by id
         /// </summary>
+        /// <param name="id">primary key</param>
+        /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        public async Task<StocktakingViewModel> GetAsync(int id)
+        public async Task<StocktakingViewModel> GetAsync(int id, CurrentUser currentUser)
         {
             var Stocktakings = _dBContext.GetDbSet<StocktakingEntity>();
             var Spus = _dBContext.GetDbSet<SpuEntity>();
@@ -155,7 +157,7 @@ namespace ModernWMS.WMS.Services
                         from gso in gsoJoin.DefaultIfEmpty()
                         join adj in queryAdjust on st.id equals adj.source_table_id into adjJoin
                         from adj in adjJoin.DefaultIfEmpty()
-                        where st.id == id
+                        where st.id == id && st.tenant_id == currentUser.tenant_id
                         select new StocktakingViewModel
                         {
                             id = st.id,
@@ -272,7 +274,7 @@ namespace ModernWMS.WMS.Services
         public async Task<(bool flag, string msg)> PutAsync(StocktakingConfirmViewModel viewModel, CurrentUser currentUser)
         {
             var DbSet = _dBContext.GetDbSet<StocktakingEntity>();
-            var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id));
+            var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(viewModel.id) && t.tenant_id == currentUser.tenant_id);
             if (entity == null)
             {
                 return (false, _stringLocalizer["not_exists_entity"]);
@@ -303,14 +305,21 @@ namespace ModernWMS.WMS.Services
         public async Task<(bool flag, string msg)> ConfirmAsync(int id, CurrentUser currentUser)
         {
             var DbSet = _dBContext.GetDbSet<StocktakingEntity>();
-            var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(id));
+            var entity = await DbSet.FirstOrDefaultAsync(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id);
             if (entity == null)
             {
                 return (false, _stringLocalizer["not_exists_entity"]);
             }
+            var alreadyAdjusted = await _dBContext.GetDbSet<StockadjustEntity>().AsNoTracking()
+                .AnyAsync(t => t.job_type == 1 && t.source_table_id == entity.id);
+            if (alreadyAdjusted)
+            {
+                return (false, _stringLocalizer["status_changed"]);
+            }
             // change stock sku qty
             var Stocks = _dBContext.GetDbSet<StockEntity>();
-            var stockEntity = await Stocks.FirstOrDefaultAsync(t => t.sku_id.Equals(entity.sku_id)
+            var stockEntity = await Stocks.FirstOrDefaultAsync(t => t.tenant_id.Equals(currentUser.tenant_id)
+                                                                 && t.sku_id.Equals(entity.sku_id)
                                                                  && t.goods_owner_id.Equals(entity.goods_owner_id)
                                                                  && t.goods_location_id.Equals(entity.goods_location_id)
                                                                  && t.series_number.Equals(entity.series_number)
@@ -376,10 +385,11 @@ namespace ModernWMS.WMS.Services
         /// delete a record
         /// </summary>
         /// <param name="id">id</param>
+        /// <param name="currentUser">current user</param>
         /// <returns></returns>
-        public async Task<(bool flag, string msg)> DeleteAsync(int id)
+        public async Task<(bool flag, string msg)> DeleteAsync(int id, CurrentUser currentUser)
         {
-            var qty = await _dBContext.GetDbSet<StocktakingEntity>().Where(t => t.id.Equals(id)).ExecuteDeleteAsync();
+            var qty = await _dBContext.GetDbSet<StocktakingEntity>().Where(t => t.id.Equals(id) && t.tenant_id == currentUser.tenant_id).ExecuteDeleteAsync();
             if (qty > 0)
             {
                 return (true, _stringLocalizer["delete_success"]);

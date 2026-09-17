@@ -91,7 +91,7 @@
          [HttpGet]
          public async Task<ResultModel<StockmoveViewModel>> GetAsync(int id)
          {
-             var data = await _stockmoveService.GetAsync(id);
+             var data = await _stockmoveService.GetAsync(id, CurrentUser);
              if (data!=null)
              {
                  return ResultModel<StockmoveViewModel>.Success(data);
@@ -147,7 +147,7 @@
          [HttpDelete]
          public async Task<ResultModel<string>> DeleteAsync(int id)
          {
-             var (flag, msg) = await _stockmoveService.DeleteAsync(id);
+             var (flag, msg) = await _stockmoveService.DeleteAsync(id, CurrentUser);
              if (flag)
              {
                  return ResultModel<string>.Success(msg);
