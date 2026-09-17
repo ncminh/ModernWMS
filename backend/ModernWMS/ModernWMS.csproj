@@ -25,6 +25,12 @@
   <ItemGroup>
     <ProjectReference Include="..\ModernWMS.Core\ModernWMS.Core.csproj" />
     <ProjectReference Include="..\ModernWMS.WMS\ModernWMS.WMS.csproj" />
+    <!-- None of these three are referenced by name from any code: each exists purely so its
+         provider's migrations assembly (see StartupExtensions' per-provider MigrationsAssembly
+         calls) ships next to ModernWMS.dll and can be Assembly.Load-ed by EF Core at runtime. -->
+    <ProjectReference Include="..\ModernWMS.Migrations\ModernWMS.Migrations.SqlServer\ModernWMS.Migrations.SqlServer.csproj" />
+    <ProjectReference Include="..\ModernWMS.Migrations\ModernWMS.Migrations.Sqlite\ModernWMS.Migrations.Sqlite.csproj" />
+    <ProjectReference Include="..\ModernWMS.Migrations\ModernWMS.Migrations.Postgres\ModernWMS.Migrations.Postgres.csproj" />
   </ItemGroup>
 
 </Project>

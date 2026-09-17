@@ -61,7 +61,7 @@ namespace ModernWMS.Core.Extentions
                 if (database_config.ToUpper() == "SQLITE")
                 {
                     var SqlLite_connection = configuration.GetConnectionString("SqlLiteConn");
-                    t.UseSqlite(SqlLite_connection, b => b.MigrationsAssembly("ModernWMS"));
+                    t.UseSqlite(SqlLite_connection, b => b.MigrationsAssembly("ModernWMS.Migrations.Sqlite"));
                 }
                 else if (database_config.ToUpper() == "MYSQL")
                 {
@@ -71,12 +71,12 @@ namespace ModernWMS.Core.Extentions
                 else if (database_config.ToUpper() == "SQLSERVER")
                 {
                     var SqlServer_connection = configuration.GetConnectionString("SqlServerConn");
-                    t.UseSqlServer(SqlServer_connection);
+                    t.UseSqlServer(SqlServer_connection, b => b.MigrationsAssembly("ModernWMS.Migrations.SqlServer"));
                 }
                 else if (database_config.ToUpper() == "POSTGRES")
                 {
                     var Postgre_connection = configuration.GetConnectionString("PostGresConn");
-                    t.UseNpgsql(Postgre_connection);
+                    t.UseNpgsql(Postgre_connection, b => b.MigrationsAssembly("ModernWMS.Migrations.Postgres"));
                     AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
                     AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
                 }

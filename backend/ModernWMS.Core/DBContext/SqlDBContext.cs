@@ -67,6 +67,17 @@ namespace ModernWMS.Core.DBContext
         }
 
         /// <summary>
+        /// overwrite ConfigureConventions: gives every decimal property an explicit precision/scale
+        /// so providers that need one (e.g. SQL Server) don't silently fall back to decimal(18,2)
+        /// </summary>
+        /// <param name="configurationBuilder"></param>
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            configurationBuilder.Properties<decimal>().HavePrecision(18, 6);
+            base.ConfigureConventions(configurationBuilder);
+        }
+
+        /// <summary>
         /// overwrite OnModelCreating
         /// </summary>
         /// <param name="modelBuilder"></param>
